@@ -12,6 +12,7 @@ import { Loader2, Music, Film, ArrowRight, Sparkles, Check, Edit3 } from "lucide
 import SceneCard from "@/components/storyboard/SceneCard";
 import { StrategyPanel } from "@/components/storyboard/StrategyPanel";
 import { StrategyEditModal } from "@/components/campaign/StrategyEditModal";
+import { RegenerationDiffDialog } from "@/components/storyboard/RegenerationDiffDialog";
 import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 import { StoryboardPageSkeleton } from "@/components/skeletons/StoryboardPageSkeleton";
 
@@ -25,6 +26,7 @@ interface Scene {
   visualUrl?: string;
   audioUrl?: string;
   generatedAt?: string;
+  strategyAlignment?: string;
 }
 
 interface Storyboard {
@@ -57,6 +59,11 @@ const Storyboard = () => {
   const [isEditingScript, setIsEditingScript] = useState(false);
   const [isEditingMusicMood, setIsEditingMusicMood] = useState(false);
   const [editedMusicMood, setEditedMusicMood] = useState("");
+  
+  // State for regeneration diff
+  const [diffDialogOpen, setDiffDialogOpen] = useState(false);
+  const [previousStoryboard, setPreviousStoryboard] = useState<Storyboard | null>(null);
+
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -400,6 +407,11 @@ const Storyboard = () => {
           setStrategy(newStrategy);
         }}
         onStoryboardRegenerated={async () => {
+          // Store the previous storyboard for comparison
+          if (storyboard) {
+            setPreviousStoryboard(storyboard);
+          }
+          
           // Refresh the storyboard data
           const { data: refreshedCampaign } = await supabase
             .from("campaigns")
@@ -415,8 +427,26 @@ const Storyboard = () => {
             if (storyboardData.strategy) {
               setStrategy(storyboardData.strategy);
             }
+            
+            // Show diff dialog if we have a previous storyboard
+            if (storyboard) {
+              setDiffDialogOpen(true);
+            }
+            
             setStep("script"); // Reset to script step to review new content
           }
+        }}
+      />
+      
+      {/* Regeneration Diff Dialog */}
+      <RegenerationDiffDialog
+        open={diffDialogOpen}
+        onOpenChange={setDiffDialogOpen}
+        beforeStoryboard={previousStoryboard}
+        afterStoryboard={storyboard}
+        onAccept={() => {
+          setDiffDialogOpen(false);
+          setPreviousStoryboard(null);
         }}
       />
       
