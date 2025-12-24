@@ -77,7 +77,11 @@ const Create = () => {
         .limit(1);
       
       if (!brands || brands.length === 0) {
-        navigate("/brand-setup");
+        toast({
+          title: "Brand Setup Required",
+          description: "Please set up your brand first to create ads.",
+        });
+        navigate("/dashboard");
         return;
       }
 
