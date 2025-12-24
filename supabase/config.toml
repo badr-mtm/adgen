@@ -1,1 +1,34 @@
 project_id = "oeaxxrxvueuphzzsxgor"
+
+[functions.generate-tv-strategy]
+verify_jwt = true
+
+[functions.generate-ideas]
+verify_jwt = true
+
+[functions.generate-storyboard]
+verify_jwt = true
+
+[functions.brand-ingest]
+verify_jwt = true
+
+[functions.generate-ad-variants]
+verify_jwt = true
+
+[functions.generate-image-ad]
+verify_jwt = true
+
+[functions.generate-scene-visual]
+verify_jwt = true
+
+[functions.image-ai-actions]
+verify_jwt = true
+
+[functions.scrape-product-url]
+verify_jwt = false
+
+[functions.update-scene]
+verify_jwt = true
+
+[functions.video-ai-assistant]
+verify_jwt = true
