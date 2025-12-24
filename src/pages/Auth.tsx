@@ -26,7 +26,9 @@ export default function Auth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
-          navigate("/brand-setup");
+          // Clear any session-based dismissal so prompt shows on new sign-in
+          sessionStorage.removeItem("brand-setup-prompt-dismissed");
+          navigate("/dashboard");
         }
       }
     );
@@ -34,7 +36,7 @@ export default function Auth() {
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/brand-setup");
+        navigate("/dashboard");
       }
     });
 
@@ -88,7 +90,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/brand-setup`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
       if (error) throw error;
@@ -137,7 +139,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/brand-setup`,
+          redirectTo: `${window.location.origin}/dashboard`,
         },
       });
       if (error) throw error;
@@ -155,7 +157,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "azure",
         options: {
-          redirectTo: `${window.location.origin}/brand-setup`,
+          redirectTo: `${window.location.origin}/dashboard`,
           scopes: "email profile openid",
         },
       });

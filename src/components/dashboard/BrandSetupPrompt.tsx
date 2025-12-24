@@ -12,12 +12,14 @@ export function BrandSetupPrompt() {
   const [isDismissed, setIsDismissed] = useState(true); // Start hidden to prevent flash
 
   useEffect(() => {
-    const dismissed = localStorage.getItem(DISMISS_KEY);
+    // Use sessionStorage so it resets on each new sign-in
+    const dismissed = sessionStorage.getItem(DISMISS_KEY);
     setIsDismissed(dismissed === "true");
   }, []);
 
   const handleDismiss = () => {
-    localStorage.setItem(DISMISS_KEY, "true");
+    // Store in sessionStorage - will reset when user signs in again
+    sessionStorage.setItem(DISMISS_KEY, "true");
     setIsDismissed(true);
   };
 
