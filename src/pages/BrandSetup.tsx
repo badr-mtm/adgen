@@ -271,10 +271,21 @@ export default function BrandSetup() {
       <div className="max-w-2xl mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Create Your Brand</CardTitle>
-            <CardDescription>
-              Set up your brand profile to start generating amazing ads
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Create Your Brand</CardTitle>
+                <CardDescription>
+                  Set up your brand profile to start generating amazing ads
+                </CardDescription>
+              </div>
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate("/")}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Skip for now
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
