@@ -1,5 +1,8 @@
 project_id = "oeaxxrxvueuphzzsxgor"
 
+[functions.regenerate-from-strategy]
+verify_jwt = true
+
 [functions.generate-tv-strategy]
 verify_jwt = true
 
