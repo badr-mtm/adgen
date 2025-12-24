@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   CalendarDays,
+  Tv,
 } from "lucide-react";
 import adgenLogo from "@/assets/adgen-logo.jpeg";
 import {
@@ -30,12 +31,12 @@ import { cn } from "@/lib/utils";
 
 const mainNavItems = [
   { title: "Home", url: "/dashboard", icon: Home },
-  { title: "Create Ad", url: "/create", icon: PlusCircle },
-  { title: "AI Suggestions", url: "/ai-suggestions", icon: Brain, badge: 3 },
+  { title: "Create TV Ad", url: "/create", icon: Tv },
+  { title: "AI Strategy", url: "/ai-suggestions", icon: Brain, badge: 3 },
   { title: "Campaigns", url: "/ad-operations", icon: FolderOpen },
-  { title: "Campaign Schedules", url: "/campaign-schedules", icon: CalendarDays },
+  { title: "Broadcast Schedule", url: "/campaign-schedules", icon: CalendarDays },
   { title: "Assets", url: "/assets", icon: Image },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
+  { title: "Performance", url: "/reports", icon: BarChart3 },
 ];
 
 const secondaryNavItems = [
@@ -64,8 +65,10 @@ export function AppSidebar() {
           className="flex items-center gap-2 cursor-pointer" 
           onClick={() => navigate("/dashboard")}
         >
-          <img src={adgenLogo} alt="AdGen" className="w-8 h-8 rounded-lg object-cover" />
-          <span className="font-bold text-xl text-sidebar-foreground">AdGen</span>
+          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <Tv className="w-5 h-5 text-primary" />
+          </div>
+          <span className="font-bold text-xl text-sidebar-foreground">TV Ads AI</span>
         </div>
       </SidebarHeader>
 

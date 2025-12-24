@@ -113,7 +113,7 @@ const AdCreationForm = ({
       {/* Prompt Input */}
       <div className="space-y-2">
         <div className="relative">
-          <Textarea value={prompt} onChange={e => setPrompt(e.target.value)} className="min-h-[140px] bg-input border-border text-foreground placeholder:text-muted-foreground resize-none pb-14 px-4 py-4 text-base" placeholder="Describe your Ad idea, or paste a product link... " />
+          <Textarea value={prompt} onChange={e => setPrompt(e.target.value)} className="min-h-[140px] bg-input border-border text-foreground placeholder:text-muted-foreground resize-none pb-14 px-4 py-4 text-base" placeholder="Describe your TV ad concept, product, or campaign goal..." />
           
           {/* Bottom Controls */}
           <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
@@ -186,9 +186,9 @@ const AdCreationForm = ({
       <div className="flex flex-col items-center gap-2 pt-2">
         <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 text-base" onClick={handleSubmit}>
           <Sparkles className="h-5 w-5 mr-2" />
-          Generate Concepts
+          Build TV Ad Strategy
         </Button>
-        <p className="text-xs text-muted-foreground">4 creative directions with predicted performance</p>
+        <p className="text-xs text-muted-foreground">AI generates strategy + creative concepts for TV broadcast</p>
       </div>
     </div>;
 };

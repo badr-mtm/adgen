@@ -67,8 +67,9 @@ export function PrimaryActionZone({ recommendations }: PrimaryActionZoneProps) {
           <CardHeader className="pb-4">
             <CardTitle className="text-xl flex items-center gap-2 text-foreground">
               <Plus className="h-6 w-6 text-primary" />
-              Create New Ad
+              Create TV Ad
             </CardTitle>
+            <p className="text-sm text-muted-foreground">Strategy-first, broadcast-ready</p>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
