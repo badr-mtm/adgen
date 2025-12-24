@@ -8,6 +8,7 @@ import { CreativePerformanceIntelligence } from "@/components/dashboard/Creative
 import { BrandSystemReadiness } from "@/components/dashboard/BrandSystemReadiness";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { EmailVerificationBanner } from "@/components/dashboard/EmailVerificationBanner";
+import { BrandSetupPrompt } from "@/components/dashboard/BrandSetupPrompt";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { motion } from "framer-motion";
@@ -34,39 +35,43 @@ const Dashboard = () => {
         return;
       }
 
-      // Check email verification status
-      setUserEmail(session.user.email || "");
-      setEmailVerified(session.user.email_confirmed_at !== null);
+      try {
+        // Check email verification status
+        setUserEmail(session.user.email || "");
+        setEmailVerified(session.user.email_confirmed_at !== null);
 
-      const { data: brands } = await supabase
-        .from("brands")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .limit(1);
+        const { data: brands } = await supabase
+          .from("brands")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .limit(1);
 
-      if (!brands || brands.length === 0) {
-        navigate("/brand-setup");
-        return;
+        if (brands && brands.length > 0) {
+          setBrandProfile(brands[0]);
+        } else {
+          // Brand is optional — keep user on dashboard and show a setup prompt.
+          setBrandProfile(null);
+        }
+
+        const { data: campaigns } = await supabase
+          .from("campaigns")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(7);
+
+        if (campaigns) {
+          setActiveCampaigns(campaigns);
+          setStats({
+            activeCampaigns: campaigns.filter((c) => c.status !== "completed").length,
+            creativesGenerated: campaigns.length * 3, // Assume ~3 creatives per campaign
+            bestCtr: parseFloat((Math.random() * 3 + 2.5).toFixed(1)),
+            spendVsBudget: Math.floor(Math.random() * 40) + 50,
+          });
+        }
+      } finally {
+        setLoading(false);
       }
-      setBrandProfile(brands[0]);
-
-      const { data: campaigns } = await supabase
-        .from("campaigns")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(7);
-
-      if (campaigns) {
-        setActiveCampaigns(campaigns);
-        setStats({
-          activeCampaigns: campaigns.filter((c) => c.status !== "completed").length,
-          creativesGenerated: campaigns.length * 3, // Assume ~3 creatives per campaign
-          bestCtr: parseFloat((Math.random() * 3 + 2.5).toFixed(1)),
-          spendVsBudget: Math.floor(Math.random() * 40) + 50,
-        });
-      }
-      setLoading(false);
     };
 
     checkAuthAndFetch();
@@ -140,6 +145,13 @@ const Dashboard = () => {
         {!emailVerified && userEmail && (
           <ScrollReveal direction="down" duration={0.3}>
             <EmailVerificationBanner email={userEmail} isVerified={emailVerified} />
+          </ScrollReveal>
+        )}
+
+        {/* Brand setup prompt (optional) */}
+        {!brandProfile && (
+          <ScrollReveal direction="down" duration={0.35}>
+            <BrandSetupPrompt />
           </ScrollReveal>
         )}
 
