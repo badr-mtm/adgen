@@ -76,14 +76,7 @@ const Create = () => {
         .eq("user_id", session.user.id)
         .limit(1);
       
-      if (!brands || brands.length === 0) {
-        toast({
-          title: "Brand Setup Required",
-          description: "Please set up your brand first to create ads.",
-        });
-        navigate("/dashboard");
-        return;
-      }
+      // Brand is optional - users can still access Create page
 
       const { data: campaigns } = await supabase
         .from("campaigns")
