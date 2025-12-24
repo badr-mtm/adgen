@@ -26,40 +26,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
-// Default AI-generated strategy template
-const generateDefaultStrategy = (prompt: string): TVAdStrategy => ({
-  objective: "awareness",
-  coreMessage: {
-    primary: prompt || "Discover what makes us different",
-    supporting: "Quality you can trust, results you can see",
-    emotionalAngle: "trust"
-  },
-  audience: {
-    primary: "Adults 25-54 who value quality and authenticity",
-    secondary: "Young professionals seeking premium experiences",
-    viewingContext: "Prime Time, Sports Events",
-    ageRange: "25-54",
-    householdType: "Families with kids",
-    psychographicIntent: "Quality-focused, value-driven"
-  },
-  storytellingFramework: "problem_solution",
-  adLength: "30s",
-  pacing: "balanced",
-  hookTiming: 3,
-  logoRevealTiming: 25,
-  cta: {
-    text: "Discover the difference",
-    strength: "soft",
-    placement: "end"
-  },
-  visualDirection: {
-    tone: "cinematic",
-    cameraMovement: "subtle",
-    musicMood: "Uplifting & Inspirational",
-    voiceoverStyle: "warm"
-  }
-});
-
 type FlowStep = "input" | "strategy" | "concepts";
 
 const Create = () => {
@@ -71,6 +37,7 @@ const Create = () => {
   const [generating, setGenerating] = useState(false);
   const [flowStep, setFlowStep] = useState<FlowStep>("input");
   const [strategy, setStrategy] = useState<TVAdStrategy | null>(null);
+  const [brandId, setBrandId] = useState<string | null>(null);
   const [isStrategyLocked, setIsStrategyLocked] = useState(false);
   const [formData, setFormData] = useState<AdCreationData | null>(null);
   const [generatedConcepts, setGeneratedConcepts] = useState<any[]>([]);
@@ -129,36 +96,62 @@ const Create = () => {
     checkAuth();
   }, [navigate]);
 
-  // Step 1: User submits form → Generate strategy
+  // Step 1: User submits form → Generate strategy via AI
   const handleAdCreation = async (data: AdCreationData) => {
     setGenerating(true);
     setFormData(data);
     
-    // Simulate AI strategy generation (would be a real API call)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const generatedStrategy = generateDefaultStrategy(data.prompt);
-    setStrategy(generatedStrategy);
-    setFlowStep("strategy");
-    setGenerating(false);
-    
-    toast({
-      title: "Strategy Generated",
-      description: "Review and customize your TV ad strategy below."
-    });
+    try {
+      const { data: strategyData, error } = await supabase.functions.invoke("generate-tv-strategy", {
+        body: {
+          prompt: data.prompt,
+          adType: data.adType,
+          productUrl: data.productUrl
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (strategyData?.strategy) {
+        setStrategy(strategyData.strategy);
+        setBrandId(strategyData.brandId);
+        setFlowStep("strategy");
+        toast({
+          title: "Strategy Generated",
+          description: "Review and customize your TV ad strategy below."
+        });
+      }
+    } catch (error: any) {
+      console.error("Error generating strategy:", error);
+      toast({
+        title: "Strategy Generation Failed",
+        description: error.message || "Failed to generate strategy. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setGenerating(false);
+    }
   };
 
-  // Step 2: User approves strategy → Generate creative concepts
+  // Step 2: User approves strategy → Generate creative concepts with strategy persistence
   const handleStrategyApproved = async () => {
-    if (!strategy || !formData) return;
+    if (!strategy || !formData || !brandId) return;
     
     setGenerating(true);
     
     try {
       const { data: campaignsData, error } = await supabase.functions.invoke("generate-ideas", {
         body: {
-          ...formData,
-          strategy // Include the strategy in the request
+          prompt: formData.prompt,
+          adType: formData.adType,
+          goal: strategy.objective,
+          targetAudience: {
+            demographics: strategy.audience.ageRange,
+            interests: strategy.audience.psychographicIntent
+          },
+          creativeStyle: strategy.visualDirection.tone,
+          aspectRatios: ["16:9"], // TV standard
+          strategy // Include full strategy for persistence
         }
       });
       

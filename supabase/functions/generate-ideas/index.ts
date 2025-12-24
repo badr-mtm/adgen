@@ -18,8 +18,11 @@ serve(async (req) => {
       goal, 
       targetAudience, 
       creativeStyle, 
-      aspectRatios 
+      aspectRatios,
+      strategy // TV ad strategy to persist
     } = await req.json();
+
+    console.log('Received request with strategy:', strategy?.objective);
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -157,7 +160,7 @@ Create 4 unique, creative concepts that directly address this brief. Be specific
     const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
     const concepts = JSON.parse(toolCall?.function?.arguments || '{"concepts":[]}').concepts;
 
-    // Store concepts in database
+    // Store concepts in database with strategy
     const campaignsToInsert = concepts.map((concept: any) => ({
       user_id: user.id,
       brand_id: brand.id,
@@ -173,8 +176,11 @@ Create 4 unique, creative concepts that directly address this brief. Be specific
       creative_style: creativeStyle,
       aspect_ratios: aspectRatios,
       prompt: prompt,
-      status: 'concept'
+      status: 'concept',
+      storyboard: strategy ? { strategy } : null // Persist strategy in storyboard JSON
     }));
+
+    console.log('Inserting campaigns with strategy persistence');
 
     const { data: campaigns, error: insertError } = await supabase
       .from('campaigns')
