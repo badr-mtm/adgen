@@ -253,7 +253,7 @@ export default function BrandSetup() {
 
               <div className="flex justify-end pt-4">
                 <Button 
-                  onClick={() => navigate("/")}
+                  onClick={() => navigate("/dashboard")}
                   className="bg-primary hover:bg-primary/90"
                 >
                   Continue
@@ -280,7 +280,7 @@ export default function BrandSetup() {
               </div>
               <Button 
                 variant="ghost" 
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
                 className="text-muted-foreground hover:text-foreground"
               >
                 Skip for now
