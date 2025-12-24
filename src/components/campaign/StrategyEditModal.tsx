@@ -13,7 +13,7 @@ import { StrategyModule, TVAdStrategy } from "@/components/strategy/StrategyModu
 import { StrategyComparison } from "./StrategyComparison";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, Edit3, GitCompare } from "lucide-react";
+import { Loader2, Save, Edit3, GitCompare, RefreshCw, Sparkles } from "lucide-react";
 
 interface StrategyEditModalProps {
   open: boolean;
@@ -21,6 +21,7 @@ interface StrategyEditModalProps {
   campaignId: string;
   initialStrategy: TVAdStrategy | null;
   onStrategySaved: (strategy: TVAdStrategy) => void;
+  onStoryboardRegenerated?: () => void;
 }
 
 export const StrategyEditModal = ({
@@ -29,9 +30,11 @@ export const StrategyEditModal = ({
   campaignId,
   initialStrategy,
   onStrategySaved,
+  onStoryboardRegenerated,
 }: StrategyEditModalProps) => {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const [strategy, setStrategy] = useState<TVAdStrategy | null>(initialStrategy);
   const [originalStrategy, setOriginalStrategy] = useState<TVAdStrategy | null>(initialStrategy);
   const [activeTab, setActiveTab] = useState<"edit" | "compare">("edit");
@@ -75,8 +78,8 @@ export const StrategyEditModal = ({
 
       if (error) throw error;
 
+      setOriginalStrategy(strategy);
       onStrategySaved(strategy);
-      onOpenChange(false);
       toast({
         title: "Strategy Saved",
         description: "Your TV ad strategy has been updated.",
@@ -90,6 +93,61 @@ export const StrategyEditModal = ({
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (!strategy) return;
+    
+    setRegenerating(true);
+    try {
+      // First save the strategy
+      const { data: campaign, error: fetchError } = await supabase
+        .from("campaigns")
+        .select("storyboard")
+        .eq("id", campaignId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const currentStoryboard = campaign?.storyboard as any || {};
+      const updatedStoryboard = {
+        ...currentStoryboard,
+        strategy,
+      };
+
+      await supabase
+        .from("campaigns")
+        .update({ storyboard: updatedStoryboard })
+        .eq("id", campaignId);
+
+      // Now regenerate the storyboard
+      const { data, error } = await supabase.functions.invoke("regenerate-from-strategy", {
+        body: { campaignId, strategy },
+      });
+
+      if (error) throw error;
+
+      setOriginalStrategy(strategy);
+      onStrategySaved(strategy);
+      onOpenChange(false);
+      
+      toast({
+        title: "Storyboard Regenerated",
+        description: "Your scenes have been updated to match the new strategy.",
+      });
+      
+      // Callback to refresh parent component
+      onStoryboardRegenerated?.();
+    } catch (error: any) {
+      console.error("Error regenerating storyboard:", error);
+      toast({
+        title: "Regeneration Failed",
+        description: error.message || "Failed to regenerate storyboard.",
+        variant: "destructive",
+      });
+    } finally {
+      setRegenerating(false);
     }
   };
 
@@ -157,7 +215,7 @@ export const StrategyEditModal = ({
             )}
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving || regenerating}>
               Cancel
             </Button>
             {hasChanges && activeTab === "edit" && (
@@ -166,7 +224,11 @@ export const StrategyEditModal = ({
                 Review Changes
               </Button>
             )}
-            <Button onClick={handleSave} disabled={saving || !hasChanges}>
+            <Button 
+              variant="outline" 
+              onClick={handleSave} 
+              disabled={saving || regenerating || !hasChanges}
+            >
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -175,7 +237,24 @@ export const StrategyEditModal = ({
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Strategy
+                  Save Only
+                </>
+              )}
+            </Button>
+            <Button 
+              onClick={handleRegenerate} 
+              disabled={saving || regenerating}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {regenerating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Regenerate from Strategy
                 </>
               )}
             </Button>

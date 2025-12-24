@@ -399,6 +399,25 @@ const Storyboard = () => {
         onStrategySaved={(newStrategy) => {
           setStrategy(newStrategy);
         }}
+        onStoryboardRegenerated={async () => {
+          // Refresh the storyboard data
+          const { data: refreshedCampaign } = await supabase
+            .from("campaigns")
+            .select("*")
+            .eq("id", id)
+            .single();
+          
+          if (refreshedCampaign?.storyboard) {
+            const storyboardData = refreshedCampaign.storyboard as unknown as Storyboard & { strategy?: TVAdStrategy };
+            setStoryboard(storyboardData);
+            setEditedScript(storyboardData.scriptVariants["30s"]);
+            setEditedMusicMood(storyboardData.musicMood);
+            if (storyboardData.strategy) {
+              setStrategy(storyboardData.strategy);
+            }
+            setStep("script"); // Reset to script step to review new content
+          }
+        }}
       />
       
       <main className="container mx-auto px-4 py-8 max-w-7xl">
