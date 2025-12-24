@@ -275,7 +275,7 @@ export default function BrandSetup() {
               <div>
                 <CardTitle>Create Your Brand</CardTitle>
                 <CardDescription>
-                  Set up your brand profile to start generating amazing ads
+                  Set up your brand profile to personalize your ads, or skip to get started right away
                 </CardDescription>
               </div>
               <Button 
@@ -290,13 +290,12 @@ export default function BrandSetup() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Brand Name *</Label>
+                <Label htmlFor="name">Brand Name</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Acme Inc."
-                  required
                 />
               </div>
 
