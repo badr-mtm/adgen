@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { SystemHealthStrip } from "@/components/dashboard/SystemHealthStrip";
-import { PrimaryActionZone } from "@/components/dashboard/PrimaryActionZone";
+import { TVMetricsStrip } from "@/components/dashboard/TVMetricsStrip";
+import { QuickTVAdCreation } from "@/components/dashboard/QuickTVAdCreation";
+import { BroadcastScheduleWidget } from "@/components/dashboard/BroadcastScheduleWidget";
 import { ActiveCampaignsSnapshot } from "@/components/dashboard/ActiveCampaignsSnapshot";
-import { CreativePerformanceIntelligence } from "@/components/dashboard/CreativePerformanceIntelligence";
-import { BrandSystemReadiness } from "@/components/dashboard/BrandSystemReadiness";
+import { TVComplianceStatus } from "@/components/dashboard/TVComplianceStatus";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { EmailVerificationBanner } from "@/components/dashboard/EmailVerificationBanner";
 import { BrandSetupPrompt } from "@/components/dashboard/BrandSetupPrompt";
@@ -20,12 +20,22 @@ const Dashboard = () => {
   const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
   const [userEmail, setUserEmail] = useState("");
   const [emailVerified, setEmailVerified] = useState(true);
-  const [stats, setStats] = useState({
-    activeCampaigns: 0,
-    creativesGenerated: 0,
-    bestCtr: 0,
-    spendVsBudget: 65,
+  
+  // TV-specific metrics
+  const [tvMetrics, setTvMetrics] = useState({
+    activeSpots: 0,
+    totalGRP: 0,
+    reachPercentage: 0,
+    avgFrequency: 0,
+    spotsAired: 0,
+    upcomingSpots: 0,
   });
+
+  // Mock broadcast schedule data
+  const [scheduledSpots, setScheduledSpots] = useState<any[]>([]);
+  
+  // Mock compliance data
+  const [complianceItems, setComplianceItems] = useState<any[]>([]);
 
   useEffect(() => {
     const checkAuthAndFetch = async () => {
@@ -49,7 +59,6 @@ const Dashboard = () => {
         if (brands && brands.length > 0) {
           setBrandProfile(brands[0]);
         } else {
-          // Brand is optional — keep user on dashboard and show a setup prompt.
           setBrandProfile(null);
         }
 
@@ -62,12 +71,45 @@ const Dashboard = () => {
 
         if (campaigns) {
           setActiveCampaigns(campaigns);
-          setStats({
-            activeCampaigns: campaigns.filter((c) => c.status !== "completed").length,
-            creativesGenerated: campaigns.length * 3, // Assume ~3 creatives per campaign
-            bestCtr: parseFloat((Math.random() * 3 + 2.5).toFixed(1)),
-            spendVsBudget: Math.floor(Math.random() * 40) + 50,
+          
+          // Generate TV metrics based on campaigns
+          const activeCount = campaigns.filter((c) => c.status !== "completed").length;
+          setTvMetrics({
+            activeSpots: activeCount,
+            totalGRP: parseFloat((activeCount * 45.5 + Math.random() * 50).toFixed(1)),
+            reachPercentage: Math.min(95, activeCount * 12 + Math.floor(Math.random() * 20)),
+            avgFrequency: parseFloat((2.5 + Math.random() * 2).toFixed(1)),
+            spotsAired: campaigns.length * 8,
+            upcomingSpots: Math.max(0, activeCount * 3),
           });
+
+          // Generate mock broadcast schedule
+          if (campaigns.length > 0) {
+            setScheduledSpots(
+              campaigns.slice(0, 3).map((c, i) => ({
+                id: c.id,
+                campaignTitle: c.title,
+                duration: ["15s", "30s", "60s"][i % 3] as "15s" | "30s" | "60s",
+                channel: ["ABC", "NBC", "CBS", "FOX"][i % 4],
+                daypart: ["Prime Time", "Daytime", "Early Morning", "Late Night"][i % 4],
+                scheduledTime: `${8 + i * 3}:00 PM`,
+                status: i === 0 ? "live" : "upcoming",
+              }))
+            );
+          }
+
+          // Generate mock compliance items
+          if (campaigns.length > 0) {
+            setComplianceItems(
+              campaigns.slice(0, 3).map((c, i) => ({
+                id: c.id,
+                campaignTitle: c.title,
+                status: ["approved", "pending", "approved"][i % 3] as "approved" | "pending" | "rejected",
+                network: ["ABC Network", "NBC Universal", "CBS Broadcasting"][i % 3],
+                submittedAt: "2 days ago",
+              }))
+            );
+          }
         }
       } finally {
         setLoading(false);
@@ -82,48 +124,6 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  // AI Recommendations with confidence levels
-  const aiRecommendations = [
-    { 
-      id: 1, 
-      type: "scale" as const, 
-      message: "Summer Sale creative is outperforming benchmarks — scale now", 
-      confidence: 94,
-      action: "scale",
-      actionLabel: "Scale Now" 
-    },
-    { 
-      id: 2, 
-      type: "refresh" as const, 
-      message: "2 campaigns need fresh creatives", 
-      confidence: 87,
-      action: "create",
-      actionLabel: "Create" 
-    },
-    { 
-      id: 3, 
-      type: "alert" as const, 
-      message: "High spend, low engagement detected on Brand Awareness", 
-      confidence: 82,
-      action: "view",
-      actionLabel: "Optimize" 
-    },
-  ];
-
-  // Creative performance data
-  const topCreatives = [
-    { id: "1", name: "Summer Hero Banner", type: "image" as const, platform: "Meta", metric: "4.2% CTR", trend: "up" as const },
-    { id: "2", name: "Product Demo 30s", type: "video" as const, platform: "TikTok", metric: "3.8% CTR", trend: "up" as const },
-  ];
-
-  const underperformingCreatives = [
-    { id: "3", name: "Brand Story Video", type: "video" as const, platform: "YouTube", metric: "1.2% CTR", trend: "down" as const },
-  ];
-
-  const newCreatives = [
-    { id: "4", name: "Holiday Promo", type: "image" as const, platform: "Google", metric: "No data yet", trend: "neutral" as const },
-  ];
 
   if (loading) {
     return (
@@ -155,33 +155,29 @@ const Dashboard = () => {
           </ScrollReveal>
         )}
 
-        {/* 1. System Health Snapshot - Minimal top strip */}
+        {/* 1. TV Metrics Strip - Key broadcast KPIs */}
         <ScrollReveal direction="down" duration={0.4}>
-          <SystemHealthStrip stats={stats} />
+          <TVMetricsStrip stats={tvMetrics} />
         </ScrollReveal>
 
-        {/* 2. Primary Action Zone - Hero area */}
-        <ScrollReveal delay={0.1} duration={0.5}>
-          <PrimaryActionZone recommendations={aiRecommendations} />
-        </ScrollReveal>
+        {/* 2. Two Column Layout: Quick Create + Broadcast Schedule */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ScrollReveal delay={0.1} duration={0.5}>
+            <QuickTVAdCreation />
+          </ScrollReveal>
+          <ScrollReveal delay={0.15} duration={0.5}>
+            <BroadcastScheduleWidget spots={scheduledSpots} />
+          </ScrollReveal>
+        </div>
 
-        {/* 3. Active Campaigns Snapshot - Condensed */}
-        <ScrollReveal delay={0.15} duration={0.5}>
+        {/* 3. Active TV Campaigns */}
+        <ScrollReveal delay={0.2} duration={0.5}>
           <ActiveCampaignsSnapshot campaigns={activeCampaigns} />
         </ScrollReveal>
 
-        {/* 4. Creative Performance Intelligence - Visual-first */}
-        <ScrollReveal delay={0.2} duration={0.5}>
-          <CreativePerformanceIntelligence
-            topCreatives={topCreatives}
-            underperformingCreatives={underperformingCreatives}
-            newCreatives={newCreatives}
-          />
-        </ScrollReveal>
-
-        {/* 5. Brand & System Readiness - Quiet but critical */}
+        {/* 4. Compliance Status */}
         <ScrollReveal delay={0.25} duration={0.5}>
-          <BrandSystemReadiness brandProfile={brandProfile} />
+          <TVComplianceStatus items={complianceItems} />
         </ScrollReveal>
       </motion.div>
     </DashboardLayout>
