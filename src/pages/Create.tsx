@@ -162,9 +162,9 @@ const Create = () => {
       <motion.div initial="hidden" animate="visible" variants={containerVariants} className="p-6 max-w-6xl mx-auto space-y-8 px-[23px]">
         {/* Header */}
         <motion.div className="text-center space-y-2" variants={itemVariants}>
-          <h1 className="font-bold text-foreground text-2xl">Create High-Performing Ads in Minutes
+          <h1 className="font-bold text-foreground text-2xl">Create Broadcast-Ready TV Ads in Minutes
         </h1>
-          
+          <p className="text-muted-foreground">Strategy-first AI generates TV-grade outputs (15s / 30s / 45s)</p>
         </motion.div>
 
         {/* Ad Creation Form */}
@@ -183,9 +183,9 @@ const Create = () => {
         duration: 0.3
       }}>
             <Loader2 className="h-12 w-12 text-primary animate-spin" />
-            <p className="text-lg text-muted-foreground">Generating campaign concepts...</p>
+            <p className="text-lg text-muted-foreground">Building your TV ad strategy...</p>
             <p className="text-sm text-muted-foreground">
-              Using AI to create unique ideas based on your brand
+              AI is generating strategy + creative concepts for broadcast
             </p>
           </motion.div>}
 
