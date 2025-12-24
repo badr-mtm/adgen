@@ -113,7 +113,7 @@ const AdCreationForm = ({
       {/* Prompt Input */}
       <div className="space-y-2">
         <div className="relative">
-          <Textarea value={prompt} onChange={e => setPrompt(e.target.value)} className="min-h-[140px] bg-input border-border text-foreground placeholder:text-muted-foreground resize-none pb-14 px-4 py-4 text-base" placeholder="Describe your TV ad concept, product, or campaign goal..." />
+          <Textarea value={prompt} onChange={e => setPrompt(e.target.value)} className="min-h-[140px] bg-input border-border text-foreground placeholder:text-muted-foreground resize-none pb-14 px-4 py-4 text-base" placeholder="Describe your Ad concept, product, or campaign goal..." />
           
           {/* Bottom Controls */}
           <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
