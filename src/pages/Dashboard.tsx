@@ -7,6 +7,7 @@ import { ActiveCampaignsSnapshot } from "@/components/dashboard/ActiveCampaignsS
 import { CreativePerformanceIntelligence } from "@/components/dashboard/CreativePerformanceIntelligence";
 import { BrandSystemReadiness } from "@/components/dashboard/BrandSystemReadiness";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import { EmailVerificationBanner } from "@/components/dashboard/EmailVerificationBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { motion } from "framer-motion";
@@ -16,6 +17,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [brandProfile, setBrandProfile] = useState<any>(null);
   const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
+  const [userEmail, setUserEmail] = useState("");
+  const [emailVerified, setEmailVerified] = useState(true);
   const [stats, setStats] = useState({
     activeCampaigns: 0,
     creativesGenerated: 0,
@@ -30,6 +33,10 @@ const Dashboard = () => {
         navigate("/auth");
         return;
       }
+
+      // Check email verification status
+      setUserEmail(session.user.email || "");
+      setEmailVerified(session.user.email_confirmed_at !== null);
 
       const { data: brands } = await supabase
         .from("brands")
@@ -129,6 +136,13 @@ const Dashboard = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
+        {/* Email Verification Banner */}
+        {!emailVerified && userEmail && (
+          <ScrollReveal direction="down" duration={0.3}>
+            <EmailVerificationBanner email={userEmail} isVerified={emailVerified} />
+          </ScrollReveal>
+        )}
+
         {/* 1. System Health Snapshot - Minimal top strip */}
         <ScrollReveal direction="down" duration={0.4}>
           <SystemHealthStrip stats={stats} />
