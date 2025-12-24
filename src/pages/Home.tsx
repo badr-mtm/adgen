@@ -59,15 +59,13 @@ const Home = () => {
         return;
       }
 
-      // Check if user has a brand
+      // Check if user has a brand (optional - don't redirect if missing)
       const {
         data: brands
       } = await supabase.from("brands").select("name").eq("user_id", session.user.id).limit(1);
-      if (!brands || brands.length === 0) {
-        navigate("/brand-setup");
-        return;
+      if (brands && brands.length > 0) {
+        setBrandName(brands[0].name);
       }
-      setBrandName(brands[0].name);
 
       // Fetch user's campaigns
       const {
