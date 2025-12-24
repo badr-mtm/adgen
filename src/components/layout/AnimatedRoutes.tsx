@@ -15,7 +15,7 @@ import Settings from "@/pages/Settings";
 import Editor from "@/pages/Editor";
 import VideoEditor from "@/pages/VideoEditor";
 import Auth from "@/pages/Auth";
-// import BrandSetup from "@/pages/BrandSetup"; // Temporarily disabled
+import BrandSetup from "@/pages/BrandSetup";
 import Storyboard from "@/pages/Storyboard";
 import NotFound from "@/pages/NotFound";
 
@@ -155,7 +155,6 @@ export function AnimatedRoutes() {
             </PageTransitionWrapper>
           }
         />
-        {/* Brand Setup route temporarily disabled
         <Route
           path="/brand-setup"
           element={
@@ -164,7 +163,6 @@ export function AnimatedRoutes() {
             </PageTransitionWrapper>
           }
         />
-        */}
         <Route
           path="*"
           element={
