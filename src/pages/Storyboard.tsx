@@ -10,6 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Music, Film, ArrowRight, Sparkles, Check, Edit3 } from "lucide-react";
 import SceneCard from "@/components/storyboard/SceneCard";
+import { StrategyPanel } from "@/components/storyboard/StrategyPanel";
+import { StrategyEditModal } from "@/components/campaign/StrategyEditModal";
+import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 import { StoryboardPageSkeleton } from "@/components/skeletons/StoryboardPageSkeleton";
 
 interface Scene {
@@ -46,6 +49,8 @@ const Storyboard = () => {
   const [generatingScenes, setGeneratingScenes] = useState<Set<number>>(new Set());
   const [campaign, setCampaign] = useState<any>(null);
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null);
+  const [strategy, setStrategy] = useState<TVAdStrategy | null>(null);
+  const [strategyModalOpen, setStrategyModalOpen] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<"15s" | "30s" | "60s">("30s");
   const [editedScript, setEditedScript] = useState("");
   const [step, setStep] = useState<StoryboardStep>("script");
@@ -81,10 +86,15 @@ const Storyboard = () => {
         setCampaign(data);
         
         if (data.storyboard) {
-          const storyboardData = data.storyboard as unknown as Storyboard;
+          const storyboardData = data.storyboard as unknown as Storyboard & { strategy?: TVAdStrategy };
           setStoryboard(storyboardData);
           setEditedScript(storyboardData.scriptVariants["30s"]);
           setEditedMusicMood(storyboardData.musicMood);
+          
+          // Extract strategy if it exists
+          if (storyboardData.strategy) {
+            setStrategy(storyboardData.strategy);
+          }
           
           // If scenes already have visuals, go directly to storyboard step
           const hasVisuals = storyboardData.scenes?.some(s => s.visualUrl);
@@ -380,52 +390,66 @@ const Storyboard = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navigation />
       
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
-        <div className="mb-8 space-y-4">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-foreground">{campaign?.title}</h1>
-              <p className="text-muted-foreground">{campaign?.description}</p>
-              <div className="flex gap-2 flex-wrap">
-                <Badge variant="secondary">{campaign?.ad_type}</Badge>
-                <Badge variant="secondary">{campaign?.creative_style}</Badge>
-                <Badge variant="outline">{campaign?.goal}</Badge>
+      {/* Strategy Edit Modal */}
+      <StrategyEditModal
+        open={strategyModalOpen}
+        onOpenChange={setStrategyModalOpen}
+        campaignId={id || ""}
+        initialStrategy={strategy}
+        onStrategySaved={(newStrategy) => {
+          setStrategy(newStrategy);
+        }}
+      />
+      
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Header */}
+            <div className="space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-bold text-foreground">{campaign?.title}</h1>
+                  <p className="text-muted-foreground">{campaign?.description}</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <Badge variant="secondary">{campaign?.ad_type}</Badge>
+                    <Badge variant="secondary">{campaign?.creative_style}</Badge>
+                    <Badge variant="outline">{campaign?.goal}</Badge>
+                  </div>
+                </div>
+                {step === "storyboard" && (
+                  <Button 
+                    onClick={() => navigate(`/video-editor/${id}`)}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    Continue to Editor
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                )}
               </div>
-            </div>
-            {step === "storyboard" && (
-              <Button 
-                onClick={() => navigate(`/video-editor/${id}`)}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Continue to Editor
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            )}
-          </div>
 
-          {/* Step Indicator */}
-          <div className="flex items-center gap-4 pt-4">
-            <div className={`flex items-center gap-2 ${step === "script" ? "text-primary" : "text-muted-foreground"}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === "script" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-                {step === "storyboard" ? <Check className="h-4 w-4" /> : "1"}
+              {/* Step Indicator */}
+              <div className="flex items-center gap-4 pt-4">
+                <div className={`flex items-center gap-2 ${step === "script" ? "text-primary" : "text-muted-foreground"}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === "script" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                    {step === "storyboard" ? <Check className="h-4 w-4" /> : "1"}
+                  </div>
+                  <span className="font-medium">Confirm Script</span>
+                </div>
+                <div className="flex-1 h-px bg-border" />
+                <div className={`flex items-center gap-2 ${step === "storyboard" ? "text-primary" : "text-muted-foreground"}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === "storyboard" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                    2
+                  </div>
+                  <span className="font-medium">Storyboard</span>
+                </div>
               </div>
-              <span className="font-medium">Confirm Script</span>
             </div>
-            <div className="flex-1 h-px bg-border" />
-            <div className={`flex items-center gap-2 ${step === "storyboard" ? "text-primary" : "text-muted-foreground"}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === "storyboard" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-                2
-              </div>
-              <span className="font-medium">Storyboard</span>
-            </div>
-          </div>
-        </div>
 
-        {step === "script" ? (
-          /* Script Confirmation Step */
-          <div className="space-y-6">
-            {/* Script Variants */}
+            {step === "script" ? (
+              /* Script Confirmation Step */
+              <div className="space-y-6">
+                {/* Script Variants */}
             <Card className="p-6 bg-card border-border">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -573,19 +597,39 @@ const Storyboard = () => {
               </div>
             </div>
 
-            {/* Continue Button */}
-            <div className="mt-8 flex justify-center">
-              <Button 
-                onClick={() => navigate(`/video-editor/${id}`)}
-                size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Continue to Visual Editor
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
+              {/* Continue Button */}
+              <div className="mt-8 flex justify-center">
+                <Button 
+                  onClick={() => navigate(`/video-editor/${id}`)}
+                  size="lg"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Continue to Visual Editor
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              </div>
+            </div>
+          )}
+          </div>
+
+          {/* Strategy Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-6">
+              {strategy ? (
+                <StrategyPanel 
+                  strategy={strategy} 
+                  onEdit={() => setStrategyModalOpen(true)}
+                  compact
+                />
+              ) : (
+                <Card className="p-4 bg-card border-border text-center">
+                  <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No strategy</p>
+                </Card>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </main>
     </div>
   );

@@ -20,6 +20,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PublishDialog } from "@/components/campaign/PublishDialog";
+import { StrategyEditModal } from "@/components/campaign/StrategyEditModal";
+import { StrategyPanel } from "@/components/storyboard/StrategyPanel";
+import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 import {
   ArrowLeft,
   Play,
@@ -44,6 +47,7 @@ import {
   Layers,
   Save,
   Rocket,
+  Tv,
 } from "lucide-react";
 import {
   LineChart,
@@ -72,6 +76,8 @@ const CampaignDetails = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [saving, setSaving] = useState(false);
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+  const [strategyModalOpen, setStrategyModalOpen] = useState(false);
+  const [strategy, setStrategy] = useState<TVAdStrategy | null>(null);
 
   // Editable settings state
   const [settings, setSettings] = useState({
@@ -110,6 +116,13 @@ const CampaignDetails = () => {
       }
 
       setCampaign(data);
+      
+      // Extract strategy from storyboard if it exists
+      const storyboardData = data.storyboard as any;
+      if (storyboardData?.strategy) {
+        setStrategy(storyboardData.strategy);
+      }
+      
       setSettings({
         title: data.title,
         description: data.description,
@@ -396,12 +409,31 @@ const CampaignDetails = () => {
           }}
         />
 
+        {/* Strategy Edit Modal */}
+        <StrategyEditModal
+          open={strategyModalOpen}
+          onOpenChange={setStrategyModalOpen}
+          campaignId={id || ""}
+          initialStrategy={strategy}
+          onStrategySaved={(newStrategy) => {
+            setStrategy(newStrategy);
+            setCampaign({
+              ...campaign,
+              storyboard: { ...(campaign?.storyboard || {}), strategy: newStrategy }
+            });
+          }}
+        />
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-muted/50">
             <TabsTrigger value="overview" className="gap-2">
               <Layers className="h-4 w-4" />
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="strategy" className="gap-2">
+              <Tv className="h-4 w-4" />
+              Strategy
             </TabsTrigger>
             <TabsTrigger value="creatives" className="gap-2">
               <Image className="h-4 w-4" />
@@ -557,6 +589,30 @@ const CampaignDetails = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Strategy Tab */}
+          <TabsContent value="strategy" className="space-y-6">
+            {strategy ? (
+              <StrategyPanel 
+                strategy={strategy} 
+                onEdit={() => setStrategyModalOpen(true)} 
+              />
+            ) : (
+              <Card className="bg-card border-border">
+                <CardContent className="p-12 text-center">
+                  <Tv className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Strategy Found</h3>
+                  <p className="text-muted-foreground mb-4">
+                    This campaign doesn't have a TV ad strategy yet.
+                  </p>
+                  <Button onClick={() => setStrategyModalOpen(true)}>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Create Strategy
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Creatives Tab */}
