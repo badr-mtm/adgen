@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Loader2, Sparkles, RefreshCw, Clock, Edit3 } from "lucide-react";
 import InlineEditField from "./InlineEditField";
 import VoiceoverSection from "./VoiceoverSection";
+import { SceneStrategyIndicators } from "./SceneStrategyIndicators";
+import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 
 interface Scene {
   sceneNumber: number;
@@ -23,6 +25,8 @@ interface Scene {
 
 interface SceneCardProps {
   scene: Scene;
+  totalScenes: number;
+  strategy?: TVAdStrategy | null;
   isGenerating: boolean;
   onGenerateVisual: (sceneNumber: number, customPrompt?: string) => void;
   onUpdateScene: (sceneNumber: number, updates: Partial<Scene>) => void;
@@ -31,6 +35,8 @@ interface SceneCardProps {
 
 const SceneCard = ({
   scene,
+  totalScenes,
+  strategy,
   isGenerating,
   onGenerateVisual,
   onUpdateScene,
@@ -48,6 +54,18 @@ const SceneCard = ({
 
   return (
     <Card className="p-6 bg-card border-border hover:border-primary/50 transition-all duration-300">
+      {/* Strategy Indicators */}
+      {strategy && (
+        <div className="mb-4">
+          <SceneStrategyIndicators
+            sceneNumber={scene.sceneNumber}
+            totalScenes={totalScenes}
+            sceneDuration={scene.duration}
+            strategy={strategy}
+          />
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Visual Section */}
         <div className="space-y-4">

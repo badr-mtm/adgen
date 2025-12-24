@@ -588,6 +588,8 @@ const Storyboard = () => {
                   <SceneCard
                     key={scene.sceneNumber}
                     scene={scene}
+                    totalScenes={storyboard.scenes.length}
+                    strategy={strategy}
                     isGenerating={generatingScenes.has(scene.sceneNumber)}
                     onGenerateVisual={generateSceneVisual}
                     onUpdateScene={updateScene}
