@@ -18,32 +18,145 @@ serve(async (req) => {
       throw new Error('No authorization header');
     }
 
-    // Extract JWT token from header
     const token = authHeader.replace('Bearer ', '');
 
-    // Create auth client for user verification
     const supabaseAuth = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    // Create service role client for database operations
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verify user with explicit token
     const { data: { user }, error: userError } = await supabaseAuth.auth.getUser(token);
     if (userError || !user) {
       console.error('Auth error:', userError);
       throw new Error('Unauthorized');
     }
 
-    const { campaignId } = await req.json();
+    const body = await req.json();
+    
+    // Check if this is a concept generation request (new modal flow)
+    if (body.prompt && body.duration && body.goal) {
+      console.log('Generating storyboard concepts for:', body.prompt);
+      
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      if (!LOVABLE_API_KEY) {
+        throw new Error('LOVABLE_API_KEY not configured');
+      }
+
+      const systemPrompt = `You are a creative director for TV advertising. Generate 3 unique storyboard concepts for a TV ad.
+
+User's concept/script: ${body.prompt}
+Duration: ${body.duration}
+Campaign Goal: ${body.goal}
+
+Create 3 distinct creative approaches, each with:
+- A compelling title
+- Brief description of the concept
+- Scene breakdown with timing
+- Tone and style
+
+Make each concept meaningfully different in approach (e.g., emotional vs humorous vs informational).`;
+
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: 'Generate 3 unique storyboard concepts now.' }
+          ],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "generate_concepts",
+                description: "Generate multiple unique storyboard concepts",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    concepts: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          id: { type: "string" },
+                          title: { type: "string" },
+                          description: { type: "string" },
+                          scenes: {
+                            type: "array",
+                            items: {
+                              type: "object",
+                              properties: {
+                                number: { type: "number" },
+                                description: { type: "string" },
+                                duration: { type: "string" }
+                              },
+                              required: ["number", "description", "duration"]
+                            }
+                          },
+                          tone: { type: "string" },
+                          style: { type: "string" }
+                        },
+                        required: ["id", "title", "description", "scenes", "tone", "style"]
+                      },
+                      minItems: 3,
+                      maxItems: 3
+                    }
+                  },
+                  required: ["concepts"],
+                  additionalProperties: false
+                }
+              }
+            }
+          ],
+          tool_choice: { type: "function", function: { name: "generate_concepts" } }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('AI API error:', response.status, errorText);
+        
+        if (response.status === 429) {
+          throw new Error('Rate limit exceeded. Please try again in a moment.');
+        }
+        if (response.status === 402) {
+          throw new Error('AI usage limit reached. Please add credits to continue.');
+        }
+        throw new Error(`AI API error: ${response.status}`);
+      }
+
+      const aiResponse = await response.json();
+      const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
+      
+      if (!toolCall?.function?.arguments) {
+        throw new Error('Invalid AI response format');
+      }
+
+      const result = JSON.parse(toolCall.function.arguments);
+      console.log('Generated', result.concepts?.length, 'concepts');
+
+      return new Response(
+        JSON.stringify({ concepts: result.concepts }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+
+    // Legacy flow: Generate storyboard for existing campaign
+    const { campaignId } = body;
     console.log('Generating storyboard for campaign:', campaignId);
 
-    // Fetch the campaign
     const { data: campaign, error: campaignError } = await supabase
       .from('campaigns')
       .select('*')
@@ -60,7 +173,6 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Build prompt purely from user inputs - no brand kit references
     const targetAudience = campaign.target_audience;
     const audienceStr = targetAudience?.demographics || targetAudience?.interests || '';
     
@@ -161,7 +273,6 @@ Generate 3 script variants (15s, 30s, 60s), 4-6 scenes with duration, visual des
 
     const storyboard = JSON.parse(toolCall.function.arguments);
 
-    // Update campaign with storyboard
     const { error: updateError } = await supabase
       .from('campaigns')
       .update({
