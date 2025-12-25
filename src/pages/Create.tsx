@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { Json } from "@/integrations/supabase/types";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -153,16 +154,25 @@ const Create = () => {
         brandId = newBrand?.id;
       }
 
-      const { data: campaign, error } = await supabase.from("campaigns").insert({
+      const storyboardData = { 
+        scenes: selectedConcept?.scenes, 
+        duration: selectedLength, 
+        tone: selectedConcept?.tone, 
+        style: selectedConcept?.style, 
+        strategy, 
+        productionSettings 
+      } as unknown as Json;
+
+      const { data: campaign, error } = await supabase.from("campaigns").insert([{
         user_id: session.user.id,
-        brand_id: brandId,
+        brand_id: brandId!,
         title: selectedConcept?.title || "New TV Campaign",
         description: selectedConcept?.description || "",
         ad_type: "video",
         goal: intentData?.goal || "awareness",
         status: "concept",
-        storyboard: { scenes: selectedConcept?.scenes, duration: selectedLength, tone: selectedConcept?.tone, style: selectedConcept?.style, strategy, productionSettings }
-      }).select().single();
+        storyboard: storyboardData
+      }]).select().single();
 
       if (error) throw error;
 
