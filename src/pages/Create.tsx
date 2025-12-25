@@ -4,13 +4,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import AdCreationForm, { AdCreationData } from "@/components/AdCreationForm";
+import { Badge } from "@/components/ui/badge";
+import { TVScriptInputForm, TVScriptFormData } from "@/components/create/TVScriptInputForm";
+import { StrategyModule, TVAdStrategy } from "@/components/strategy/StrategyModule";
 import CampaignConceptCard from "@/components/CampaignConceptCard";
 import CampaignCard from "@/components/CampaignCard";
-import { StrategyModule, TVAdStrategy } from "@/components/strategy/StrategyModule";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, ArrowRight, Sparkles, Check } from "lucide-react";
+import { 
+  Loader2, 
+  ArrowLeft, 
+  ArrowRight, 
+  Sparkles, 
+  Check, 
+  FileText, 
+  Wand2, 
+  Tv,
+  Clock,
+  Shield,
+  Calendar
+} from "lucide-react";
 import { CreatePageSkeleton } from "@/components/skeletons/CreatePageSkeleton";
 
 const containerVariants = {
@@ -26,7 +39,14 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
-type FlowStep = "input" | "strategy" | "concepts";
+type FlowStep = "script" | "strategy" | "storyboard" | "concepts";
+
+const STEP_CONFIG = [
+  { key: "script", label: "Script", icon: FileText, description: "Write your TV script" },
+  { key: "strategy", label: "Strategy", icon: Wand2, description: "AI builds broadcast strategy" },
+  { key: "storyboard", label: "Storyboard", icon: Tv, description: "Scene-by-scene breakdown" },
+  { key: "concepts", label: "Production", icon: Sparkles, description: "Generate final concepts" },
+];
 
 const Create = () => {
   const navigate = useNavigate();
@@ -35,32 +55,17 @@ const Create = () => {
   
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [flowStep, setFlowStep] = useState<FlowStep>("input");
+  const [flowStep, setFlowStep] = useState<FlowStep>("script");
   const [strategy, setStrategy] = useState<TVAdStrategy | null>(null);
   const [brandId, setBrandId] = useState<string | null>(null);
   const [isStrategyLocked, setIsStrategyLocked] = useState(false);
-  const [formData, setFormData] = useState<AdCreationData | null>(null);
+  const [formData, setFormData] = useState<TVScriptFormData | null>(null);
   const [generatedConcepts, setGeneratedConcepts] = useState<any[]>([]);
   const [recentCampaigns, setRecentCampaigns] = useState<any[]>([]);
 
   // Parse URL params for pre-filled data
-  const productUrl = searchParams.get("productUrl") || undefined;
-  const productTitle = searchParams.get("productTitle") || "";
-  const productDescription = searchParams.get("productDescription") || "";
-  const assetsParam = searchParams.get("assets");
-  const defaultAdType = searchParams.get("type") as "video" | "image" | null;
-
-  const assetUrls = assetsParam ? JSON.parse(assetsParam) as string[] : [];
-  const initialPrompt = productTitle 
-    ? `Create an ad for: ${productTitle}${productDescription ? `. ${productDescription}` : ''}` 
-    : "";
-  
-  const initialFormData = {
-    prompt: initialPrompt,
-    adType: defaultAdType || "video" as "video" | "image",
-    assetUrls,
-    productUrl
-  };
+  const initialConcept = searchParams.get("concept") || undefined;
+  const initialDuration = searchParams.get("duration") || undefined;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -70,14 +75,6 @@ const Create = () => {
         return;
       }
       
-      const { data: brands } = await supabase
-        .from("brands")
-        .select("name")
-        .eq("user_id", session.user.id)
-        .limit(1);
-      
-      // Brand is optional - users can still access Create page
-
       const { data: campaigns } = await supabase
         .from("campaigns")
         .select("*")
@@ -93,17 +90,20 @@ const Create = () => {
     checkAuth();
   }, [navigate]);
 
-  // Step 1: User submits form → Generate strategy via AI
-  const handleAdCreation = async (data: AdCreationData) => {
+  // Step 1: User submits script → Generate strategy via AI
+  const handleScriptSubmit = async (data: TVScriptFormData) => {
     setGenerating(true);
     setFormData(data);
     
     try {
       const { data: strategyData, error } = await supabase.functions.invoke("generate-tv-strategy", {
         body: {
-          prompt: data.prompt,
-          adType: data.adType,
-          productUrl: data.productUrl
+          prompt: data.script,
+          adType: "video",
+          duration: data.duration,
+          dayparts: data.dayparts,
+          objective: data.objective,
+          targetDemo: data.targetDemo
         }
       });
       
@@ -115,7 +115,7 @@ const Create = () => {
         setFlowStep("strategy");
         toast({
           title: "Strategy Generated",
-          description: "Review and customize your TV ad strategy below."
+          description: "Review your TV ad strategy and customize as needed."
         });
       }
     } catch (error: any) {
@@ -130,7 +130,7 @@ const Create = () => {
     }
   };
 
-  // Step 2: User approves strategy → Generate creative concepts with strategy persistence
+  // Step 2: User approves strategy → Generate concepts
   const handleStrategyApproved = async () => {
     if (!strategy || !formData || !brandId) return;
     
@@ -139,8 +139,8 @@ const Create = () => {
     try {
       const { data: campaignsData, error } = await supabase.functions.invoke("generate-ideas", {
         body: {
-          prompt: formData.prompt,
-          adType: formData.adType,
+          prompt: formData.script,
+          adType: "video",
           goal: strategy.objective,
           targetAudience: {
             demographics: strategy.audience.ageRange,
@@ -148,6 +148,7 @@ const Create = () => {
           },
           creativeStyle: strategy.visualDirection.tone,
           aspectRatios: ["16:9"], // TV standard
+          duration: formData.duration,
           strategy // Include full strategy for persistence
         }
       });
@@ -158,8 +159,8 @@ const Create = () => {
         setGeneratedConcepts(campaignsData.campaigns);
         setFlowStep("concepts");
         toast({
-          title: "Concepts Generated!",
-          description: `Created ${campaignsData.campaigns.length} TV ad concepts based on your strategy.`
+          title: "TV Ad Concepts Generated!",
+          description: `Created ${campaignsData.campaigns.length} broadcast-ready concepts.`
         });
       }
     } catch (error: any) {
@@ -174,8 +175,8 @@ const Create = () => {
     }
   };
 
-  const handleBackToInput = () => {
-    setFlowStep("input");
+  const handleBackToScript = () => {
+    setFlowStep("script");
     setStrategy(null);
     setGeneratedConcepts([]);
   };
@@ -184,6 +185,8 @@ const Create = () => {
     setFlowStep("strategy");
     setGeneratedConcepts([]);
   };
+
+  const getCurrentStepIndex = () => STEP_CONFIG.findIndex(s => s.key === flowStep);
 
   const getCampaignThumbnail = (campaign: any) => {
     const storyboard = campaign.storyboard as any;
@@ -194,9 +197,7 @@ const Create = () => {
       const firstSceneWithVisual = storyboard.scenes.find((s: any) => s.visualUrl);
       if (firstSceneWithVisual?.visualUrl) return firstSceneWithVisual.visualUrl;
     }
-    return campaign.ad_type === "video" 
-      ? "https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?w=800&auto=format&fit=crop" 
-      : "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop";
+    return "https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?w=800&auto=format&fit=crop";
   };
 
   const handleDelete = async (id: string) => {
@@ -232,66 +233,87 @@ const Create = () => {
         initial="hidden" 
         animate="visible" 
         variants={containerVariants} 
-        className="p-6 max-w-6xl mx-auto space-y-6"
+        className="p-6 max-w-5xl mx-auto space-y-6"
       >
+        {/* Header */}
+        <motion.div className="text-center space-y-2" variants={itemVariants}>
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <Tv className="h-7 w-7 text-primary" />
+            <h1 className="font-bold text-foreground text-2xl">
+              Create TV Ad
+            </h1>
+          </div>
+          <p className="text-muted-foreground">
+            Script-first approach for broadcast-ready advertising
+          </p>
+        </motion.div>
+
         {/* Progress Steps */}
-        <motion.div variants={itemVariants} className="flex items-center justify-center gap-2">
-          {["Input", "Strategy", "Concepts"].map((step, index) => {
-            const stepKey = ["input", "strategy", "concepts"][index] as FlowStep;
-            const isActive = flowStep === stepKey;
-            const isPast = 
-              (flowStep === "strategy" && index === 0) || 
-              (flowStep === "concepts" && index <= 1);
+        <motion.div variants={itemVariants} className="flex items-center justify-center gap-1 md:gap-2 overflow-x-auto pb-2">
+          {STEP_CONFIG.map((step, index) => {
+            const isActive = flowStep === step.key;
+            const isPast = getCurrentStepIndex() > index;
+            const IconComponent = step.icon;
             
             return (
-              <div key={step} className="flex items-center gap-2">
+              <div key={step.key} className="flex items-center gap-1 md:gap-2">
                 <div className={`
-                  flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-all
+                  flex items-center gap-1.5 px-3 py-2 rounded-full text-sm transition-all
                   ${isActive ? "bg-primary text-primary-foreground" : ""}
                   ${isPast ? "bg-primary/20 text-primary" : ""}
                   ${!isActive && !isPast ? "bg-muted text-muted-foreground" : ""}
                 `}>
-                  {isPast ? <Check className="h-4 w-4" /> : index + 1}
+                  {isPast ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <IconComponent className="h-4 w-4" />
+                  )}
+                  <span className="hidden md:inline font-medium">{step.label}</span>
                 </div>
-                <span className={`text-sm ${isActive ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                  {step}
-                </span>
-                {index < 2 && (
-                  <div className={`w-12 h-0.5 ${isPast ? "bg-primary/30" : "bg-border"}`} />
+                {index < STEP_CONFIG.length - 1 && (
+                  <div className={`w-6 md:w-10 h-0.5 ${isPast ? "bg-primary/30" : "bg-border"}`} />
                 )}
               </div>
             );
           })}
         </motion.div>
 
+        {/* TV Ad Features Strip */}
+        <motion.div variants={itemVariants} className="flex items-center justify-center gap-4 flex-wrap">
+          <Badge variant="outline" className="border-border text-muted-foreground">
+            <Clock className="h-3 w-3 mr-1" />
+            15s / 30s / 60s Spots
+          </Badge>
+          <Badge variant="outline" className="border-border text-muted-foreground">
+            <Calendar className="h-3 w-3 mr-1" />
+            Daypart Targeting
+          </Badge>
+          <Badge variant="outline" className="border-border text-muted-foreground">
+            <Shield className="h-3 w-3 mr-1" />
+            Broadcast Compliance
+          </Badge>
+        </motion.div>
+
         <AnimatePresence mode="wait">
-          {/* Step 1: Input Form */}
-          {flowStep === "input" && !generating && (
+          {/* Step 1: Script Input */}
+          {flowStep === "script" && !generating && (
             <motion.div
-              key="input"
+              key="script"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="space-y-8"
             >
-              <motion.div className="text-center space-y-2" variants={itemVariants}>
-                <h1 className="font-bold text-foreground text-2xl">
-                  Create Broadcast-Ready TV Ads
-                </h1>
-                <p className="text-muted-foreground">
-                  Describe your concept and AI will build a complete strategy
-                </p>
-              </motion.div>
-
-              <motion.div variants={itemVariants}>
-                <AdCreationForm onSubmit={handleAdCreation} initialData={initialFormData} />
-              </motion.div>
+              <TVScriptInputForm 
+                onSubmit={handleScriptSubmit}
+                initialConcept={initialConcept}
+                initialDuration={initialDuration}
+              />
 
               {/* Recent Campaigns */}
               {recentCampaigns.length > 0 && (
-                <motion.div className="space-y-4" variants={itemVariants}>
+                <motion.div className="space-y-4 mt-8" variants={itemVariants}>
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-foreground">Recent Campaigns</h2>
+                    <h2 className="text-xl font-semibold text-foreground">Recent TV Campaigns</h2>
                     <Button variant="link" onClick={() => navigate("/ad-operations")} className="text-primary">
                       View all
                     </Button>
@@ -327,17 +349,6 @@ const Create = () => {
                   </motion.div>
                 </motion.div>
               )}
-
-              {recentCampaigns.length === 0 && (
-                <Card className="bg-card border-border">
-                  <CardContent className="p-12 text-center">
-                    <p className="text-lg text-muted-foreground mb-2">No campaigns yet</p>
-                    <p className="text-sm text-muted-foreground">
-                      Describe your TV ad concept above to get started
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
             </motion.div>
           )}
 
@@ -350,14 +361,17 @@ const Create = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
             >
-              <Loader2 className="h-12 w-12 text-primary animate-spin" />
-              <p className="text-lg text-muted-foreground">
-                {flowStep === "input" ? "Building your TV ad strategy..." : "Generating creative concepts..."}
+              <div className="relative">
+                <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                <Tv className="h-5 w-5 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              </div>
+              <p className="text-lg text-foreground font-medium">
+                {flowStep === "script" ? "Building TV Strategy..." : "Generating TV Concepts..."}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {flowStep === "input" 
-                  ? "AI is analyzing your concept and creating a broadcast strategy"
-                  : "Creating TV-grade creative directions based on your strategy"
+              <p className="text-sm text-muted-foreground max-w-md text-center">
+                {flowStep === "script" 
+                  ? "AI is analyzing your script and creating a broadcast-ready strategy with scene breakdowns"
+                  : "Creating production-ready TV ad concepts with storyboards"
                 }
               </p>
             </motion.div>
@@ -375,17 +389,17 @@ const Create = () => {
               <div className="flex items-center justify-between">
                 <Button 
                   variant="ghost" 
-                  onClick={handleBackToInput}
+                  onClick={handleBackToScript}
                   className="text-muted-foreground"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Input
+                  Back to Script
                 </Button>
                 <div className="text-center">
-                  <h1 className="font-bold text-foreground text-xl">Review Your Strategy</h1>
-                  <p className="text-sm text-muted-foreground">Edit any section, then generate creatives</p>
+                  <h2 className="font-bold text-foreground text-xl">TV Ad Strategy</h2>
+                  <p className="text-sm text-muted-foreground">Review and customize before production</p>
                 </div>
-                <div className="w-[120px]" /> {/* Spacer for centering */}
+                <div className="w-[120px]" />
               </div>
 
               <StrategyModule
@@ -409,7 +423,7 @@ const Create = () => {
                   className="bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-10 text-lg"
                 >
                   <Sparkles className="h-5 w-5 mr-2" />
-                  Generate TV Ad Concepts
+                  Generate TV Concepts
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </motion.div>
@@ -435,8 +449,8 @@ const Create = () => {
                   Back to Strategy
                 </Button>
                 <div className="text-center">
-                  <h1 className="font-bold text-foreground text-xl">TV Ad Concepts</h1>
-                  <p className="text-sm text-muted-foreground">Select a concept to continue production</p>
+                  <h2 className="font-bold text-foreground text-xl">TV Ad Concepts</h2>
+                  <p className="text-sm text-muted-foreground">Select a concept to begin production</p>
                 </div>
                 <div className="w-[140px]" />
               </div>
@@ -457,19 +471,35 @@ const Create = () => {
                       predictedCtr={concept.predicted_ctr} 
                       predictedEngagement={concept.predicted_engagement} 
                       onClick={() => {
-                        if (concept.ad_type === "image") {
-                          navigate(`/editor/${concept.id}`);
-                        } else {
-                          navigate(`/storyboard/${concept.id}`);
-                        }
-                      }} 
+                        navigate(`/storyboard/${concept.id}`);
+                      }}
                     />
                   </motion.div>
                 ))}
               </motion.div>
+
+              {/* Start New */}
+              <div className="text-center pt-4">
+                <Button variant="outline" onClick={handleBackToScript}>
+                  Start New TV Ad
+                </Button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Empty State for Concepts */}
+        {flowStep === "script" && recentCampaigns.length === 0 && !generating && (
+          <Card className="bg-card border-border">
+            <CardContent className="p-12 text-center">
+              <Tv className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg text-foreground mb-2">Ready to create your first TV ad</p>
+              <p className="text-sm text-muted-foreground">
+                Write your script above and AI will build the complete broadcast strategy
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </motion.div>
     </DashboardLayout>
   );
