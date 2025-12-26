@@ -17,11 +17,13 @@ import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 import { StoryboardPageSkeleton } from "@/components/skeletons/StoryboardPageSkeleton";
 
 interface Scene {
-  sceneNumber: number;
+  sceneNumber?: number;
+  number?: number;
   duration: string;
-  visualDescription: string;
-  suggestedVisuals: string;
-  voiceover: string;
+  description?: string;
+  visualDescription?: string;
+  suggestedVisuals?: string;
+  voiceover?: string;
   voiceoverLines?: string[];
   visualUrl?: string;
   audioUrl?: string;
@@ -30,13 +32,18 @@ interface Scene {
 }
 
 interface Storyboard {
-  scriptVariants: {
+  scriptVariants?: {
     "15s": string;
     "30s": string;
     "60s": string;
   };
   scenes: Scene[];
-  musicMood: string;
+  musicMood?: string;
+  duration?: string;
+  tone?: string;
+  style?: string;
+  strategy?: any;
+  productionSettings?: any;
 }
 
 type StoryboardStep = "script" | "storyboard";
@@ -93,10 +100,13 @@ const Storyboard = () => {
         setCampaign(data);
         
         if (data.storyboard) {
-          const storyboardData = data.storyboard as unknown as Storyboard & { strategy?: TVAdStrategy };
+          const storyboardData = data.storyboard as unknown as Storyboard;
           setStoryboard(storyboardData);
-          setEditedScript(storyboardData.scriptVariants["30s"]);
-          setEditedMusicMood(storyboardData.musicMood);
+          // Handle both old format (scriptVariants) and new format (scenes)
+          const script = storyboardData.scriptVariants?.["30s"] || 
+            storyboardData.scenes?.map(s => s.voiceover || s.description || s.visualDescription).join('\n\n') || "";
+          setEditedScript(script);
+          setEditedMusicMood(storyboardData.musicMood || "");
           
           // Extract strategy if it exists
           if (storyboardData.strategy) {
@@ -137,8 +147,10 @@ const Storyboard = () => {
       if (error) throw error;
 
       setStoryboard(data.storyboard);
-      setEditedScript(data.storyboard.scriptVariants["30s"]);
-      setEditedMusicMood(data.storyboard.musicMood);
+      const script = data.storyboard.scriptVariants?.["30s"] || 
+        data.storyboard.scenes?.map((s: Scene) => s.voiceover || s.description || s.visualDescription).join('\n\n') || "";
+      setEditedScript(script);
+      setEditedMusicMood(data.storyboard.musicMood || "");
       
       toast({
         title: "Script Generated!",
@@ -157,8 +169,8 @@ const Storyboard = () => {
   };
 
   useEffect(() => {
-    if (storyboard) {
-      setEditedScript(storyboard.scriptVariants[selectedDuration]);
+    if (storyboard && storyboard.scriptVariants) {
+      setEditedScript(storyboard.scriptVariants[selectedDuration] || "");
     }
   }, [selectedDuration, storyboard]);
 
@@ -633,18 +645,21 @@ const Storyboard = () => {
               </div>
               
               <div className="space-y-6">
-                {storyboard.scenes.map((scene) => (
-                  <SceneCard
-                    key={scene.sceneNumber}
-                    scene={scene}
-                    totalScenes={storyboard.scenes.length}
-                    strategy={strategy}
-                    isGenerating={generatingScenes.has(scene.sceneNumber)}
-                    onGenerateVisual={generateSceneVisual}
-                    onUpdateScene={updateScene}
-                    onUploadAudio={handleUploadAudio}
-                  />
-                ))}
+                {storyboard.scenes.map((scene, index) => {
+                  const sceneNum = scene.sceneNumber ?? scene.number ?? (index + 1);
+                  return (
+                    <SceneCard
+                      key={sceneNum}
+                      scene={scene}
+                      totalScenes={storyboard.scenes.length}
+                      strategy={strategy}
+                      isGenerating={generatingScenes.has(sceneNum)}
+                      onGenerateVisual={generateSceneVisual}
+                      onUpdateScene={updateScene}
+                      onUploadAudio={handleUploadAudio}
+                    />
+                  );
+                })}
               </div>
             </div>
 
