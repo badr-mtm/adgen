@@ -4,24 +4,29 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowRight, Clock, Film, Mic, AlertCircle, Check, Plus, Minus } from "lucide-react";
 
 interface Scene {
-  sceneNumber: number;
+  sceneNumber?: number;
+  number?: number;
   duration: string;
-  visualDescription: string;
-  suggestedVisuals: string;
-  voiceover: string;
+  description?: string;
+  visualDescription?: string;
+  suggestedVisuals?: string;
+  voiceover?: string;
   voiceoverLines?: string[];
   visualUrl?: string;
   strategyAlignment?: string;
 }
 
 interface Storyboard {
-  scriptVariants: {
+  scriptVariants?: {
     "15s": string;
     "30s": string;
     "60s": string;
   };
   scenes: Scene[];
-  musicMood: string;
+  musicMood?: string;
+  duration?: string;
+  tone?: string;
+  style?: string;
 }
 
 interface SceneDiffViewProps {
@@ -46,7 +51,7 @@ export const SceneDiffView = ({ before, after }: SceneDiffViewProps) => {
 
     let changes = 0;
     if (beforeScene.duration !== afterScene.duration) changes++;
-    if (beforeScene.visualDescription !== afterScene.visualDescription) changes++;
+    if ((beforeScene.visualDescription || beforeScene.description) !== (afterScene.visualDescription || afterScene.description)) changes++;
     if (beforeScene.suggestedVisuals !== afterScene.suggestedVisuals) changes++;
     if (beforeScene.voiceover !== afterScene.voiceover) changes++;
 
@@ -72,20 +77,20 @@ export const SceneDiffView = ({ before, after }: SceneDiffViewProps) => {
           <div className="space-y-2">
             <Badge variant="outline" className="text-muted-foreground">Before</Badge>
             <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 min-h-[100px]">
-              {before.scriptVariants["30s"]}
+              {before.scriptVariants?.["30s"] || before.scenes?.map(s => s.voiceover || s.description || s.visualDescription).join('\n\n') || "No script"}
             </div>
           </div>
           <div className="space-y-2">
             <Badge className="bg-primary/20 text-primary border-0">After</Badge>
             <div className="text-sm text-foreground bg-primary/5 rounded-lg p-3 min-h-[100px] border border-primary/20">
-              {after.scriptVariants["30s"]}
+              {after.scriptVariants?.["30s"] || after.scenes?.map(s => s.voiceover || s.description || s.visualDescription).join('\n\n') || "No script"}
             </div>
           </div>
         </div>
       </Card>
 
       {/* Music Mood Diff */}
-      {before.musicMood !== after.musicMood && (
+      {before.musicMood && after.musicMood && before.musicMood !== after.musicMood && (
         <Card className="p-4 bg-card border-border">
           <h3 className="font-medium text-foreground mb-3 flex items-center gap-2">
             <Mic className="h-4 w-4 text-primary" />
@@ -168,15 +173,15 @@ export const SceneDiffView = ({ before, after }: SceneDiffViewProps) => {
                   {type !== "unchanged" && (
                     <div className="space-y-3">
                       {/* Visual Description */}
-                      {afterScene && (beforeScene?.visualDescription !== afterScene.visualDescription) && (
+                      {afterScene && ((beforeScene?.visualDescription || beforeScene?.description) !== (afterScene.visualDescription || afterScene.description)) && (
                         <div className="space-y-2">
                           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Visual</span>
                           <div className="grid grid-cols-2 gap-3">
                             <div className="text-sm text-muted-foreground bg-muted/30 rounded p-2">
-                              {beforeScene?.visualDescription || <span className="italic">N/A</span>}
+                              {beforeScene?.visualDescription || beforeScene?.description || <span className="italic">N/A</span>}
                             </div>
                             <div className="text-sm text-foreground bg-primary/5 rounded p-2 border border-primary/20">
-                              {afterScene.visualDescription}
+                              {afterScene.visualDescription || afterScene.description}
                             </div>
                           </div>
                         </div>

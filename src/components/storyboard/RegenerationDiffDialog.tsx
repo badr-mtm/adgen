@@ -11,24 +11,29 @@ import { SceneDiffView } from "./SceneDiffView";
 import { Check, ArrowRight } from "lucide-react";
 
 interface Scene {
-  sceneNumber: number;
+  sceneNumber?: number;
+  number?: number;
   duration: string;
-  visualDescription: string;
-  suggestedVisuals: string;
-  voiceover: string;
+  description?: string;
+  visualDescription?: string;
+  suggestedVisuals?: string;
+  voiceover?: string;
   voiceoverLines?: string[];
   visualUrl?: string;
   strategyAlignment?: string;
 }
 
 interface Storyboard {
-  scriptVariants: {
+  scriptVariants?: {
     "15s": string;
     "30s": string;
     "60s": string;
   };
   scenes: Scene[];
-  musicMood: string;
+  musicMood?: string;
+  duration?: string;
+  tone?: string;
+  style?: string;
 }
 
 interface RegenerationDiffDialogProps {

@@ -12,11 +12,13 @@ import { SceneStrategyIndicators } from "./SceneStrategyIndicators";
 import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 
 interface Scene {
-  sceneNumber: number;
+  sceneNumber?: number;
+  number?: number;
   duration: string;
-  visualDescription: string;
-  suggestedVisuals: string;
-  voiceover: string;
+  description?: string;
+  visualDescription?: string;
+  suggestedVisuals?: string;
+  voiceover?: string;
   voiceoverLines?: string[];
   visualUrl?: string;
   audioUrl?: string;
@@ -46,8 +48,14 @@ const SceneCard = ({
   const [customPrompt, setCustomPrompt] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  // Support both sceneNumber and number fields
+  const sceneNum = scene.sceneNumber ?? scene.number ?? 1;
+  const visualDesc = scene.visualDescription || scene.description || "";
+  const suggestedVisuals = scene.suggestedVisuals || "";
+  const voiceover = scene.voiceover || "";
+
   const handleGenerateWithPrompt = () => {
-    onGenerateVisual(scene.sceneNumber, customPrompt);
+    onGenerateVisual(sceneNum, customPrompt);
     setDialogOpen(false);
     setCustomPrompt("");
   };
@@ -58,7 +66,7 @@ const SceneCard = ({
       {strategy && (
         <div className="mb-4">
           <SceneStrategyIndicators
-            sceneNumber={scene.sceneNumber}
+            sceneNumber={sceneNum}
             totalScenes={totalScenes}
             sceneDuration={scene.duration}
             strategy={strategy}
@@ -73,7 +81,7 @@ const SceneCard = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Badge className="bg-primary text-primary-foreground">
-                Scene {scene.sceneNumber}
+                Scene {sceneNum}
               </Badge>
               {isEditingDuration ? (
                 <div className="flex items-center gap-2">
@@ -85,13 +93,13 @@ const SceneCard = ({
                     placeholder="e.g., 5s"
                     onBlur={(e) => {
                       if (e.target.value !== scene.duration) {
-                        onUpdateScene(scene.sceneNumber, { duration: e.target.value });
+                        onUpdateScene(sceneNum, { duration: e.target.value });
                       }
                       setIsEditingDuration(false);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        onUpdateScene(scene.sceneNumber, { duration: e.currentTarget.value });
+                        onUpdateScene(sceneNum, { duration: e.currentTarget.value });
                         setIsEditingDuration(false);
                       }
                     }}
@@ -116,7 +124,7 @@ const SceneCard = ({
             <div className="relative rounded-lg overflow-hidden bg-muted aspect-video">
               <img 
                 src={scene.visualUrl} 
-                alt={`Scene ${scene.sceneNumber}`}
+                alt={`Scene ${sceneNum}`}
                 className="w-full h-full object-cover"
               />
               <div className="absolute bottom-2 right-2">
@@ -133,7 +141,7 @@ const SceneCard = ({
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Regenerate Scene {scene.sceneNumber}</DialogTitle>
+                      <DialogTitle>Regenerate Scene {sceneNum}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <Textarea
@@ -187,7 +195,7 @@ const SceneCard = ({
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Generate Scene {scene.sceneNumber} Visual</DialogTitle>
+                    <DialogTitle>Generate Scene {sceneNum} Visual</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <p className="text-sm text-muted-foreground">
@@ -228,30 +236,30 @@ const SceneCard = ({
           {/* Visual Description */}
           <InlineEditField
             label="Visual"
-            value={scene.visualDescription}
+            value={visualDesc}
             type="textarea"
-            onSave={(value) => onUpdateScene(scene.sceneNumber, { visualDescription: value })}
+            onSave={(value) => onUpdateScene(sceneNum, { visualDescription: value })}
           />
 
           {/* Camera & Composition */}
           <div className="bg-muted/30 rounded-lg p-4 border border-border">
             <InlineEditField
               label="Camera & Composition"
-              value={scene.suggestedVisuals}
+              value={suggestedVisuals}
               type="textarea"
-              onSave={(value) => onUpdateScene(scene.sceneNumber, { suggestedVisuals: value })}
+              onSave={(value) => onUpdateScene(sceneNum, { suggestedVisuals: value })}
             />
           </div>
 
           {/* Voiceover */}
           <VoiceoverSection
-            voiceover={scene.voiceover}
+            voiceover={voiceover}
             voiceoverLines={scene.voiceoverLines}
             audioUrl={scene.audioUrl}
-            onSave={(voiceover, voiceoverLines) => 
-              onUpdateScene(scene.sceneNumber, { voiceover, voiceoverLines })
+            onSave={(vo, voLines) => 
+              onUpdateScene(sceneNum, { voiceover: vo, voiceoverLines: voLines })
             }
-            onUploadAudio={(file) => onUploadAudio?.(scene.sceneNumber, file)}
+            onUploadAudio={(file) => onUploadAudio?.(sceneNum, file)}
           />
         </div>
       </div>
