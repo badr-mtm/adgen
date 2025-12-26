@@ -19,7 +19,11 @@ import {
   Gift,
   Sparkles,
   Check,
-  Tv
+  Tv,
+  ShoppingCart,
+  UserPlus,
+  Smartphone,
+  Radio
 } from "lucide-react";
 
 export interface CampaignIntentData {
@@ -39,11 +43,75 @@ interface CampaignIntentModalProps {
 }
 
 const CAMPAIGN_GOALS = [
-  { id: "awareness", label: "Awareness", icon: Megaphone, description: "Build brand recognition" },
-  { id: "recall", label: "Recall", icon: TrendingUp, description: "Stay top of mind" },
-  { id: "launch", label: "Launch", icon: Rocket, description: "Introduce something new" },
-  { id: "promo", label: "Promo", icon: Gift, description: "Drive limited offers" },
-  { id: "brand_lift", label: "Brand Lift", icon: Sparkles, description: "Strengthen perception" },
+  { 
+    id: "awareness", 
+    label: "Awareness", 
+    icon: Megaphone, 
+    description: "Reach more viewers to grow your brand.",
+    useCases: [
+      "Boost your brand visibility",
+      "Target high intent audiences on premium and live sports channels"
+    ],
+    adDelivery: "Optimize for impressions"
+  },
+  { 
+    id: "traffic", 
+    label: "Traffic", 
+    icon: TrendingUp, 
+    isNew: true,
+    description: "Drive viewers to your website or landing page.",
+    useCases: [
+      "Increase website visits",
+      "Promote special offers and campaigns"
+    ],
+    adDelivery: "Optimize for link clicks"
+  },
+  { 
+    id: "leads", 
+    label: "Leads", 
+    icon: UserPlus, 
+    isNew: true,
+    description: "Capture customer information and inquiries.",
+    useCases: [
+      "Generate qualified leads",
+      "Build your email subscriber list"
+    ],
+    adDelivery: "Optimize for form submissions"
+  },
+  { 
+    id: "sales", 
+    label: "Sales", 
+    icon: ShoppingCart, 
+    isNew: true,
+    description: "Drive purchases and conversions.",
+    useCases: [
+      "Increase product sales",
+      "Promote limited-time offers"
+    ],
+    adDelivery: "Optimize for conversions"
+  },
+  { 
+    id: "retargeting", 
+    label: "Retargeting", 
+    icon: Target, 
+    description: "Re-engage viewers who know your brand.",
+    useCases: [
+      "Reconnect with past customers",
+      "Remind viewers of abandoned carts"
+    ],
+    adDelivery: "Optimize for return visits"
+  },
+  { 
+    id: "app_promotion", 
+    label: "App Promotion", 
+    icon: Smartphone, 
+    description: "Drive app installs and engagement.",
+    useCases: [
+      "Increase app downloads",
+      "Boost in-app engagement"
+    ],
+    adDelivery: "Optimize for app installs"
+  },
 ];
 
 const AUDIENCE_PRESETS = [
@@ -86,6 +154,8 @@ export function CampaignIntentModal({ open, onOpenChange, onContinue }: Campaign
   const [budgetRange, setBudgetRange] = useState("growth");
   const [timeframe, setTimeframe] = useState("");
 
+  const selectedGoalData = CAMPAIGN_GOALS.find(g => g.id === goal);
+
   const handleContinue = () => {
     if (step < 3) {
       setStep(step + 1);
@@ -110,14 +180,14 @@ export function CampaignIntentModal({ open, onOpenChange, onContinue }: Campaign
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl bg-card border-border p-0 overflow-hidden max-h-[90vh]">
+      <DialogContent className="sm:max-w-4xl bg-card border-border p-0 overflow-hidden max-h-[90vh]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="p-8"
         >
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-4">
               <Tv className="h-7 w-7 text-primary" />
             </div>
@@ -145,52 +215,152 @@ export function CampaignIntentModal({ open, onOpenChange, onContinue }: Campaign
           </div>
 
           {/* Content */}
-          <div className="min-h-[340px]">
+          <div className="min-h-[380px]">
             <AnimatePresence mode="wait">
-              {/* Step 1: Campaign Goal */}
+              {/* Step 1: Campaign Goal - New Design */}
               {step === 1 && (
                 <motion.div
                   key="step1"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  className="space-y-4"
                 >
-                  <div className="flex items-center gap-2 text-foreground font-medium">
-                    <Target className="h-5 w-5 text-primary" />
-                    What's your campaign goal?
+                  {/* Section Header */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <Radio className="h-5 w-5 text-primary" />
+                    <span className="text-lg font-semibold text-foreground">Campaign Goal</span>
+                    <div className="w-4 h-4 rounded-full border border-muted-foreground/30 flex items-center justify-center">
+                      <span className="text-[10px] text-muted-foreground">i</span>
+                    </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {CAMPAIGN_GOALS.map((g) => {
-                      const Icon = g.icon;
-                      const isSelected = goal === g.id;
-                      return (
-                        <button
-                          key={g.id}
-                          onClick={() => setGoal(g.id)}
-                          className={`
-                            relative p-4 rounded-xl border-2 text-left transition-all
-                            ${isSelected 
-                              ? "border-primary bg-primary/10" 
-                              : "border-border hover:border-muted-foreground/30 bg-secondary/20"
-                            }
-                          `}
-                        >
-                          <Icon className={`h-6 w-6 mb-2 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-                          <div className="font-semibold text-foreground">{g.label}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">{g.description}</div>
-                          {isSelected && (
-                            <motion.div
-                              layoutId="goal-check"
-                              className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center"
-                            >
-                              <Check className="h-3 w-3 text-primary-foreground" />
-                            </motion.div>
-                          )}
-                        </button>
-                      );
-                    })}
+                  {/* Two-column layout */}
+                  <div className="flex gap-6">
+                    {/* Left: Goal Options */}
+                    <div className="w-52 space-y-2 flex-shrink-0">
+                      {CAMPAIGN_GOALS.map((g) => {
+                        const Icon = g.icon;
+                        const isSelected = goal === g.id;
+                        return (
+                          <button
+                            key={g.id}
+                            onClick={() => setGoal(g.id)}
+                            className={`
+                              w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left transition-all
+                              ${isSelected 
+                                ? "border-primary bg-background shadow-sm" 
+                                : "border-border hover:border-muted-foreground/50 bg-background"
+                              }
+                            `}
+                          >
+                            {/* Radio Circle */}
+                            <div className={`
+                              w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
+                              ${isSelected ? "border-primary" : "border-muted-foreground/50"}
+                            `}>
+                              {isSelected && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  className="w-2 h-2 rounded-full bg-primary"
+                                />
+                              )}
+                            </div>
+                            
+                            {/* Icon */}
+                            <Icon className={`h-4 w-4 flex-shrink-0 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                            
+                            {/* Label */}
+                            <span className={`font-medium text-sm ${isSelected ? "text-foreground" : "text-foreground"}`}>
+                              {g.label}
+                            </span>
+                            
+                            {/* New Badge */}
+                            {g.isNew && (
+                              <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-5 bg-primary/10 text-primary border-0">
+                                New
+                              </Badge>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Right: Goal Details */}
+                    <div className="flex-1 border-l border-border pl-6">
+                      <AnimatePresence mode="wait">
+                        {selectedGoalData && (
+                          <motion.div
+                            key={selectedGoalData.id}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.2 }}
+                            className="space-y-5"
+                          >
+                            {/* Illustration */}
+                            <div className="flex justify-start py-2">
+                              <div className="relative">
+                                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent flex items-center justify-center">
+                                  <selectedGoalData.icon className="h-12 w-12 text-primary" />
+                                </div>
+                                <motion.div
+                                  animate={{ y: [0, -4, 0] }}
+                                  transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                                  className="absolute -top-1 -right-1"
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-primary">
+                                    <path d="M6 0L7 5L12 6L7 7L6 12L5 7L0 6L5 5L6 0Z" fill="currentColor" opacity="0.6"/>
+                                  </svg>
+                                </motion.div>
+                                <motion.div
+                                  animate={{ y: [0, -3, 0] }}
+                                  transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse", delay: 0.3 }}
+                                  className="absolute top-2 -right-4"
+                                >
+                                  <svg width="8" height="8" viewBox="0 0 12 12" fill="none" className="text-primary">
+                                    <path d="M6 0L7 5L12 6L7 7L6 12L5 7L0 6L5 5L6 0Z" fill="currentColor" opacity="0.4"/>
+                                  </svg>
+                                </motion.div>
+                              </div>
+                            </div>
+
+                            {/* Title & Description */}
+                            <div>
+                              <h3 className="text-xl font-bold text-foreground mb-1">
+                                {selectedGoalData.label}
+                              </h3>
+                              <p className="text-muted-foreground text-sm">
+                                {selectedGoalData.description}
+                              </p>
+                            </div>
+
+                            {/* Use Cases */}
+                            <div>
+                              <h4 className="text-sm font-semibold text-foreground mb-2">Use cases</h4>
+                              <ul className="space-y-1.5">
+                                {selectedGoalData.useCases.map((useCase, index) => (
+                                  <li key={index} className="flex items-start gap-2">
+                                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                                    <span className="text-sm text-primary">{useCase}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* Ad Delivery */}
+                            <div>
+                              <h4 className="text-sm font-semibold text-foreground mb-2">Ad delivery</h4>
+                              <div className="flex items-center gap-2">
+                                <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                                <span className="text-sm text-primary">{selectedGoalData.adDelivery}</span>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </motion.div>
               )}
