@@ -11,9 +11,9 @@ import {
   Users, 
   Smartphone,
   ArrowLeft,
+  ArrowRight,
   Check,
-  Loader2,
-  Radio
+  Loader2
 } from "lucide-react";
 
 interface CampaignGoalModalProps {
@@ -111,29 +111,33 @@ export function CampaignGoalModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl bg-card border-border p-0 overflow-hidden max-h-[90vh]">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 30, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="p-8"
         >
           {/* Header */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="mb-8">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={onBack}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground mb-4"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-2">
-              <Radio className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">
-                Campaign Goal
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+            >
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                What do you want your campaign to achieve?
               </h2>
-              <div className="w-4 h-4 rounded-full border border-muted-foreground/30 flex items-center justify-center">
-                <span className="text-[10px] text-muted-foreground">i</span>
-              </div>
-            </div>
+              <p className="text-muted-foreground">
+                Choose a goal that aligns with your business objectives
+              </p>
+            </motion.div>
           </div>
 
           {/* Content Grid */}
@@ -195,10 +199,10 @@ export function CampaignGoalModal({
                 {selectedGoalData && (
                   <motion.div
                     key={selectedGoalData.id}
-                    initial={{ opacity: 0, x: 20 }}
+                    initial={{ opacity: 0, x: 30 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2 }}
+                    exit={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     className="space-y-6"
                   >
                     {/* Illustration */}
@@ -278,27 +282,32 @@ export function CampaignGoalModal({
             </div>
           </div>
 
-          {/* Generate Button */}
-          <div className="mt-8 pt-6 border-t border-border">
+          {/* Next Button */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="mt-8 pt-6 border-t border-border"
+          >
             <Button
               size="lg"
               onClick={() => onGenerate(selectedGoal)}
               disabled={isGenerating}
-              className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90"
+              className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90 group transition-all duration-300"
             >
               {isGenerating ? (
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Generating Concepts...
+                  Processing...
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Generate Concepts
+                  Next
+                  <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                 </>
               )}
             </Button>
-          </div>
+          </motion.div>
         </motion.div>
       </DialogContent>
     </Dialog>
