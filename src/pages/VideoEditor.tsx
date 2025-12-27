@@ -6,7 +6,7 @@ import VideoPreview from "@/components/video-editor/VideoPreview";
 import VideoTimeline from "@/components/video-editor/VideoTimeline";
 import AIAssistantPanel from "@/components/video-editor/AIAssistantPanel";
 import SceneEditor from "@/components/video-editor/SceneEditor";
-import { PublishDialog } from "@/components/campaign/PublishDialog";
+import { StrategyConfigModal, type StrategyConfig } from "@/components/create/StrategyConfigModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useVideoPlayback } from "@/hooks/useVideoPlayback";
@@ -49,7 +49,8 @@ const VideoEditor = () => {
   const [regeneratingScene, setRegeneratingScene] = useState<number | null>(null);
   const [overlaySettings, setOverlaySettings] = useState<VideoOverlaySettings>(defaultOverlaySettings);
   const [showEndScreen, setShowEndScreen] = useState(false);
-  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [showStrategyConfig, setShowStrategyConfig] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Video playback hook
   const playback = useVideoPlayback({
@@ -219,10 +220,11 @@ const VideoEditor = () => {
   };
 
   const handleAddToStrategy = () => {
-    setShowPublishDialog(true);
+    setShowStrategyConfig(true);
   };
 
-  const handlePublish = async () => {
+  const handlePublishWithStrategy = async (config: StrategyConfig) => {
+    setIsPublishing(true);
     try {
       await supabase
         .from("campaigns")
@@ -234,15 +236,18 @@ const VideoEditor = () => {
 
       toast({ 
         title: "Campaign is Live! 🚀", 
-        description: "Your campaign has been published successfully."
+        description: `Your campaign is now running with a $${config.budget.amount} ${config.budget.type} budget.`
       });
-      setShowPublishDialog(false);
+      setShowStrategyConfig(false);
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Publish failed",
         description: error.message,
         variant: "destructive"
       });
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -401,20 +406,13 @@ const VideoEditor = () => {
         />
       )}
 
-      {/* Publish Dialog */}
-      <PublishDialog
-        open={showPublishDialog}
-        onOpenChange={setShowPublishDialog}
-        campaign={campaign}
-        creatives={storyboard.scenes.map((scene, i) => ({
-          id: i + 1,
-          name: `Scene ${i + 1}`,
-          thumbnail: scene.visualUrl || "/placeholder.svg",
-          ctr: `${(2.1 + Math.random()).toFixed(1)}%`,
-          platforms: ["instagram", "facebook", "tiktok"],
-          aiRecommended: i === 0,
-        }))}
-        onPublish={handlePublish}
+      {/* Strategy Config Modal */}
+      <StrategyConfigModal
+        open={showStrategyConfig}
+        onOpenChange={setShowStrategyConfig}
+        onBack={() => setShowStrategyConfig(false)}
+        onPublish={handlePublishWithStrategy}
+        isPublishing={isPublishing}
       />
     </div>
   );
