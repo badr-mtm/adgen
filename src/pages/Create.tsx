@@ -424,11 +424,10 @@ const Create = () => {
                   {/* Right side: Submit button */}
                   <Button 
                     onClick={handleStartCreate} 
-                    size="sm"
-                    className="h-8 px-4 rounded-full bg-foreground text-background hover:bg-foreground/90"
+                    size="icon"
+                    className="h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    Next
-                    <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
