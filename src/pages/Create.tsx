@@ -13,9 +13,8 @@ import { PrePublishSimulationModal } from "@/components/create/PrePublishSimulat
 import CampaignCard from "@/components/CampaignCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Tv, Play, ArrowRight, Paperclip, X } from "lucide-react";
+import { Play, ArrowRight, Paperclip, X } from "lucide-react";
 import { CreatePageSkeleton } from "@/components/skeletons/CreatePageSkeleton";
-import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 const containerVariants = {
   hidden: {
@@ -339,52 +338,53 @@ const Create = () => {
   if (loading) return <DashboardLayout><CreatePageSkeleton /></DashboardLayout>;
   return <DashboardLayout>
       <motion.div initial="hidden" animate="visible" variants={containerVariants} className="p-6 max-w-6xl mx-auto space-y-10">
-        {/* Quick TV Ad Creation Card */}
-        <motion.div variants={itemVariants}>
-          <Card className="bg-card border-border overflow-hidden relative">
-            <CardContent className="p-4 relative">
-              {/* Uploaded files preview */}
-              {uploadedFiles.length > 0 && (
-                <div className="flex gap-2 mb-3 flex-wrap">
-                  {uploadedFiles.map((item, index) => (
-                    <div key={index} className="relative group">
-                      {item.file.type.startsWith('video/') ? (
-                        <video 
-                          src={item.preview} 
-                          className="w-16 h-16 object-cover rounded-lg border border-border"
-                        />
-                      ) : (
-                        <img 
-                          src={item.preview} 
-                          alt={`Reference ${index + 1}`}
-                          className="w-16 h-16 object-cover rounded-lg border border-border"
-                        />
-                      )}
-                      <button
-                        onClick={() => removeFile(index)}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                      {item.file.type.startsWith('video/') && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-6 h-6 rounded-full bg-background/80 flex items-center justify-center">
-                            <Play className="h-3 w-3 text-foreground" />
-                          </div>
+        {/* Quick TV Ad Creation */}
+        <motion.div variants={itemVariants} className="max-w-2xl mx-auto">
+          <div className="space-y-4">
+            <h1 className="text-2xl font-semibold text-foreground text-center">Create your TV ad</h1>
+            
+            {/* Uploaded files preview */}
+            {uploadedFiles.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                {uploadedFiles.map((item, index) => (
+                  <div key={index} className="relative group">
+                    {item.file.type.startsWith('video/') ? (
+                      <video 
+                        src={item.preview} 
+                        className="w-16 h-16 object-cover rounded-lg border border-border"
+                      />
+                    ) : (
+                      <img 
+                        src={item.preview} 
+                        alt={`Reference ${index + 1}`}
+                        className="w-16 h-16 object-cover rounded-lg border border-border"
+                      />
+                    )}
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                    {item.file.type.startsWith('video/') && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-background/80 flex items-center justify-center">
+                          <Play className="h-3 w-3 text-foreground" />
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <div className="relative">
-                <Textarea 
-                  value={concept} 
-                  onChange={e => setConcept(e.target.value)} 
-                  placeholder="Describe your TV ad concept..." 
-                  className="min-h-[120px] bg-secondary/30 border-border text-foreground placeholder:text-muted-foreground resize-none pr-16 pb-14" 
-                />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="relative">
+              <Textarea 
+                value={concept} 
+                onChange={e => setConcept(e.target.value)} 
+                placeholder="Describe your TV ad concept..." 
+                className="min-h-[120px] bg-secondary/30 border-border text-foreground placeholder:text-muted-foreground resize-none pr-16 pb-14" 
+              />
                 
                 {/* Bottom controls inside textarea area */}
                 <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
@@ -431,8 +431,7 @@ const Create = () => {
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
         </motion.div>
 
         {recentCampaigns.length > 0 && <motion.div className="space-y-6" variants={itemVariants}>
