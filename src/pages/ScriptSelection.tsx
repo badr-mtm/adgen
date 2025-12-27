@@ -318,9 +318,10 @@ export default function ScriptSelection() {
           {step === "scripts" ? (
             <motion.div
               key="scripts"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: -30, scale: 0.98 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 30, scale: 0.98 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             >
               {/* Scripts List */}
@@ -499,9 +500,10 @@ export default function ScriptSelection() {
           ) : (
             <motion.div
               key="scenes"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: 30, scale: 0.98 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -30, scale: 0.98 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               className="space-y-6"
             >
               {/* Scenes Grid */}
