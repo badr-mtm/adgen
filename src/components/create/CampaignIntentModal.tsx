@@ -15,11 +15,17 @@ export interface CampaignIntentData {
   geographicScope: string;
   budgetRange: string;
   timeframe: string;
+  concept?: string;
+  duration?: string;
+  referenceFiles?: Array<{ name: string; type: string; preview: string }>;
 }
 interface CampaignIntentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onContinue: (data: CampaignIntentData) => void;
+  initialConcept?: string;
+  initialDuration?: string;
+  referenceFiles?: Array<{ file: File; preview: string }>;
 }
 const CAMPAIGN_GOALS = [{
   id: "awareness",
@@ -137,7 +143,10 @@ const BUDGET_RANGES = [{
 export function CampaignIntentModal({
   open,
   onOpenChange,
-  onContinue
+  onContinue,
+  initialConcept,
+  initialDuration,
+  referenceFiles
 }: CampaignIntentModalProps) {
   const [step, setStep] = useState(1);
   const [goal, setGoal] = useState("awareness");
@@ -159,7 +168,14 @@ export function CampaignIntentModal({
         brandTone,
         geographicScope,
         budgetRange,
-        timeframe
+        timeframe,
+        concept: initialConcept,
+        duration: initialDuration,
+        referenceFiles: referenceFiles?.map(f => ({
+          name: f.file.name,
+          type: f.file.type,
+          preview: f.preview
+        }))
       });
     }
   };
