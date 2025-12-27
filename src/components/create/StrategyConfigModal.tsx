@@ -25,7 +25,11 @@ import {
   Users,
   Sparkles,
   Search,
-  Check
+  Check,
+  Play,
+  Target,
+  Film,
+  Settings2
 } from "lucide-react";
 
 export interface StrategyConfig {
@@ -50,12 +54,23 @@ export interface StrategyConfig {
   };
 }
 
+interface CampaignPreviewData {
+  title?: string;
+  description?: string;
+  goal?: string;
+  audience?: string;
+  duration?: string;
+  scenesCount?: number;
+  thumbnailUrl?: string;
+}
+
 interface StrategyConfigModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onBack: () => void;
   onPublish: (config: StrategyConfig) => void;
   isPublishing: boolean;
+  campaignPreview?: CampaignPreviewData;
 }
 
 const CHANNELS = [
@@ -96,8 +111,10 @@ export function StrategyConfigModal({
   onOpenChange,
   onBack,
   onPublish,
-  isPublishing
+  isPublishing,
+  campaignPreview
 }: StrategyConfigModalProps) {
+  const [step, setStep] = useState<"preview" | "strategy">("preview");
   const [activeTab, setActiveTab] = useState("budget");
   const [config, setConfig] = useState<StrategyConfig>({
     budget: { amount: 200, type: "daily" },
@@ -119,6 +136,14 @@ export function StrategyConfigModal({
   const [expandedDelivery, setExpandedDelivery] = useState(false);
   const [expandedAdvanced, setExpandedAdvanced] = useState(false);
   const [channelSearch, setChannelSearch] = useState("");
+
+  // Reset step when modal opens
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setStep("preview");
+    }
+    onOpenChange(open);
+  };
 
   const toggleChannel = (channelId: string) => {
     setConfig(prev => ({
@@ -152,10 +177,186 @@ export function StrategyConfigModal({
   const estimatedImpressions = "47K - 93K";
   const estimatedHouseholds = "3.1K - 6.2K";
 
+  const pageTransition = {
+    initial: { opacity: 0, x: 30 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -30 },
+    transition: { duration: 0.5, ease: "easeInOut" as const }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-6xl bg-card border-border p-0 overflow-hidden max-h-[90vh]">
-        <div className="flex h-full max-h-[85vh]">
+        <AnimatePresence mode="wait">
+          {step === "preview" ? (
+            <motion.div
+              key="preview"
+              initial={pageTransition.initial}
+              animate={pageTransition.animate}
+              exit={pageTransition.exit}
+              transition={pageTransition.transition}
+              className="flex flex-col max-h-[85vh]"
+            >
+              {/* Preview Header */}
+              <div className="p-6 border-b border-border">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onBack}
+                    className="text-muted-foreground hover:text-foreground transition-colors duration-300"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Campaign Preview
+                  </h2>
+                </div>
+              </div>
+
+              {/* Preview Content */}
+              <ScrollArea className="flex-1 p-6">
+                <div className="max-w-3xl mx-auto space-y-8">
+                  {/* Campaign Summary Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.5 }}
+                    className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 to-transparent p-6 space-y-6"
+                  >
+                    <div className="flex items-start gap-6">
+                      {/* Thumbnail */}
+                      <div className="w-40 h-24 rounded-xl bg-muted overflow-hidden flex-shrink-0 relative group">
+                        {campaignPreview?.thumbnailUrl ? (
+                          <img 
+                            src={campaignPreview.thumbnailUrl} 
+                            alt="Campaign thumbnail"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                            <Film className="h-8 w-8 text-primary/60" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <Play className="h-8 w-8 text-white" />
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-xl font-semibold text-foreground mb-2 truncate">
+                          {campaignPreview?.title || "New Campaign"}
+                        </h3>
+                        <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+                          {campaignPreview?.description || "Your campaign is ready to go live."}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {campaignPreview?.duration && (
+                            <Badge variant="secondary" className="text-xs">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {campaignPreview.duration}
+                            </Badge>
+                          )}
+                          {campaignPreview?.scenesCount && (
+                            <Badge variant="secondary" className="text-xs">
+                              <Film className="h-3 w-3 mr-1" />
+                              {campaignPreview.scenesCount} Scenes
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Campaign Details Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      className="rounded-xl border border-border bg-card p-5 space-y-3"
+                    >
+                      <div className="flex items-center gap-2 text-primary">
+                        <Target className="h-5 w-5" />
+                        <span className="font-medium">Campaign Goal</span>
+                      </div>
+                      <p className="text-foreground capitalize">
+                        {campaignPreview?.goal || "Brand Awareness"}
+                      </p>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3, duration: 0.5 }}
+                      className="rounded-xl border border-border bg-card p-5 space-y-3"
+                    >
+                      <div className="flex items-center gap-2 text-primary">
+                        <Users className="h-5 w-5" />
+                        <span className="font-medium">Target Audience</span>
+                      </div>
+                      <p className="text-foreground">
+                        {campaignPreview?.audience || "General Audience"}
+                      </p>
+                    </motion.div>
+                  </div>
+
+                  {/* What's Next */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    className="rounded-xl border border-primary/30 bg-primary/5 p-5"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Settings2 className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-foreground">Ready to configure your strategy?</h4>
+                        <p className="text-sm text-muted-foreground">Set your budget, schedule, and placements</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <DollarSign className="h-4 w-4 text-primary" />
+                        Budget & Schedule
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Monitor className="h-4 w-4 text-primary" />
+                        Placements
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Zap className="h-4 w-4 text-primary" />
+                        Bidding
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </ScrollArea>
+
+              {/* Preview Footer */}
+              <div className="p-6 border-t border-border">
+                <Button
+                  size="lg"
+                  onClick={() => setStep("strategy")}
+                  className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 group"
+                >
+                  Configure Strategy
+                  <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                </Button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="strategy"
+              initial={pageTransition.initial}
+              animate={pageTransition.animate}
+              exit={pageTransition.exit}
+              transition={pageTransition.transition}
+              className="flex h-full max-h-[85vh]"
+            >
           {/* Main Content */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Header */}
@@ -164,8 +365,8 @@ export function StrategyConfigModal({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={onBack}
-                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => setStep("preview")}
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-300"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
@@ -621,7 +822,7 @@ export function StrategyConfigModal({
                   size="lg"
                   onClick={() => onPublish(config)}
                   disabled={isPublishing}
-                  className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30"
                 >
                   {isPublishing ? (
                     <>
@@ -683,7 +884,9 @@ export function StrategyConfigModal({
               </div>
             </div>
           </div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );

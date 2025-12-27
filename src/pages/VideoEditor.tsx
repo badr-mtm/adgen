@@ -413,6 +413,20 @@ const VideoEditor = () => {
         onBack={() => setShowStrategyConfig(false)}
         onPublish={handlePublishWithStrategy}
         isPublishing={isPublishing}
+        campaignPreview={{
+          title: campaign?.title,
+          description: campaign?.description,
+          goal: campaign?.goal,
+          audience: typeof campaign?.target_audience === 'string' 
+            ? campaign?.target_audience 
+            : campaign?.target_audience?.primary || "General Audience",
+          duration: storyboard?.scenes?.reduce((acc, s) => {
+            const seconds = parseInt(s.duration?.replace('s', '') || '0');
+            return acc + seconds;
+          }, 0) + "s",
+          scenesCount: storyboard?.scenes?.length || 0,
+          thumbnailUrl: storyboard?.scenes?.[0]?.visualUrl
+        }}
       />
     </div>
   );
