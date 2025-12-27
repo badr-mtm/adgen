@@ -35,6 +35,17 @@ const frameworkLabels: Record<string, string> = {
 };
 
 export const StrategyPanel = ({ strategy, onEdit, compact = false }: StrategyPanelProps) => {
+  // Early return if strategy is undefined
+  if (!strategy) {
+    return (
+      <Card className="bg-card border-border">
+        <CardContent className="py-6 text-center text-muted-foreground">
+          No strategy available
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (compact) {
     return (
       <Card className="bg-card border-border">
@@ -55,7 +66,7 @@ export const StrategyPanel = ({ strategy, onEdit, compact = false }: StrategyPan
         <CardContent className="space-y-2 text-sm">
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="secondary" className="text-xs">
-              {objectiveLabels[strategy.objective]}
+              {objectiveLabels[strategy.objective] || strategy.objective}
             </Badge>
             <Badge variant="outline" className="text-xs">
               {strategy.adLength}
@@ -65,7 +76,7 @@ export const StrategyPanel = ({ strategy, onEdit, compact = false }: StrategyPan
             </Badge>
           </div>
           <p className="text-muted-foreground text-xs line-clamp-2">
-            {strategy.coreMessage.primary}
+            {strategy.coreMessage?.primary}
           </p>
         </CardContent>
       </Card>
@@ -96,47 +107,55 @@ export const StrategyPanel = ({ strategy, onEdit, compact = false }: StrategyPan
               <Target className="h-4 w-4" />
               Objective
             </div>
-            <p className="font-medium">{objectiveLabels[strategy.objective]}</p>
+            <p className="font-medium">{objectiveLabels[strategy.objective] || strategy.objective}</p>
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Film className="h-4 w-4" />
               Framework
             </div>
-            <p className="font-medium">{frameworkLabels[strategy.storytellingFramework]}</p>
+            <p className="font-medium">{frameworkLabels[strategy.storytellingFramework] || strategy.storytellingFramework}</p>
           </div>
         </div>
 
         {/* Core Message */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <MessageSquare className="h-4 w-4" />
-            Core Message
-          </div>
-          <div className="p-3 bg-muted/30 rounded-lg space-y-1">
-            <p className="font-medium">{strategy.coreMessage.primary}</p>
-            <p className="text-sm text-muted-foreground">{strategy.coreMessage.supporting}</p>
-            <Badge variant="outline" className="mt-2 capitalize">
-              {strategy.coreMessage.emotionalAngle}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Audience */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <Users className="h-4 w-4" />
-            Target Audience
-          </div>
-          <div className="p-3 bg-muted/30 rounded-lg space-y-2">
-            <p className="text-sm"><strong>Primary:</strong> {strategy.audience.primary}</p>
-            <p className="text-sm"><strong>Secondary:</strong> {strategy.audience.secondary}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <Badge variant="secondary" className="text-xs">{strategy.audience.ageRange}</Badge>
-              <Badge variant="secondary" className="text-xs">{strategy.audience.viewingContext}</Badge>
+        {strategy.coreMessage && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <MessageSquare className="h-4 w-4" />
+              Core Message
+            </div>
+            <div className="p-3 bg-muted/30 rounded-lg space-y-1">
+              <p className="font-medium">{strategy.coreMessage.primary}</p>
+              <p className="text-sm text-muted-foreground">{strategy.coreMessage.supporting}</p>
+              <Badge variant="outline" className="mt-2 capitalize">
+                {strategy.coreMessage.emotionalAngle}
+              </Badge>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Audience */}
+        {strategy.audience && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Users className="h-4 w-4" />
+              Target Audience
+            </div>
+            <div className="p-3 bg-muted/30 rounded-lg space-y-2">
+              <p className="text-sm"><strong>Primary:</strong> {strategy.audience.primary}</p>
+              <p className="text-sm"><strong>Secondary:</strong> {strategy.audience.secondary}</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {strategy.audience.ageRange && (
+                  <Badge variant="secondary" className="text-xs">{strategy.audience.ageRange}</Badge>
+                )}
+                {strategy.audience.viewingContext && (
+                  <Badge variant="secondary" className="text-xs">{strategy.audience.viewingContext}</Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Timing & Pacing */}
         <div className="grid grid-cols-3 gap-4">
@@ -158,34 +177,38 @@ export const StrategyPanel = ({ strategy, onEdit, compact = false }: StrategyPan
         </div>
 
         {/* CTA */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <MousePointer className="h-4 w-4" />
-            Call to Action
+        {strategy.cta && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <MousePointer className="h-4 w-4" />
+              Call to Action
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge className="bg-primary/10 text-primary border-primary/20">
+                {strategy.cta.text}
+              </Badge>
+              <span className="text-sm text-muted-foreground capitalize">
+                {strategy.cta.strength} • {strategy.cta.placement}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge className="bg-primary/10 text-primary border-primary/20">
-              {strategy.cta.text}
-            </Badge>
-            <span className="text-sm text-muted-foreground capitalize">
-              {strategy.cta.strength} • {strategy.cta.placement}
-            </span>
-          </div>
-        </div>
+        )}
 
         {/* Visual Direction */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <Palette className="h-4 w-4" />
-            Visual Direction
+        {strategy.visualDirection && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Palette className="h-4 w-4" />
+              Visual Direction
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="capitalize">{strategy.visualDirection.tone}</Badge>
+              <Badge variant="outline" className="capitalize">{strategy.visualDirection.cameraMovement} camera</Badge>
+              <Badge variant="outline">{strategy.visualDirection.musicMood}</Badge>
+              <Badge variant="outline" className="capitalize">{strategy.visualDirection.voiceoverStyle} VO</Badge>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="capitalize">{strategy.visualDirection.tone}</Badge>
-            <Badge variant="outline" className="capitalize">{strategy.visualDirection.cameraMovement} camera</Badge>
-            <Badge variant="outline">{strategy.visualDirection.musicMood}</Badge>
-            <Badge variant="outline" className="capitalize">{strategy.visualDirection.voiceoverStyle} VO</Badge>
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
