@@ -13,11 +13,10 @@ import { PrePublishSimulationModal } from "@/components/create/PrePublishSimulat
 import CampaignCard from "@/components/CampaignCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Tv, Play, ArrowRight, Paperclip } from "lucide-react";
+import { Plus, Tv, Play, ArrowRight, Paperclip, X } from "lucide-react";
 import { CreatePageSkeleton } from "@/components/skeletons/CreatePageSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { useRef } from "react";
 const containerVariants = {
   hidden: {
     opacity: 0
@@ -62,7 +61,25 @@ const Create = () => {
   // Quick create state
   const [concept, setConcept] = useState("");
   const [selectedDuration, setSelectedDuration] = useState("30s");
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ file: File; preview: string }>>([]);
 
+  const handleFileUpload = (files: FileList | null) => {
+    if (!files) return;
+    const newFiles = Array.from(files).map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+    setUploadedFiles(prev => [...prev, ...newFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => {
+      const updated = [...prev];
+      URL.revokeObjectURL(updated[index].preview);
+      updated.splice(index, 1);
+      return updated;
+    });
+  };
   // Loading states
   const [generatingStrategy, setGeneratingStrategy] = useState(false);
   const [generatingStoryboards, setGeneratingStoryboards] = useState(false);
@@ -324,6 +341,41 @@ const Create = () => {
         <motion.div variants={itemVariants}>
           <Card className="bg-card border-border overflow-hidden relative">
             <CardContent className="p-4 relative">
+              {/* Uploaded files preview */}
+              {uploadedFiles.length > 0 && (
+                <div className="flex gap-2 mb-3 flex-wrap">
+                  {uploadedFiles.map((item, index) => (
+                    <div key={index} className="relative group">
+                      {item.file.type.startsWith('video/') ? (
+                        <video 
+                          src={item.preview} 
+                          className="w-16 h-16 object-cover rounded-lg border border-border"
+                        />
+                      ) : (
+                        <img 
+                          src={item.preview} 
+                          alt={`Reference ${index + 1}`}
+                          className="w-16 h-16 object-cover rounded-lg border border-border"
+                        />
+                      )}
+                      <button
+                        onClick={() => removeFile(index)}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                      {item.file.type.startsWith('video/') && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full bg-background/80 flex items-center justify-center">
+                            <Play className="h-3 w-3 text-foreground" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
               <div className="relative">
                 <Textarea 
                   value={concept} 
@@ -343,11 +395,7 @@ const Create = () => {
                         input.accept = 'image/*,video/*';
                         input.multiple = true;
                         input.onchange = (e) => {
-                          const files = (e.target as HTMLInputElement).files;
-                          if (files?.length) {
-                            // Handle file upload
-                            console.log('Files selected:', files);
-                          }
+                          handleFileUpload((e.target as HTMLInputElement).files);
                         };
                         input.click();
                       }}
