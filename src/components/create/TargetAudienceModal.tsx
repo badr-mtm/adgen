@@ -166,34 +166,43 @@ export function TargetAudienceModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-5xl bg-card border-border p-0 overflow-hidden max-h-[90vh]">
-        <div className="flex h-full">
+        <motion.div 
+          initial={{ opacity: 0, y: 30, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="flex h-full"
+        >
           {/* Main Content */}
           <div className="flex-1 p-8 overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
+            <div className="mb-8">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onBack}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground mb-4"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">
-                  Audience Controls
-                </h2>
-              </div>
-              <Badge className="bg-primary/10 text-primary border-0 text-xs">
-                <Sparkles className="h-3 w-3 mr-1" />
-                AI Optimized
-              </Badge>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Who's your ideal audience?
+                  </h2>
+                  <Badge className="bg-primary/10 text-primary border-0 text-xs">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    AI Optimized
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground">
+                  We'll automatically reach people most likely to respond. Fine-tune if needed.
+                </p>
+              </motion.div>
             </div>
-
-            <p className="text-muted-foreground text-sm mb-6">
-              We'll automatically reach people most likely to respond. Adjust audience controls to reflect legal or practical constraints only.
-            </p>
 
             <ScrollArea className="flex-1 pr-4">
               <div className="space-y-4">
@@ -405,17 +414,22 @@ export function TargetAudienceModal({
               </div>
             </ScrollArea>
 
-            {/* Continue Button */}
-            <div className="mt-6 pt-6 border-t border-border">
+            {/* Next Button */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="mt-6 pt-6 border-t border-border"
+            >
               <Button
                 size="lg"
                 onClick={() => onContinue(audienceData)}
-                className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90"
+                className="w-full h-14 text-lg bg-primary text-primary-foreground hover:bg-primary/90 group transition-all duration-300"
               >
-                Continue to Storyboard
-                <ArrowRight className="h-5 w-5 ml-2" />
+                Next
+                <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
-            </div>
+            </motion.div>
           </div>
 
           {/* Strategy Estimate Sidebar */}
@@ -452,7 +466,7 @@ export function TargetAudienceModal({
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
