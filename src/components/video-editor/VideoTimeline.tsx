@@ -248,9 +248,13 @@ const VideoTimeline = ({
             <Download className="h-4 w-4 mr-2" />
             Download
           </Button>
-          <Button size="sm" onClick={onAddToStrategy}>
+          <Button 
+            size="sm" 
+            onClick={onAddToStrategy}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30"
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Publish Campaign
+            Go to Strategy
           </Button>
         </div>
       </div>
