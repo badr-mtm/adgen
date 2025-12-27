@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { TVMetricsStrip } from "@/components/dashboard/TVMetricsStrip";
-import { QuickTVAdCreation } from "@/components/dashboard/QuickTVAdCreation";
 import { BroadcastScheduleWidget } from "@/components/dashboard/BroadcastScheduleWidget";
 import { ActiveCampaignsSnapshot } from "@/components/dashboard/ActiveCampaignsSnapshot";
 import { TVComplianceStatus } from "@/components/dashboard/TVComplianceStatus";
@@ -12,6 +11,9 @@ import { BrandSetupPrompt } from "@/components/dashboard/BrandSetupPrompt";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Sparkles } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -160,15 +162,34 @@ const Dashboard = () => {
           <TVMetricsStrip stats={tvMetrics} />
         </ScrollReveal>
 
-        {/* 2. Two Column Layout: Quick Create + Broadcast Schedule */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ScrollReveal delay={0.1} duration={0.5}>
-            <QuickTVAdCreation />
-          </ScrollReveal>
-          <ScrollReveal delay={0.15} duration={0.5}>
-            <BroadcastScheduleWidget spots={scheduledSpots} />
-          </ScrollReveal>
-        </div>
+        {/* 2. Welcome Card with Create Ad Button */}
+        <ScrollReveal delay={0.1} duration={0.5}>
+          <Card className="bg-gradient-to-r from-primary/5 via-card to-card border-border overflow-hidden">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">Welcome back!</h2>
+                  <p className="text-muted-foreground">Ready to create your next broadcast-ready TV ad?</p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => navigate("/create")} 
+                className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-6"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create New Ad
+              </Button>
+            </CardContent>
+          </Card>
+        </ScrollReveal>
+
+        {/* 3. Broadcast Schedule */}
+        <ScrollReveal delay={0.15} duration={0.5}>
+          <BroadcastScheduleWidget spots={scheduledSpots} />
+        </ScrollReveal>
 
         {/* 3. Active TV Campaigns */}
         <ScrollReveal delay={0.2} duration={0.5}>
