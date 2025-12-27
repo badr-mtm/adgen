@@ -13,10 +13,11 @@ import { PrePublishSimulationModal } from "@/components/create/PrePublishSimulat
 import CampaignCard from "@/components/CampaignCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Tv, Sparkles, Play, Clock, ArrowRight } from "lucide-react";
+import { Plus, Tv, Play, ArrowRight, Paperclip } from "lucide-react";
 import { CreatePageSkeleton } from "@/components/skeletons/CreatePageSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useRef } from "react";
 const containerVariants = {
   hidden: {
     opacity: 0
@@ -321,52 +322,65 @@ const Create = () => {
       <motion.div initial="hidden" animate="visible" variants={containerVariants} className="p-6 max-w-6xl mx-auto space-y-10">
         {/* Quick TV Ad Creation Card */}
         <motion.div variants={itemVariants}>
-          <Card className="bg-gradient-to-br from-card via-card to-primary/5 border-border overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <CardContent className="p-6 relative">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <Tv className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">Create TV Ad</h3>
-                  <p className="text-xs text-muted-foreground">Script-first broadcast advertising</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <Textarea value={concept} onChange={e => setConcept(e.target.value)} placeholder="Describe your TV ad concept... What's the story you want to tell?" className="min-h-[80px] bg-input border-border text-foreground placeholder:text-muted-foreground resize-none" />
-
-                <div>
-                  <label className="text-xs text-muted-foreground mb-2 block flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Spot Duration
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[{
-                    value: "15s",
-                    label: "15 sec",
-                    description: "Quick impact"
-                  }, {
-                    value: "30s",
-                    label: "30 sec",
-                    description: "Standard spot"
-                  }, {
-                    value: "60s",
-                    label: "60 sec",
-                    description: "Story-driven"
-                  }].map(option => <button key={option.value} onClick={() => setSelectedDuration(option.value)} className={`p-3 rounded-lg border text-center transition-all ${selectedDuration === option.value ? "border-primary bg-primary/10 text-primary" : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50"}`}>
-                        <p className="text-lg font-bold">{option.label}</p>
-                        <p className="text-[10px]">{option.description}</p>
-                      </button>)}
+          <Card className="bg-card border-border overflow-hidden relative">
+            <CardContent className="p-4 relative">
+              <div className="relative">
+                <Textarea 
+                  value={concept} 
+                  onChange={e => setConcept(e.target.value)} 
+                  placeholder="Describe your TV ad concept..." 
+                  className="min-h-[120px] bg-secondary/30 border-border text-foreground placeholder:text-muted-foreground resize-none pr-16 pb-14" 
+                />
+                
+                {/* Bottom controls inside textarea area */}
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                  {/* Left side: Upload + Duration chips */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*,video/*';
+                        input.multiple = true;
+                        input.onchange = (e) => {
+                          const files = (e.target as HTMLInputElement).files;
+                          if (files?.length) {
+                            // Handle file upload
+                            console.log('Files selected:', files);
+                          }
+                        };
+                        input.click();
+                      }}
+                      className="w-7 h-7 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors"
+                    >
+                      <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                    
+                    {["15s", "30s", "60s"].map(duration => (
+                      <button 
+                        key={duration} 
+                        onClick={() => setSelectedDuration(duration)} 
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                          selectedDuration === duration 
+                            ? "bg-primary text-primary-foreground" 
+                            : "bg-muted/80 text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {duration}
+                      </button>
+                    ))}
                   </div>
+                  
+                  {/* Right side: Submit button */}
+                  <Button 
+                    onClick={handleStartCreate} 
+                    size="sm"
+                    className="h-8 px-4 rounded-full bg-foreground text-background hover:bg-foreground/90"
+                  >
+                    Next
+                    <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                  </Button>
                 </div>
-
-                <Button onClick={handleStartCreate} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  ​Next  
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
               </div>
             </CardContent>
           </Card>
