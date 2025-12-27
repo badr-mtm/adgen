@@ -284,7 +284,9 @@ const Create = () => {
         tone: selectedConcept?.tone,
         style: selectedConcept?.style,
         strategy,
-        productionSettings
+        productionSettings,
+        concept: intentData?.concept,
+        referenceFiles: intentData?.referenceFiles
       } as unknown as Json;
       const {
         data: campaign,
@@ -454,7 +456,14 @@ const Create = () => {
       </motion.div>
 
       {/* 7-Step Modal Flow */}
-      <CampaignIntentModal open={modalStep === "intent"} onOpenChange={open => !open && handleCloseModals()} onContinue={handleIntentContinue} />
+      <CampaignIntentModal 
+        open={modalStep === "intent"} 
+        onOpenChange={open => !open && handleCloseModals()} 
+        onContinue={handleIntentContinue}
+        initialConcept={concept}
+        initialDuration={selectedDuration}
+        referenceFiles={uploadedFiles}
+      />
       <StrategyReviewModal open={modalStep === "strategy"} onOpenChange={open => !open && handleCloseModals()} onBack={() => setModalStep("intent")} onContinue={handleStrategyContinue} strategy={strategy} isLoading={generatingStrategy} />
       <StoryboardConceptsModal open={modalStep === "storyboard"} onOpenChange={open => !open && handleCloseModals()} onBack={() => setModalStep("strategy")} onSelect={handleStoryboardSelect} concepts={concepts} duration={selectedLength} isLoading={generatingStoryboards} />
       <CreativeProductionModal open={modalStep === "production"} onOpenChange={open => !open && handleCloseModals()} onBack={() => setModalStep("storyboard")} onContinue={handleProductionContinue} conceptTitle={selectedConcept?.title || ""} duration={selectedLength} />
