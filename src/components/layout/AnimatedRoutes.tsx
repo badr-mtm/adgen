@@ -17,6 +17,7 @@ import VideoEditor from "@/pages/VideoEditor";
 import Auth from "@/pages/Auth";
 import BrandSetup from "@/pages/BrandSetup";
 import Storyboard from "@/pages/Storyboard";
+import ScriptSelection from "@/pages/ScriptSelection";
 import NotFound from "@/pages/NotFound";
 
 export function AnimatedRoutes() {
@@ -144,6 +145,14 @@ export function AnimatedRoutes() {
           element={
             <PageTransitionWrapper>
               <Storyboard />
+            </PageTransitionWrapper>
+          }
+        />
+        <Route
+          path="/script-selection"
+          element={
+            <PageTransitionWrapper>
+              <ScriptSelection />
             </PageTransitionWrapper>
           }
         />
