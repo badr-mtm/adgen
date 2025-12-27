@@ -13,7 +13,7 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Tv, Sparkles } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -21,6 +21,7 @@ const Dashboard = () => {
   const [brandProfile, setBrandProfile] = useState<any>(null);
   const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
   const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [emailVerified, setEmailVerified] = useState(true);
   
   // TV-specific metrics
@@ -50,6 +51,7 @@ const Dashboard = () => {
       try {
         // Check email verification status
         setUserEmail(session.user.email || "");
+        setUserName(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "");
         setEmailVerified(session.user.email_confirmed_at !== null);
 
         const { data: brands } = await supabase
@@ -143,51 +145,56 @@ const Dashboard = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
+        {/* 1. Welcome Header */}
+        <ScrollReveal direction="down" duration={0.3}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-primary/10">
+                <Tv className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">Dashboard</span>
+                </div>
+                <h1 className="text-3xl font-bold text-foreground">
+                  Welcome back{brandProfile?.name ? `, ${brandProfile.name}` : userName ? `, ${userName}` : ""}!
+                </h1>
+                <p className="text-muted-foreground mt-1">Ready to create your next broadcast-ready TV ad?</p>
+              </div>
+            </div>
+            <Button 
+              onClick={() => navigate("/create")} 
+              size="lg"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 shadow-lg shadow-primary/20"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Create New Ad
+            </Button>
+          </div>
+        </ScrollReveal>
+
         {/* Email Verification Banner */}
         {!emailVerified && userEmail && (
-          <ScrollReveal direction="down" duration={0.3}>
+          <ScrollReveal direction="down" duration={0.35}>
             <EmailVerificationBanner email={userEmail} isVerified={emailVerified} />
           </ScrollReveal>
         )}
 
         {/* Brand setup prompt (optional) */}
         {!brandProfile && (
-          <ScrollReveal direction="down" duration={0.35}>
+          <ScrollReveal direction="down" duration={0.4}>
             <BrandSetupPrompt />
           </ScrollReveal>
         )}
 
-        {/* 1. TV Metrics Strip - Key broadcast KPIs */}
-        <ScrollReveal direction="down" duration={0.4}>
+        {/* 2. TV Metrics Strip - Key broadcast KPIs */}
+        <ScrollReveal direction="down" duration={0.45}>
           <TVMetricsStrip stats={tvMetrics} />
         </ScrollReveal>
 
-        {/* 2. Welcome Card with Create Ad Button */}
-        <ScrollReveal delay={0.1} duration={0.5}>
-          <Card className="bg-gradient-to-r from-primary/5 via-card to-card border-border overflow-hidden">
-            <CardContent className="p-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground">Welcome back!</h2>
-                  <p className="text-muted-foreground">Ready to create your next broadcast-ready TV ad?</p>
-                </div>
-              </div>
-              <Button 
-                onClick={() => navigate("/create")} 
-                className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-6"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create New Ad
-              </Button>
-            </CardContent>
-          </Card>
-        </ScrollReveal>
-
         {/* 3. Broadcast Schedule */}
-        <ScrollReveal delay={0.15} duration={0.5}>
+        <ScrollReveal delay={0.1} duration={0.5}>
           <BroadcastScheduleWidget spots={scheduledSpots} />
         </ScrollReveal>
 
