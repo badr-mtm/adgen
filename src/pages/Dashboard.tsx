@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { TVMetricsStrip } from "@/components/dashboard/TVMetricsStrip";
+import { BroadcastScheduleWidget } from "@/components/dashboard/BroadcastScheduleWidget";
+import { ActiveCampaignsSnapshot } from "@/components/dashboard/ActiveCampaignsSnapshot";
+import { TVComplianceStatus } from "@/components/dashboard/TVComplianceStatus";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import { EmailVerificationBanner } from "@/components/dashboard/EmailVerificationBanner";
 import { BrandSetupPrompt } from "@/components/dashboard/BrandSetupPrompt";
-import { PremiumMetricCard } from "@/components/dashboard/PremiumMetricCard";
-import { PerformanceChart } from "@/components/dashboard/PerformanceChart";
-import { ReachBreakdownChart } from "@/components/dashboard/ReachBreakdownChart";
-import { RecentCampaignsTable } from "@/components/dashboard/RecentCampaignsTable";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Tv, Users, TrendingUp, Radio, BarChart3, Clock, Plus, FileText } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Tv, Sparkles } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -32,6 +33,12 @@ const Dashboard = () => {
     spotsAired: 0,
     upcomingSpots: 0,
   });
+
+  // Mock broadcast schedule data
+  const [scheduledSpots, setScheduledSpots] = useState<any[]>([]);
+  
+  // Mock compliance data
+  const [complianceItems, setComplianceItems] = useState<any[]>([]);
 
   useEffect(() => {
     const checkAuthAndFetch = async () => {
@@ -64,7 +71,7 @@ const Dashboard = () => {
           .select("*")
           .eq("user_id", session.user.id)
           .order("created_at", { ascending: false })
-          .limit(10);
+          .limit(7);
 
         if (campaigns) {
           setActiveCampaigns(campaigns);
@@ -79,6 +86,34 @@ const Dashboard = () => {
             spotsAired: campaigns.length * 8,
             upcomingSpots: Math.max(0, activeCount * 3),
           });
+
+          // Generate mock broadcast schedule
+          if (campaigns.length > 0) {
+            setScheduledSpots(
+              campaigns.slice(0, 3).map((c, i) => ({
+                id: c.id,
+                campaignTitle: c.title,
+                duration: ["15s", "30s", "60s"][i % 3] as "15s" | "30s" | "60s",
+                channel: ["ABC", "NBC", "CBS", "FOX"][i % 4],
+                daypart: ["Prime Time", "Daytime", "Early Morning", "Late Night"][i % 4],
+                scheduledTime: `${8 + i * 3}:00 PM`,
+                status: i === 0 ? "live" : "upcoming",
+              }))
+            );
+          }
+
+          // Generate mock compliance items
+          if (campaigns.length > 0) {
+            setComplianceItems(
+              campaigns.slice(0, 3).map((c, i) => ({
+                id: c.id,
+                campaignTitle: c.title,
+                status: ["approved", "pending", "approved"][i % 3] as "approved" | "pending" | "rejected",
+                network: ["ABC Network", "NBC Universal", "CBS Broadcasting"][i % 3],
+                submittedAt: "2 days ago",
+              }))
+            );
+          }
         }
       } finally {
         setLoading(false);
@@ -94,11 +129,6 @@ const Dashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Generate sparkline data for each metric
-  const generateSparkline = (base: number, variance: number = 10) => {
-    return Array.from({ length: 8 }, () => base + Math.random() * variance - variance / 2);
-  };
-
   if (loading) {
     return (
       <DashboardLayout>
@@ -110,27 +140,36 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <motion.div 
-        className="p-6 lg:p-8 space-y-8 max-w-[1600px] mx-auto"
+        className="p-6 space-y-6 max-w-7xl mx-auto"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        {/* Header Section */}
+        {/* 1. Welcome Header */}
         <ScrollReveal direction="down" duration={0.3}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Dashboard / Overview</p>
-              <h1 className="text-3xl font-bold text-foreground">
-                Dashboard
-              </h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-primary/10">
+                <Tv className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">Dashboard</span>
+                </div>
+                <h1 className="text-3xl font-bold text-foreground">
+                  Welcome back{brandProfile?.name ? `, ${brandProfile.name}` : userName ? `, ${userName}` : ""}!
+                </h1>
+                <p className="text-muted-foreground mt-1">Ready to create your next broadcast-ready TV ad?</p>
+              </div>
             </div>
             <Button 
               onClick={() => navigate("/create")} 
               size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-6 shadow-lg shadow-primary/20 rounded-xl"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-6 shadow-lg shadow-primary/20"
             >
-              <FileText className="h-4 w-4 mr-2" />
-              Create Report
+              <Plus className="h-5 w-5 mr-2" />
+              Create New Ad
             </Button>
           </div>
         </ScrollReveal>
@@ -142,72 +181,32 @@ const Dashboard = () => {
           </ScrollReveal>
         )}
 
-        {/* Brand setup prompt */}
+        {/* Brand setup prompt (optional) */}
         {!brandProfile && (
           <ScrollReveal direction="down" duration={0.4}>
             <BrandSetupPrompt />
           </ScrollReveal>
         )}
 
-        {/* Premium Metrics Grid - 4 cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <PremiumMetricCard
-            label="Active Spots"
-            value={tvMetrics.activeSpots.toLocaleString()}
-            change={0.84}
-            changeLabel="last year"
-            icon={Tv}
-            sparklineData={generateSparkline(tvMetrics.activeSpots, 3)}
-            accentColor="hsl(var(--primary))"
-            index={0}
-          />
-          <PremiumMetricCard
-            label="Total GRP"
-            value={tvMetrics.totalGRP.toLocaleString()}
-            change={1.94}
-            changeLabel="last year"
-            icon={TrendingUp}
-            sparklineData={generateSparkline(tvMetrics.totalGRP, 20)}
-            accentColor="hsl(142, 76%, 36%)"
-            index={1}
-          />
-          <PremiumMetricCard
-            label="Reach Percentage"
-            value={`${tvMetrics.reachPercentage.toLocaleString()}%`}
-            change={1.21}
-            changeLabel="last year"
-            icon={Users}
-            sparklineData={generateSparkline(tvMetrics.reachPercentage, 15)}
-            accentColor="hsl(217, 91%, 60%)"
-            index={2}
-          />
-          <PremiumMetricCard
-            label="Total Impressions"
-            value={(tvMetrics.spotsAired * 1247).toLocaleString()}
-            change={1.02}
-            changeLabel="last year"
-            icon={BarChart3}
-            sparklineData={generateSparkline(tvMetrics.spotsAired * 1247, 5000)}
-            accentColor="hsl(280, 87%, 65%)"
-            index={3}
-          />
-        </div>
+        {/* 2. TV Metrics Strip - Key broadcast KPIs */}
+        <ScrollReveal direction="down" duration={0.45}>
+          <TVMetricsStrip stats={tvMetrics} />
+        </ScrollReveal>
 
-        {/* Charts Row - Performance + Breakdown */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <PerformanceChart 
-              title="Broadcast Performance" 
-              subtitle="Reach vs Impressions over time"
-            />
-          </div>
-          <div className="lg:col-span-1">
-            <ReachBreakdownChart />
-          </div>
-        </div>
+        {/* 3. Broadcast Schedule */}
+        <ScrollReveal delay={0.1} duration={0.5}>
+          <BroadcastScheduleWidget spots={scheduledSpots} />
+        </ScrollReveal>
 
-        {/* Recent Campaigns Table */}
-        <RecentCampaignsTable campaigns={activeCampaigns} />
+        {/* 3. Active TV Campaigns */}
+        <ScrollReveal delay={0.2} duration={0.5}>
+          <ActiveCampaignsSnapshot campaigns={activeCampaigns} />
+        </ScrollReveal>
+
+        {/* 4. Compliance Status */}
+        <ScrollReveal delay={0.25} duration={0.5}>
+          <TVComplianceStatus items={complianceItems} />
+        </ScrollReveal>
       </motion.div>
     </DashboardLayout>
   );
