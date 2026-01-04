@@ -1,435 +1,456 @@
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Navigation from "@/components/Navigation";
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { VideoProject, Scene, VideoOverlaySettings, defaultOverlaySettings } from "@/types/videoEditor";
+
+// Components
 import VideoEditorSidebar from "@/components/video-editor/VideoEditorSidebar";
 import VideoPreview from "@/components/video-editor/VideoPreview";
 import VideoTimeline from "@/components/video-editor/VideoTimeline";
 import AIAssistantPanel from "@/components/video-editor/AIAssistantPanel";
 import SceneEditor from "@/components/video-editor/SceneEditor";
-import { StrategyConfigModal, type StrategyConfig } from "@/components/create/StrategyConfigModal";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useVideoPlayback } from "@/hooks/useVideoPlayback";
-import { Loader2, Sparkles } from "lucide-react";
-import { defaultOverlaySettings, type VideoOverlaySettings } from "@/types/videoEditor";
+import VideoEditorHeader from "@/components/video-editor/VideoEditorHeader";
 
-interface Scene {
-  sceneNumber: number;
-  duration: string;
-  visualDescription: string;
-  suggestedVisuals: string;
-  voiceover: string;
-  voiceoverLines?: string[];
-  visualUrl?: string;
-  audioUrl?: string;
-  generatedAt?: string;
-}
-
-interface Storyboard {
-  scriptVariants: {
-    "15s": string;
-    "30s": string;
-    "60s": string;
-  };
-  scenes: Scene[];
-  musicMood: string;
-}
-
-const VideoEditor = () => {
+export default function VideoEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
+  // State
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [campaign, setCampaign] = useState<any>(null);
-  const [storyboard, setStoryboard] = useState<Storyboard | null>(null);
+  const [project, setProject] = useState<any>(null);
+  const [scenes, setScenes] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("slideshow");
-  const [editingSceneIndex, setEditingSceneIndex] = useState<number | null>(null);
-  const [regeneratingScene, setRegeneratingScene] = useState<number | null>(null);
+  const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
   const [overlaySettings, setOverlaySettings] = useState<VideoOverlaySettings>(defaultOverlaySettings);
+  const [isEditingScene, setIsEditingScene] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [showEndScreen, setShowEndScreen] = useState(false);
-  const [showStrategyConfig, setShowStrategyConfig] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
 
-  // Video playback hook
-  const playback = useVideoPlayback({
-    scenes: storyboard?.scenes || [],
-    onSceneChange: (index) => {
-      // Show end screen when we reach the last scene and it ends
-      const isLastScene = storyboard && index === storyboard.scenes.length - 1;
-      if (isLastScene && overlaySettings.endScreen.enabled) {
-        // Will be handled by timeline end
-      }
+  // Undo/Redo History
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const saveToHistory = (newScenes: any[], newSettings: VideoOverlaySettings) => {
+    const newState = { scenes: JSON.parse(JSON.stringify(newScenes)), settings: JSON.parse(JSON.stringify(newSettings)) };
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(newState);
+    if (newHistory.length > 50) newHistory.shift(); // Limit history size
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const prevState = history[historyIndex - 1];
+      setScenes(prevState.scenes);
+      setOverlaySettings(prevState.settings);
+      setHistoryIndex(historyIndex - 1);
     }
-  });
+  };
 
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const nextState = history[historyIndex + 1];
+      setScenes(nextState.scenes);
+      setOverlaySettings(nextState.settings);
+      setHistoryIndex(historyIndex + 1);
+    }
+  };
+
+  // Refs for playback
+  const playbackIntervalRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  // Load project data
   useEffect(() => {
-    const loadCampaign = async () => {
+    async function loadProject() {
+      if (!id) return;
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          navigate("/auth");
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("campaigns")
-          .select("*")
-          .eq("id", id)
-          .eq("user_id", session.user.id)
+        const { data: campaign, error } = await supabase
+          .from('campaigns')
+          .select('*')
+          .eq('id', id)
           .single();
 
-        if (error || !data) {
-          toast({
-            title: "Campaign not found",
-            variant: "destructive",
-          });
-          navigate("/");
-          return;
-        }
+        if (error) throw error;
 
-        setCampaign(data);
-        
-        if (data.storyboard) {
-          const storyboardData = data.storyboard as unknown as Storyboard;
-          setStoryboard(storyboardData);
-        } else {
-          await generateStoryboard();
+        if (campaign) {
+          setProject(campaign);
+          const storyboard = campaign.storyboard as any;
+          if (storyboard?.scenes) {
+            setScenes(storyboard.scenes);
+          }
+          const strategy = campaign.strategy as any;
+          if (strategy?.videoSettings) {
+            setOverlaySettings(prev => ({ ...prev, ...strategy.videoSettings }));
+          }
         }
-      } catch (error: any) {
-        console.error("Error loading campaign:", error);
+      } catch (err: any) {
+        console.error("Error loading project:", err);
         toast({
-          title: "Error loading campaign",
-          description: error.message,
-          variant: "destructive",
+          title: "Error loading project",
+          description: err.message,
+          variant: "destructive"
         });
       } finally {
         setLoading(false);
       }
-    };
-
-    loadCampaign();
-  }, [id, navigate, toast]);
-
-  const generateStoryboard = async () => {
-    setGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-storyboard", {
-        body: { campaignId: id },
-      });
-
-      if (error) throw error;
-
-      setStoryboard(data.storyboard);
-      
-      toast({
-        title: "Storyboard Generated!",
-        description: "Your video storyboard is ready.",
-      });
-    } catch (error: any) {
-      console.error("Error generating storyboard:", error);
-      toast({
-        title: "Generation Failed",
-        description: error.message || "Failed to generate storyboard",
-        variant: "destructive",
-      });
-    } finally {
-      setGenerating(false);
     }
-  };
+    loadProject();
+  }, [id, toast]);
 
-  const generateSceneVisual = async (sceneNumber: number, customPrompt?: string) => {
-    setRegeneratingScene(sceneNumber);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-scene-visual", {
-        body: { 
-          campaignId: id, 
-          sceneNumber,
-          ...(customPrompt && { customPrompt })
-        },
-      });
+  // Debounced Auto-save for Overlay Settings
+  useEffect(() => {
+    if (!id || loading) return;
 
-      if (error) throw error;
-
-      setStoryboard(data.storyboard);
-      
-      toast({
-        title: "Visual Generated!",
-        description: `Scene ${sceneNumber} visual created successfully.`,
-      });
-    } catch (error: any) {
-      console.error("Error generating scene visual:", error);
-      toast({
-        title: "Generation Failed",
-        description: error.message || "Failed to generate visual",
-        variant: "destructive",
-      });
-    } finally {
-      setRegeneratingScene(null);
-    }
-  };
-
-  const handleSceneSave = async (updatedScene: Scene) => {
-    if (!storyboard) return;
-
-    const newScenes = [...storyboard.scenes];
-    const index = newScenes.findIndex(s => s.sceneNumber === updatedScene.sceneNumber);
-    if (index >= 0) {
-      newScenes[index] = updatedScene;
-      
-      const newStoryboard = { ...storyboard, scenes: newScenes };
-      setStoryboard(newStoryboard);
-
-      // Save to database
+    const timer = setTimeout(async () => {
       try {
-        await supabase
-          .from("campaigns")
-          .update({ 
-            storyboard: newStoryboard as any,
+        const currentStrategy = (project?.strategy as any) || {};
+        const updatedStrategy = {
+          ...currentStrategy,
+          videoSettings: overlaySettings
+        };
+
+        const { error } = await supabase
+          .from('campaigns')
+          .update({
+            strategy: updatedStrategy,
             updated_at: new Date().toISOString()
           })
-          .eq("id", id);
+          .eq('id', id);
 
-        toast({ title: "Scene updated" });
-      } catch (error: any) {
-        console.error("Error saving scene:", error);
-        toast({
-          title: "Save failed",
-          description: error.message,
-          variant: "destructive"
-        });
+        if (error) throw error;
+        console.log("Overlay settings auto-saved");
+      } catch (err) {
+        console.error("Auto-save failed:", err);
       }
+    }, 2000); // 2 second debounce
+
+    return () => clearTimeout(timer);
+  }, [overlaySettings, id, loading, project?.strategy]);
+
+  // Playback Logic
+  const totalDuration = scenes.reduce((acc, scene) => acc + (parseInt(scene.duration) || 0), 0) + (overlaySettings.endScreen.enabled ? overlaySettings.endScreen.duration : 0);
+
+  useEffect(() => {
+    if (isPlaying) {
+      const step = 0.1;
+      playbackIntervalRef.current = window.setInterval(() => {
+        setCurrentTime(prev => {
+          const next = prev + step;
+          if (next >= totalDuration) {
+            setIsPlaying(false);
+            return 0;
+          }
+          return next;
+        });
+      }, 100);
+    } else {
+      if (playbackIntervalRef.current) clearInterval(playbackIntervalRef.current);
     }
-  };
+    return () => {
+      if (playbackIntervalRef.current) clearInterval(playbackIntervalRef.current);
+    };
+  }, [isPlaying, totalDuration]);
 
-  const handleStoryboardUpdate = useCallback((newStoryboard: Storyboard) => {
-    setStoryboard(newStoryboard);
-    toast({ title: "Storyboard updated" });
-  }, [toast]);
+  // Sync currentSceneIndex with currentTime
+  useEffect(() => {
+    let accumulatedTime = 0;
+    let found = false;
 
-  const handleAIActionComplete = useCallback((action: string) => {
-    if (action === "scene_updated") {
-      toast({ title: "Scene updated by AI" });
+    for (let i = 0; i < scenes.length; i++) {
+      const sceneDuration = parseInt(scenes[i].duration) || 0;
+      if (currentTime >= accumulatedTime && currentTime < accumulatedTime + sceneDuration) {
+        setCurrentSceneIndex(i);
+        setShowEndScreen(false);
+        found = true;
+        break;
+      }
+      accumulatedTime += sceneDuration;
     }
-  }, [toast]);
 
-  const handleDownload = () => {
-    toast({ title: "Download started", description: "Preparing your creative..." });
-    // TODO: Implement video download/export
-  };
+    if (!found && overlaySettings.endScreen.enabled && currentTime >= accumulatedTime) {
+      setShowEndScreen(true);
+    }
+  }, [currentTime, scenes, overlaySettings.endScreen.enabled]);
 
-  const handleAddToStrategy = () => {
-    setShowStrategyConfig(true);
-  };
+  // Handlers
+  const handleSaveScene = async (updatedScene: any) => {
+    saveToHistory(scenes, overlaySettings); // Save history BEFORE updating
+    const updatedScenes = [...scenes];
+    updatedScenes[currentSceneIndex] = updatedScene;
+    setScenes(updatedScenes);
 
-  const handlePublishWithStrategy = async (config: StrategyConfig) => {
-    setIsPublishing(true);
+    // Save to Supabase
     try {
-      await supabase
-        .from("campaigns")
-        .update({ 
-          status: "live",
+      const updatedStoryboard = {
+        ...project.storyboard,
+        scenes: updatedScenes
+      };
+
+      const { error } = await supabase
+        .from('campaigns')
+        .update({
+          storyboard: updatedStoryboard,
           updated_at: new Date().toISOString()
         })
-        .eq("id", id);
+        .eq('id', id);
 
-      toast({ 
-        title: "Campaign is Live! 🚀", 
-        description: `Your campaign is now running with a $${config.budget.amount} ${config.budget.type} budget.`
-      });
-      setShowStrategyConfig(false);
-      navigate("/");
-    } catch (error: any) {
-      toast({
-        title: "Publish failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsPublishing(false);
+      if (error) throw error;
+
+      toast({ title: "Scene saved", description: `Scene ${updatedScene.sceneNumber} updated successfully.` });
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
     }
   };
 
-  // Convert storyboard scenes to timeline format
-  const timelineScenes = storyboard?.scenes.map((scene, index) => {
-    const durationSecs = parseInt(scene.duration) || 4;
-    const startTime = storyboard.scenes.slice(0, index).reduce((acc, s) => acc + (parseInt(s.duration) || 4), 0);
+  const handleRegenerateVisual = async (customPrompt?: string) => {
+    setIsRegenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-scene-visual', {
+        body: {
+          campaignId: id,
+          sceneNumber: scenes[currentSceneIndex].sceneNumber,
+          customPrompt
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.visualUrl) {
+        saveToHistory(scenes, overlaySettings);
+        const updatedScenes = [...scenes];
+        updatedScenes[currentSceneIndex] = { ...updatedScenes[currentSceneIndex], visualUrl: data.visualUrl };
+        setScenes(updatedScenes);
+        toast({ title: "Visual regenerated", description: "The new visual has been applied to this scene." });
+      }
+    } catch (err: any) {
+      toast({ title: "Regeneration failed", description: err.message, variant: "destructive" });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const handleGenerateVideo = async (model: string, customPrompt?: string) => {
+    setIsRegenerating(true);
+    try {
+      toast({ title: "Generating video clip...", description: "This may take a minute or two. Please wait." });
+      const { data, error } = await supabase.functions.invoke('generate-video-scene', {
+        body: {
+          campaignId: id,
+          sceneNumber: scenes[currentSceneIndex].sceneNumber,
+          model,
+          customPrompt
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.videoUrl) {
+        saveToHistory(scenes, overlaySettings);
+        const updatedScenes = [...scenes];
+        updatedScenes[currentSceneIndex] = { ...updatedScenes[currentSceneIndex], videoUrl: data.videoUrl };
+        setScenes(updatedScenes);
+        toast({ title: "Video generated", description: "The cinematic clip has been added to this scene." });
+      }
+    } catch (err: any) {
+      toast({ title: "Video generation failed", description: err.message, variant: "destructive" });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const handleOverlaySettingsChange = async (newSettings: VideoOverlaySettings) => {
+    saveToHistory(scenes, overlaySettings);
+    setOverlaySettings(newSettings);
+    // Optional: Debounced auto-save to DB strategy
+  };
+
+  const handleSeek = (time: number) => {
+    setCurrentTime(time);
+    if (isPlaying) setIsPlaying(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground">Loading video editor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Map local scenes to TimelineScene format
+  const timelineScenes = scenes.map((s, idx) => {
+    let startTime = 0;
+    for (let i = 0; i < idx; i++) {
+      startTime += parseInt(scenes[i].duration) || 0;
+    }
+    const duration = parseInt(s.duration) || 0;
     return {
-      id: scene.sceneNumber,
-      thumbnailUrl: scene.visualUrl,
-      duration: scene.duration,
-      startTime,
-      endTime: startTime + durationSecs,
+      id: idx,
+      thumbnailUrl: s.visualUrl,
+      duration: s.duration,
+      startTime: startTime,
+      endTime: startTime + duration
     };
-  }) || [];
+  });
 
-  const sidebarScenes = storyboard?.scenes.map((scene, index) => ({
-    id: scene.sceneNumber,
-    thumbnailUrl: scene.visualUrl,
-    duration: `${parseInt(scene.duration) || 4}s`,
-    label: `Scene ${scene.sceneNumber}`,
-    isActive: playback.currentSceneIndex === index,
-  })) || [];
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [pendingAIAction, setPendingAIAction] = useState<{ action: string; message: string; timestamp: number } | null>(null);
 
-  const currentScene = storyboard?.scenes[playback.currentSceneIndex];
+  const handleAIAction = (action: string, context?: any) => {
+    const actionMessages: Record<string, string> = {
+      improve_banner_text: `Improve this banner text: "${context?.text || ''}"`,
+      improve_cta_text: `Make this CTA more compelling: "${context?.text || ''}"`,
+      improve_script: `Refine this script for better flow and impact: "${context?.script || ''}"`
+    };
 
-  if (loading || generating) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navigation />
-        <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-          <div className="relative">
-            <Sparkles className="h-16 w-16 text-primary animate-pulse" />
-            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-ping" />
-          </div>
-          <Loader2 className="h-8 w-8 text-primary animate-spin" />
-          <p className="text-lg text-muted-foreground">
-            {generating ? "Generating your video storyboard..." : "Loading campaign..."}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!storyboard) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navigation />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-muted-foreground">No storyboard available</p>
-        </div>
-      </div>
-    );
-  }
+    setPendingAIAction({
+      action,
+      message: actionMessages[action] || action,
+      timestamp: Date.now()
+    });
+    setIsAssistantOpen(true);
+  };
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
-      <Navigation />
-      
-      <div className="flex-1 flex overflow-hidden min-h-0">
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
+      <VideoEditorHeader
+        title={project?.title || "Untitled Campaign"}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={historyIndex > 0}
+        canRedo={historyIndex < history.length - 1}
+      />
+
+      <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar */}
         <VideoEditorSidebar
-          scenes={sidebarScenes}
+          scenes={scenes.map((s, idx) => ({
+            id: idx,
+            label: `Scene ${s.sceneNumber}`,
+            duration: s.duration,
+            thumbnailUrl: s.visualUrl,
+            isActive: currentSceneIndex === idx
+          }))}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          onSceneSelect={(sceneId) => {
-            setShowEndScreen(false);
-            const index = storyboard.scenes.findIndex(s => s.sceneNumber === sceneId);
-            if (index >= 0) {
-              playback.seekToScene(index);
+          onSceneSelect={(idx) => {
+            let startTime = 0;
+            for (let i = 0; i < idx; i++) {
+              startTime += parseInt(scenes[i].duration) || 0;
             }
+            setCurrentTime(startTime);
+            setCurrentSceneIndex(idx);
           }}
-          onSceneChange={(sceneId) => generateSceneVisual(sceneId)}
+          onSceneChange={(idx) => {
+            setCurrentSceneIndex(idx);
+            setIsEditingScene(true);
+          }}
           overlaySettings={overlaySettings}
-          onOverlaySettingsChange={setOverlaySettings}
+          onOverlaySettingsChange={handleOverlaySettingsChange}
           isPreviewingEndScreen={showEndScreen}
-          onToggleEndScreenPreview={() => setShowEndScreen(!showEndScreen)}
+          onToggleEndScreenPreview={() => {
+            if (!showEndScreen) {
+              const scenesDuration = scenes.reduce((acc, s) => acc + (parseInt(s.duration) || 0), 0);
+              setCurrentTime(scenesDuration);
+            } else {
+              setCurrentTime(0);
+            }
+            setShowEndScreen(!showEndScreen);
+          }}
+          onAIAction={handleAIAction}
         />
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          {/* Video Preview - scrollable area */}
-          <div className="flex-1 min-h-0 overflow-auto">
-            <VideoPreview
-              scenes={storyboard.scenes.map(s => ({
-                id: s.sceneNumber,
-                visualUrl: s.visualUrl,
-                duration: s.duration,
-                voiceover: s.voiceover,
-              }))}
-              currentSceneIndex={playback.currentSceneIndex}
-              sceneProgress={playback.getCurrentSceneProgress()}
-              brandName={campaign?.title}
-              headline={campaign?.title}
-              description={campaign?.description}
-              ctaText={campaign?.cta_text || "Learn More"}
-              isPlaying={playback.isPlaying}
-              onPlayPause={playback.togglePlayPause}
-              onEditScene={(index) => setEditingSceneIndex(index)}
-              currentVoiceover={currentScene?.voiceover}
-              overlaySettings={overlaySettings}
-              showEndScreen={showEndScreen}
-            />
-          </div>
+        {/* Main Editor Area */}
+        <div className="flex-1 flex flex-col min-w-0 relative">
+          {/* Preview Player */}
+          <VideoPreview
+            scenes={scenes.map((s, idx) => ({
+              id: idx,
+              visualUrl: s.visualUrl,
+              videoUrl: s.videoUrl,
+              duration: s.duration,
+              voiceover: s.voiceover
+            }))}
+            currentSceneIndex={currentSceneIndex}
+            sceneProgress={timelineScenes[currentSceneIndex] ? (currentTime - timelineScenes[currentSceneIndex].startTime) / (parseInt(scenes[currentSceneIndex]?.duration) || 1) : 0}
+            isPlaying={isPlaying}
+            onPlayPause={() => setIsPlaying(!isPlaying)}
+            onEditScene={() => setIsEditingScene(true)}
+            currentVoiceover={scenes[currentSceneIndex]?.voiceover}
+            overlaySettings={overlaySettings}
+            showEndScreen={showEndScreen}
+            brandName={project?.brand_name || "Brand"}
+            headline={scenes[currentSceneIndex]?.visualDescription?.split('.')[0]}
+            description={scenes[currentSceneIndex]?.visualDescription}
+            ctaText={overlaySettings.endScreen.ctaText}
+            ctaUrl={overlaySettings.endScreen.ctaUrl}
+          />
 
-          {/* Timeline - fixed at bottom, scrollable if needed */}
-          <div className="flex-shrink-0 max-h-[45%] overflow-auto">
-            <VideoTimeline
-              scenes={timelineScenes}
-              currentTime={playback.currentTime}
-              totalDuration={playback.totalDuration}
-              currentSceneIndex={playback.currentSceneIndex}
-              onSceneSelect={playback.seekToScene}
-              onPlayPause={playback.togglePlayPause}
-              onSeek={playback.seekToTime}
-              onSkipBack={() => {
-                const prevIndex = Math.max(0, playback.currentSceneIndex - 1);
-                playback.seekToScene(prevIndex);
-              }}
-              onSkipForward={() => {
-                const nextIndex = Math.min(storyboard.scenes.length - 1, playback.currentSceneIndex + 1);
-                playback.seekToScene(nextIndex);
-              }}
-              isPlaying={playback.isPlaying}
-              brandName={campaign?.title}
-              onDownload={handleDownload}
-              onAddToStrategy={handleAddToStrategy}
-              overlaySettings={overlaySettings}
-              onTabChange={setActiveTab}
-            />
-          </div>
+          {/* Assistant Toggle */}
+          <AIAssistantPanel
+            campaignId={id!}
+            storyboard={project?.storyboard}
+            currentSceneIndex={currentSceneIndex}
+            onStoryboardUpdate={(newStoryboard) => {
+              saveToHistory(scenes, overlaySettings);
+              setProject({ ...project, storyboard: newStoryboard });
+              setScenes(newStoryboard.scenes);
+            }}
+            onActionComplete={(action) => {
+              toast({ title: "AI Action Applied", description: `Applied changes for: ${action.replace('_', ' ')}` });
+            }}
+            isOpen={isAssistantOpen}
+            onOpenChange={setIsAssistantOpen}
+            externalMessage={pendingAIAction}
+          />
+
+          {/* Timeline */}
+          <VideoTimeline
+            scenes={timelineScenes}
+            currentTime={currentTime}
+            totalDuration={totalDuration}
+            currentSceneIndex={currentSceneIndex}
+            onSceneSelect={(idx) => {
+              let startTime = 0;
+              for (let i = 0; i < idx; i++) {
+                startTime += parseInt(scenes[i].duration) || 0;
+              }
+              setCurrentTime(startTime);
+              setCurrentSceneIndex(idx);
+            }}
+            onPlayPause={() => setIsPlaying(!isPlaying)}
+            onSeek={handleSeek}
+            isPlaying={isPlaying}
+            brandName={project?.brand_name || "Brand"}
+            onDownload={() => toast({ title: "Rendering...", description: "Your video is being rendered for download." })}
+            onAddToStrategy={() => navigate(`/strategy/${id}`)}
+            overlaySettings={overlaySettings}
+            onTabChange={setActiveTab}
+          />
         </div>
       </div>
 
-      {/* AI Assistant Panel */}
-      <AIAssistantPanel
-        campaignId={id || ""}
-        storyboard={storyboard}
-        currentSceneIndex={playback.currentSceneIndex}
-        onStoryboardUpdate={handleStoryboardUpdate}
-        onActionComplete={handleAIActionComplete}
-      />
-
       {/* Scene Editor Dialog */}
-      {editingSceneIndex !== null && storyboard.scenes[editingSceneIndex] && (
+      {scenes[currentSceneIndex] && (
         <SceneEditor
-          scene={storyboard.scenes[editingSceneIndex]}
-          isOpen={editingSceneIndex !== null}
-          onClose={() => setEditingSceneIndex(null)}
-          onSave={handleSceneSave}
-          onRegenerateVisual={(customPrompt) => {
-            const sceneNumber = storyboard.scenes[editingSceneIndex].sceneNumber;
-            generateSceneVisual(sceneNumber, customPrompt);
-          }}
-          isRegenerating={regeneratingScene === storyboard.scenes[editingSceneIndex]?.sceneNumber}
+          scene={scenes[currentSceneIndex]}
+          isOpen={isEditingScene}
+          onClose={() => setIsEditingScene(false)}
+          onSave={handleSaveScene}
+          onRegenerateVisual={handleRegenerateVisual}
+          onGenerateVideo={handleGenerateVideo}
+          isRegenerating={isRegenerating}
         />
       )}
-
-      {/* Strategy Config Modal */}
-      <StrategyConfigModal
-        open={showStrategyConfig}
-        onOpenChange={setShowStrategyConfig}
-        onBack={() => setShowStrategyConfig(false)}
-        onPublish={handlePublishWithStrategy}
-        isPublishing={isPublishing}
-        campaignPreview={{
-          title: campaign?.title,
-          description: campaign?.description,
-          goal: campaign?.goal,
-          audience: typeof campaign?.target_audience === 'string' 
-            ? campaign?.target_audience 
-            : campaign?.target_audience?.primary || "General Audience",
-          duration: storyboard?.scenes?.reduce((acc, s) => {
-            const seconds = parseInt(s.duration?.replace('s', '') || '0');
-            return acc + seconds;
-          }, 0) + "s",
-          scenesCount: storyboard?.scenes?.length || 0,
-          thumbnailUrl: storyboard?.scenes?.[0]?.visualUrl
-        }}
-      />
     </div>
   );
-};
-
-export default VideoEditor;
+}

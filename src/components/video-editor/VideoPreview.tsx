@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, Edit3 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, Edit3, Film } from "lucide-react";
 import OverlayElements from "./OverlayElements";
 import EndScreen from "./EndScreen";
 import type { VideoOverlaySettings } from "@/types/videoEditor";
@@ -9,6 +9,7 @@ interface VideoPreviewProps {
   scenes: Array<{
     id: number;
     visualUrl?: string;
+    videoUrl?: string;
     duration: string;
     voiceover?: string;
   }>;
@@ -49,12 +50,13 @@ const VideoPreview = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showVoiceover, setShowVoiceover] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const currentScene = scenes[currentSceneIndex];
 
-  // Handle fullscreen toggle
+  // ... (lines 54-76)
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
-    
+
     if (!document.fullscreenElement) {
       await containerRef.current.requestFullscreen();
       setIsFullscreen(true);
@@ -64,7 +66,6 @@ const VideoPreview = ({
     }
   };
 
-  // Listen for fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -75,143 +76,175 @@ const VideoPreview = ({
 
   // Animate scene transitions
   const [displayedImage, setDisplayedImage] = useState(currentScene?.visualUrl);
+  const [displayedVideo, setDisplayedVideo] = useState(currentScene?.videoUrl);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    if (currentScene?.visualUrl !== displayedImage) {
+    if (currentScene?.visualUrl !== displayedImage || currentScene?.videoUrl !== displayedVideo) {
       setIsTransitioning(true);
       const timeout = setTimeout(() => {
         setDisplayedImage(currentScene?.visualUrl);
+        setDisplayedVideo(currentScene?.videoUrl);
         setIsTransitioning(false);
       }, 150);
       return () => clearTimeout(timeout);
     }
-  }, [currentScene?.visualUrl, displayedImage]);
+  }, [currentScene?.visualUrl, currentScene?.videoUrl, displayedImage, displayedVideo]);
+
+  // Handle Video Playback
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.play().catch(console.error);
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isPlaying, displayedVideo]);
 
   return (
-    <div className="flex-1 bg-background/50 flex flex-col">
+    <div className="flex-1 bg-[#0A0A0A] flex flex-col">
       {/* Video Preview Area */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-8">
-        <div ref={containerRef} className="relative w-full max-w-4xl aspect-video rounded-xl overflow-hidden shadow-2xl bg-muted group">
-          {/* Background Image with Transition */}
-          <div 
+      <div className="flex-1 flex items-center justify-center p-4 md:p-12">
+        <div ref={containerRef} className="relative w-full max-w-5xl aspect-video rounded-[32px] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.8)] bg-black group ring-1 ring-white/10">
+          {/* Background Media with Transition */}
+          <div
             className={`absolute inset-0 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
           >
-            {displayedImage ? (
+            {displayedVideo ? (
+              <video
+                ref={videoRef}
+                src={displayedVideo}
+                className="absolute inset-0 w-full h-full object-cover"
+                muted={isMuted}
+                loop
+                playsInline
+              />
+            ) : displayedImage ? (
               <img
                 src={displayedImage}
                 alt={`Scene ${currentSceneIndex + 1}`}
                 className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-muted to-secondary/20 flex items-center justify-center">
-                <p className="text-muted-foreground text-sm">No visual generated</p>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#1A1A1A] via-black to-[#1A1A1A] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                  <Film className="h-10 w-10 text-[#222]" />
+                  <p className="text-[#333] text-sm font-bold uppercase tracking-widest">Awaiting Visual</p>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Scene Progress Bar */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-black/30">
-            <div 
-              className="h-full bg-primary transition-all duration-100 ease-linear"
+          {/* TOP HUD */}
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30">
+            <div className="px-4 py-1.5 bg-black/60 backdrop-blur-xl rounded-full border border-white/10 flex items-center gap-3">
+              <span className="text-[10px] font-black text-white uppercase tracking-widest whitespace-nowrap">Scene {currentSceneIndex + 1} / {scenes.length}</span>
+              <div className="h-3 w-px bg-white/20" />
+              <div className="flex items-center gap-1.5">
+                <Film className="h-3 w-3 text-[#C1FF72]" />
+                <span className="text-[10px] font-black text-[#C1FF72] uppercase tracking-widest">Video</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Scene Progress Bar - Slim & High-end */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-white/5 z-30">
+            <div
+              className="h-full bg-[#C1FF72] transition-all duration-100 ease-linear shadow-[0_0_10px_#C1FF72]"
               style={{ width: `${sceneProgress * 100}%` }}
             />
           </div>
 
-          {/* Edit Button - Shows on Hover */}
+          {/* Edit Button - Sleek floating */}
           {onEditScene && (
             <button
               onClick={() => onEditScene(currentSceneIndex)}
-              className="absolute top-4 left-4 px-3 py-1.5 bg-black/60 hover:bg-black/80 rounded-lg text-white text-xs flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-6 right-6 px-4 py-2 bg-white/10 hover:bg-white text-white hover:text-black rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md border border-white/20"
             >
-              <Edit3 className="h-3 w-3" />
+              <Edit3 className="h-3.5 w-3.5" />
               Edit Scene
             </button>
           )}
 
-          {/* Scene Counter */}
-          <div className="absolute top-4 right-28 px-2 py-1 bg-black/60 rounded text-white text-xs">
-            Scene {currentSceneIndex + 1} / {scenes.length}
-          </div>
-
           {/* Overlay Content */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30">
-            {/* Top Left - Brand */}
-            <div className="absolute top-4 left-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="w-8 h-8 rounded-lg bg-white/90 flex items-center justify-center text-primary font-bold text-sm shadow">
-                {brandName.charAt(0)}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none">
+            {/* Overlay Elements (Banner & QR Code) */}
+            {overlaySettings && !showEndScreen && (
+              <div className="pointer-events-auto">
+                <OverlayElements
+                  banner={overlaySettings.banner}
+                  qrCode={overlaySettings.qrCode}
+                />
               </div>
-              <span className="text-white font-medium text-sm drop-shadow">{brandName}</span>
+            )}
+
+            {/* End Screen */}
+            {overlaySettings && (
+              <div className="pointer-events-auto">
+                <EndScreen
+                  settings={overlaySettings.endScreen}
+                  qrSettings={overlaySettings.qrCode}
+                  brandName={brandName}
+                  isActive={showEndScreen}
+                />
+              </div>
+            )}
+
+            {/* Center Play Button - Glassmorphism */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
+              <button
+                className="w-24 h-24 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 hover:scale-110 transition-all border border-white/20 shadow-2xl group/play"
+                onClick={onPlayPause}
+              >
+                {isPlaying ? (
+                  <Pause className="h-10 w-10 text-white fill-white" />
+                ) : (
+                  <Play className="h-10 w-10 text-white fill-white ml-2 transition-transform group-hover/play:scale-110" />
+                )}
+              </button>
             </div>
 
-          {/* Overlay Elements (Banner & QR Code) */}
-          {overlaySettings && !showEndScreen && (
-            <OverlayElements 
-              banner={overlaySettings.banner} 
-              qrCode={overlaySettings.qrCode} 
-            />
-          )}
-
-          {/* End Screen */}
-          {overlaySettings && (
-            <EndScreen
-              settings={overlaySettings.endScreen}
-              qrSettings={overlaySettings.qrCode}
-              brandName={brandName}
-              isActive={showEndScreen}
-            />
-          )}
-
-            {/* Center Play Button */}
-            <button 
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 hover:scale-105 transition-all border border-white/20"
-              onClick={onPlayPause}
-            >
-              {isPlaying ? (
-                <Pause className="h-10 w-10 text-white" fill="white" />
-              ) : (
-                <Play className="h-10 w-10 text-white ml-1" fill="white" />
-              )}
-            </button>
-
-            {/* Voiceover Subtitle */}
-            {showVoiceover && currentVoiceover && (
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 max-w-2xl px-4">
-                <p className="text-white text-center text-lg font-medium drop-shadow-lg bg-black/40 rounded-lg px-4 py-2 backdrop-blur-sm">
+            {/* Voiceover Subtitle - Refined typography */}
+            {currentVoiceover && (
+              <div className="absolute bottom-32 left-1/2 -translate-x-1/2 max-w-2xl px-8 z-30 pointer-events-auto">
+                <p className="text-white text-center text-xl font-bold tracking-tight bg-black/80 rounded-2xl px-6 py-3 backdrop-blur-xl border border-white/10 shadow-2xl">
                   {currentVoiceover}
                 </p>
               </div>
             )}
 
-            {/* Bottom Content */}
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <div className="flex items-end justify-between">
-                <div className="space-y-2 flex-1">
+            {/* Bottom Content - High contrast headings */}
+            <div className="absolute bottom-0 left-0 right-0 p-10 pointer-events-auto">
+              <div className="flex items-end justify-between gap-12">
+                <div className="space-y-4 flex-1">
                   {/* Headline */}
-                  <h2 className="text-2xl md:text-3xl font-bold text-white uppercase tracking-wide drop-shadow-lg">
-                    {headline}
-                  </h2>
-                  <p className="text-white/90 text-sm max-w-lg drop-shadow">
-                    {description}
-                  </p>
+                  <div>
+                    <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none mb-2 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
+                      {headline}
+                    </h2>
+                    <p className="text-white/70 text-base max-w-xl font-medium leading-relaxed drop-shadow-lg">
+                      {description}
+                    </p>
+                  </div>
 
-                  {/* CTA Button */}
-                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground mt-2">
+                  {/* CTA Button - DESIGN MATCH */}
+                  <Button className="bg-[#C1FF72] hover:bg-[#D4FF9D] text-black font-black uppercase tracking-widest px-8 h-12 rounded-2xl shadow-[0_20px_40px_rgba(193,255,114,0.15)] transition-all flex items-center gap-3">
                     {ctaText}
                   </Button>
                 </div>
 
-                {/* Controls */}
-                <div className="flex items-center gap-2">
+                {/* Vertical Controls */}
+                <div className="flex flex-col gap-3">
                   <button
                     onClick={() => setIsMuted(!isMuted)}
-                    className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors"
+                    className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all"
                   >
                     {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                   </button>
-                  <button 
+                  <button
                     onClick={toggleFullscreen}
-                    className="w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors"
+                    className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all"
                   >
                     {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
                   </button>

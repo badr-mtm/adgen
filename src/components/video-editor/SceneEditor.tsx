@@ -10,14 +10,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { 
-  Sparkles, 
-  RefreshCw, 
+import {
+  Sparkles,
+  RefreshCw,
   Save,
   Clock,
   Type,
   Image,
-  Mic
+  Mic,
+  Loader2
 } from "lucide-react";
 
 interface Scene {
@@ -27,6 +28,7 @@ interface Scene {
   suggestedVisuals: string;
   voiceover: string;
   visualUrl?: string;
+  videoUrl?: string;
 }
 
 interface SceneEditorProps {
@@ -35,6 +37,7 @@ interface SceneEditorProps {
   onClose: () => void;
   onSave: (scene: Scene) => void;
   onRegenerateVisual: (customPrompt?: string) => void;
+  onGenerateVideo: (model: string, customPrompt?: string) => void;
   isRegenerating?: boolean;
 }
 
@@ -44,10 +47,12 @@ const SceneEditor = ({
   onClose,
   onSave,
   onRegenerateVisual,
+  onGenerateVideo,
   isRegenerating
 }: SceneEditorProps) => {
   const [editedScene, setEditedScene] = useState<Scene>(scene);
   const [customPrompt, setCustomPrompt] = useState("");
+  const [selectedModel, setSelectedModel] = useState("luma");
   const [activeTab, setActiveTab] = useState<"visual" | "text" | "timing">("visual");
 
   const handleSave = () => {
@@ -61,8 +66,8 @@ const SceneEditor = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <span>Edit Scene {scene.sceneNumber}</span>
+          <DialogTitle className="flex items-center justify-between pr-8">
+            <span className="flex items-center gap-2">Edit Scene {scene.sceneNumber}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -92,21 +97,42 @@ const SceneEditor = ({
         <div className="space-y-6 py-4">
           {activeTab === "visual" && (
             <>
-              {/* Current Visual */}
+              {/* Current Visual / Video */}
               <div className="space-y-3">
-                <Label>Current Visual</Label>
-                <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                  {scene.visualUrl ? (
-                    <img
-                      src={scene.visualUrl}
-                      alt={`Scene ${scene.sceneNumber}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                      No visual generated
+                <Label>Current Visual Assets</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-muted-foreground uppercase">Static Background</span>
+                    <div className="aspect-video rounded-lg overflow-hidden bg-muted border border-border">
+                      {scene.visualUrl ? (
+                        <img
+                          src={scene.visualUrl}
+                          alt={`Scene ${scene.sceneNumber}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                          No visual generated
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-muted-foreground uppercase">Cinematic Clip</span>
+                    <div className="aspect-video rounded-lg overflow-hidden bg-muted border border-border">
+                      {scene.videoUrl ? (
+                        <video
+                          src={scene.videoUrl}
+                          className="w-full h-full object-cover"
+                          controls
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                          No video generated
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -121,32 +147,78 @@ const SceneEditor = ({
                 />
               </div>
 
-              {/* Custom Prompt for Regeneration */}
-              <div className="space-y-2">
-                <Label>Custom Prompt (optional)</Label>
-                <Textarea
-                  value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
-                  placeholder="Add specific instructions for regeneration..."
-                  rows={2}
-                />
-                <Button
-                  onClick={() => onRegenerateVisual(customPrompt || undefined)}
-                  disabled={isRegenerating}
-                  className="w-full"
-                >
-                  {isRegenerating ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Regenerate Visual
-                    </>
-                  )}
-                </Button>
+              {/* Generation Actions */}
+              <div className="p-4 bg-muted/30 rounded-xl border border-border space-y-4">
+                <div className="space-y-2">
+                  <Label>AI Creative Direction</Label>
+                  <Textarea
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    placeholder="Add specific instructions for generation..."
+                    rows={2}
+                    className="bg-background"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => onRegenerateVisual(customPrompt || undefined)}
+                      disabled={isRegenerating}
+                      className="w-full"
+                      variant="outline"
+                    >
+                      {isRegenerating ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Image className="h-4 w-4 mr-2" />
+                          Regenerate Image
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex gap-1 mb-2">
+                      <Button
+                        variant={selectedModel === "luma" ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => setSelectedModel("luma")}
+                        className="text-[10px] h-6 px-2"
+                      >
+                        Luma (Cinematic)
+                      </Button>
+                      <Button
+                        variant={selectedModel === "kling" ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => setSelectedModel("kling")}
+                        className="text-[10px] h-6 px-2"
+                      >
+                        Kling (Realistic)
+                      </Button>
+                    </div>
+                    <Button
+                      onClick={() => onGenerateVideo(selectedModel, customPrompt || undefined)}
+                      disabled={isRegenerating}
+                      className="w-full bg-primary/90 hover:bg-primary"
+                    >
+                      {isRegenerating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Processing Video...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Generate Video
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </>
           )}

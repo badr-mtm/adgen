@@ -2,10 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Sparkles, 
-  Send, 
-  X, 
+import {
+  Sparkles,
+  Send,
+  X,
   Loader2,
   MessageSquare,
   Wand2,
@@ -30,6 +30,9 @@ interface AIAssistantPanelProps {
   currentSceneIndex: number;
   onStoryboardUpdate: (storyboard: any) => void;
   onActionComplete: (action: string) => void;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  externalMessage?: { action: string; message: string; timestamp: number } | null;
 }
 
 const quickActions = [
@@ -45,9 +48,18 @@ const AIAssistantPanel = ({
   storyboard,
   currentSceneIndex,
   onStoryboardUpdate,
-  onActionComplete
+  onActionComplete,
+  isOpen: externalOpen,
+  onOpenChange,
+  externalMessage
 }: AIAssistantPanelProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setIsOpen = (val: boolean) => {
+    if (onOpenChange) onOpenChange(val);
+    setInternalOpen(val);
+  };
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -56,6 +68,7 @@ const AIAssistantPanel = ({
       timestamp: new Date()
     }
   ]);
+
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -121,22 +134,25 @@ const AIAssistantPanel = ({
     }
   };
 
-  const handleQuickAction = async (action: string) => {
+  const handleQuickAction = async (action: string, customMessage?: string) => {
     const actionMessages: Record<string, string> = {
       regenerate_visual: `Regenerate the visual for scene ${currentSceneIndex + 1} with a fresh perspective`,
       improve_headline: "Suggest a more engaging headline for the current scene",
       adjust_timing: "Optimize the timing of scenes for better pacing",
       suggest_music: "Suggest background music that matches the video's mood",
-      generate_voiceover: "Generate a voiceover script for the current scene"
+      generate_voiceover: "Generate a voiceover script for the current scene",
+      improve_banner_text: "Improve the bottom banner overlay text to be more catchy",
+      improve_cta_text: "Suggest a stronger call-to-action text for the end screen",
+      improve_script: "Refine the voiceover script to be more persuasive and clear"
     };
 
-    setInput(actionMessages[action] || "");
-    
+    const targetMessage = customMessage || actionMessages[action] || action;
+
     // Auto-send for quick actions
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: actionMessages[action],
+      content: targetMessage,
       timestamp: new Date()
     };
 
@@ -147,7 +163,7 @@ const AIAssistantPanel = ({
       const { data, error } = await supabase.functions.invoke("video-ai-assistant", {
         body: {
           campaignId,
-          message: actionMessages[action],
+          message: targetMessage,
           action,
           currentSceneIndex,
           storyboard
@@ -184,6 +200,12 @@ const AIAssistantPanel = ({
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (externalMessage) {
+      handleQuickAction(externalMessage.action, externalMessage.message);
+    }
+  }, [externalMessage]);
 
   if (!isOpen) {
     return (
@@ -244,11 +266,10 @@ const AIAssistantPanel = ({
               className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2 ${
-                  message.role === "user"
-                    ? "bg-primary text-primary-foreground rounded-br-md"
-                    : "bg-muted text-foreground rounded-bl-md"
-                }`}
+                className={`max-w-[85%] rounded-2xl px-4 py-2 ${message.role === "user"
+                  ? "bg-primary text-primary-foreground rounded-br-md"
+                  : "bg-muted text-foreground rounded-bl-md"
+                  }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
@@ -275,9 +296,9 @@ const AIAssistantPanel = ({
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             disabled={isLoading}
           />
-          <Button 
-            onClick={handleSend} 
-            size="icon" 
+          <Button
+            onClick={handleSend}
+            size="icon"
             disabled={!input.trim() || isLoading}
           >
             <Send className="h-4 w-4" />

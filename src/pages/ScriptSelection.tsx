@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  Check, 
-  Edit3, 
-  Play, 
-  Volume2, 
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Edit3,
+  Play,
+  Volume2,
   Sparkles,
   Loader2,
   RefreshCw,
@@ -54,9 +54,9 @@ export default function ScriptSelection() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  
+
   const campaignData = location.state || {};
-  
+
   const [loading, setLoading] = useState(true);
   const [scripts, setScripts] = useState<Script[]>([]);
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
@@ -73,50 +73,90 @@ export default function ScriptSelection() {
 
   const generateScripts = async () => {
     setLoading(true);
-    // Simulate AI script generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const generatedScripts: Script[] = [
-      {
-        id: "1",
-        title: "Emotional Connection",
-        hook: "What if the perfect workout wasn't about the gym at all?",
-        body: "It's about finding your sanctuary. A place where every rep feels intentional, where the energy elevates you, and where luxury meets determination.",
-        cta: "Experience the difference. Visit us today.",
-        tone: "Inspirational",
-        duration: campaignData.duration || "30s"
-      },
-      {
-        id: "2", 
-        title: "Bold Statement",
-        hook: "Forget everything you know about fitness.",
-        body: "We've reimagined the entire experience. State-of-the-art equipment, personalized training, and an atmosphere that demands excellence from every member.",
-        cta: "Join the elite. Start your journey now.",
-        tone: "Confident",
-        duration: campaignData.duration || "30s"
-      },
-      {
-        id: "3",
-        title: "Transformation Story",
-        hook: "Sarah never thought she'd become a morning person.",
-        body: "But something changed when she discovered a gym that felt more like a retreat. Now, 5 AM is her favorite hour. The journey from tired to transformed starts with a single step.",
-        cta: "Your transformation awaits. Book your tour.",
-        tone: "Warm",
-        duration: campaignData.duration || "30s"
-      },
-      {
-        id: "4",
-        title: "Direct & Powerful",
-        hook: "Your body deserves the best.",
-        body: "Premium equipment. Expert trainers. Results that speak for themselves. No excuses, no shortcuts – just the tools and support you need to become your strongest self.",
-        cta: "Elevate your fitness. Join today.",
-        tone: "Assertive",
-        duration: campaignData.duration || "30s"
+
+    try {
+      console.log('Generating real AI scripts with data:', campaignData);
+      const { data, error } = await supabase.functions.invoke('generate-ideas', {
+        body: {
+          prompt: campaignData.description || campaignData.prompt,
+          adType: 'video',
+          goal: campaignData.goal,
+          targetAudience: campaignData.target_audience,
+          creativeStyle: campaignData.style || 'modern',
+          aspectRatios: ['16:9'],
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.campaigns) {
+        const mappedScripts: Script[] = data.campaigns.map((c: any, index: number) => ({
+          id: c.id || String(index + 1),
+          title: c.title,
+          hook: c.description.split('.')[0] + '.',
+          body: c.script,
+          cta: c.cta_text || 'Learn More',
+          tone: c.creative_style || 'Professional',
+          duration: campaignData.duration || '30s'
+        }));
+        setScripts(mappedScripts);
+        toast({
+          title: "AI Scripts Generated",
+          description: "We've created 4 unique concepts based on your brief.",
+        });
+      } else {
+        throw new Error('No campaigns returned from AI');
       }
-    ];
-    
-    setScripts(generatedScripts);
-    setLoading(false);
+    } catch (error: any) {
+      console.error("AI Generation failed, falling back to mock data:", error);
+
+      const generatedScripts: Script[] = [
+        {
+          id: "1",
+          title: "Emotional Connection (Offline)",
+          hook: "What if the perfect workout wasn't about the gym at all?",
+          body: "It's about finding your sanctuary. A place where every rep feels intentional, where the energy elevates you, and where luxury meets determination.",
+          cta: "Experience the difference.",
+          tone: "Inspirational",
+          duration: campaignData.duration || "30s"
+        },
+        {
+          id: "2",
+          title: "Bold Statement (Offline)",
+          hook: "Forget everything you know about fitness.",
+          body: "We've reimagined the entire experience. State-of-the-art equipment, personalized training, and an atmosphere that demands excellence from every member.",
+          cta: "Join the elite.",
+          tone: "Confident",
+          duration: campaignData.duration || "30s"
+        },
+        {
+          id: "3",
+          title: "Transformation Story (Offline)",
+          hook: "Sarah never thought she'd become a morning person.",
+          body: "But something changed when she discovered a gym that felt more like a retreat. Now, 5 AM is her favorite hour.",
+          cta: "Your transformation awaits.",
+          tone: "Warm",
+          duration: campaignData.duration || "30s"
+        },
+        {
+          id: "4",
+          title: "Direct & Powerful (Offline)",
+          hook: "Your body deserves the best.",
+          body: "Premium equipment. Expert trainers. Results that speak for themselves. No excuses, no shortcuts – just the tools and support you need.",
+          cta: "Elevate your fitness.",
+          tone: "Assertive",
+          duration: campaignData.duration || "30s"
+        }
+      ];
+      setScripts(generatedScripts);
+
+      toast({
+        title: "AI Gateway Offline",
+        description: "Falling back to smart templates. Connect your AI API key for real-time generation.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectScript = (script: Script) => {
@@ -133,66 +173,84 @@ export default function ScriptSelection() {
 
   const generateScenes = async () => {
     if (!selectedScript) return;
-    
+
     setGeneratingScenes(true);
     setStep("scenes");
-    
-    // Simulate AI scene generation
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    const generatedScenes: Scene[] = [
-      {
-        id: "1",
-        number: 1,
-        description: "Opening: Cinematic establishing shot",
-        duration: "5s",
-        visualPrompt: "Aerial drone shot of luxurious modern gym exterior at golden hour, glass windows reflecting sunset",
-        imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800"
-      },
-      {
-        id: "2",
-        number: 2,
-        description: "Interior reveal: Premium equipment",
-        duration: "4s",
-        visualPrompt: "Slow tracking shot through high-end gym interior, focusing on premium equipment and atmospheric lighting",
-        imageUrl: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800"
-      },
-      {
-        id: "3",
-        number: 3,
-        description: "Human element: Member in action",
-        duration: "6s",
-        visualPrompt: "Close-up of determined athlete mid-workout, sweat glistening, professional lighting emphasizing effort",
-        imageUrl: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800"
-      },
-      {
-        id: "4",
-        number: 4,
-        description: "Community: Group energy",
-        duration: "5s",
-        visualPrompt: "Wide shot of diverse group fitness class, high energy, natural light flooding the space",
-        imageUrl: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800"
-      },
-      {
-        id: "5",
-        number: 5,
-        description: "Transformation moment",
-        duration: "4s",
-        visualPrompt: "Emotional close-up of person achieving personal milestone, genuine smile, cinematic depth of field",
-        imageUrl: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800"
-      },
-      {
-        id: "6",
-        number: 6,
-        description: "CTA: Brand reveal",
-        duration: "6s",
-        visualPrompt: "Elegant logo animation over ambient gym footage, premium typography, call to action overlay",
-        imageUrl: "https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=800"
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-storyboard', {
+        body: {
+          campaignId: campaignData.id,
+          prompt: selectedScript.body,
+          duration: selectedScript.duration,
+          goal: selectedScript.tone
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.concepts?.[0]?.scenes || data?.storyboard?.scenes) {
+        const aiScenes = (data.concepts?.[0]?.scenes || data.storyboard.scenes).map((s: any, idx: number) => ({
+          id: String(idx + 1),
+          number: s.number || s.sceneNumber || idx + 1,
+          description: s.description || s.visualDescription,
+          duration: s.duration,
+          visualPrompt: s.visualPrompt || s.suggestedVisuals,
+          imageUrl: `https://images.unsplash.com/photo-${1534438327276 + idx}-14e5300c3a48?w=800`
+        }));
+        setScenes(aiScenes);
+        toast({
+          title: "Storyboard Generated",
+          description: "AI has visualized your campaign script into scenes.",
+        });
+      } else {
+        throw new Error('No scenes returned from AI');
       }
-    ];
-    
-    setScenes(generatedScenes);
-    setGeneratingScenes(false);
+    } catch (error: any) {
+      console.error("Scene generation failed, falling back to mock data:", error);
+
+      const generatedScenes: Scene[] = [
+        {
+          id: "1",
+          number: 1,
+          description: "Opening: Cinematic establishing shot (Offline)",
+          duration: "5s",
+          visualPrompt: "Aerial drone shot of luxurious modern gym exterior at golden hour, glass windows reflecting sunset",
+          imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800"
+        },
+        {
+          id: "2",
+          number: 2,
+          description: "The Experience: State-of-the-art equipment (Offline)",
+          duration: "10s",
+          visualPrompt: "Close-up slow motion of high-end chrome weight machines, clean environment, glowing accent lights",
+          imageUrl: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800"
+        },
+        {
+          id: "3",
+          number: 3,
+          description: "The Result: Focused athlete (Offline)",
+          duration: "10s",
+          visualPrompt: "Portrait of a person finishing a set, wiping sweat, looking satisfied in a premium locker room",
+          imageUrl: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800"
+        },
+        {
+          id: "4",
+          number: 4,
+          description: "Closing: Logo and Call to Action (Offline)",
+          duration: "5s",
+          visualPrompt: "Minimalist graphic with brand logo and text 'Join the Elite Today' on a dark textured background",
+          imageUrl: "https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=800"
+        }
+      ];
+      setScenes(generatedScenes);
+      toast({
+        title: "AI Visualizer Offline",
+        description: "Using pre-rendered storyboard templates.",
+      });
+    } finally {
+      setGeneratingScenes(false);
+    }
   };
 
   const handleContinueToEditor = async () => {
@@ -209,9 +267,9 @@ export default function ScriptSelection() {
         .select("id")
         .eq("user_id", session.user.id)
         .limit(1);
-      
+
       let brandId = brands?.[0]?.id;
-      
+
       if (!brandId) {
         const { data: newBrand } = await supabase
           .from("brands")
@@ -247,8 +305,8 @@ export default function ScriptSelection() {
 
       if (error) throw error;
 
-      navigate(`/video-editor/${campaign.id}`, { 
-        state: { 
+      navigate(`/video-editor/${campaign.id}`, {
+        state: {
           fromScriptSelection: true,
           campaignData: { ...campaignData, ...storyboardData }
         }
@@ -296,14 +354,14 @@ export default function ScriptSelection() {
                 {step === "scripts" ? "Choose Your Script" : "Review Scenes"}
               </h1>
               <p className="text-muted-foreground">
-                {step === "scripts" 
+                {step === "scripts"
                   ? "Select and customize one of our AI-generated scripts"
                   : "Review and edit your storyboard scenes"
                 }
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-primary border-primary">
               {campaignData.duration || "30s"} Ad
@@ -328,8 +386,8 @@ export default function ScriptSelection() {
               <div className="lg:col-span-2 space-y-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-foreground">AI Generated Scripts</h2>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={generateScripts}
                     className="text-muted-foreground"
@@ -346,11 +404,10 @@ export default function ScriptSelection() {
                       onClick={() => handleSelectScript(script)}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className={`p-5 rounded-xl border-2 text-left transition-all ${
-                        selectedScript?.id === script.id
-                          ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
-                          : "border-border hover:border-primary/50 bg-card"
-                      }`}
+                      className={`p-5 rounded-xl border-2 text-left transition-all ${selectedScript?.id === script.id
+                        ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                        : "border-border hover:border-primary/50 bg-card"
+                        }`}
                     >
                       <div className="flex items-start justify-between mb-3">
                         <Badge variant="secondary" className="text-xs">
@@ -450,11 +507,10 @@ export default function ScriptSelection() {
                               <button
                                 key={voice.id}
                                 onClick={() => setSelectedVoice(voice.id)}
-                                className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
-                                  selectedVoice === voice.id
-                                    ? "border-primary bg-primary/10"
-                                    : "border-border hover:border-muted-foreground/50"
-                                }`}
+                                className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${selectedVoice === voice.id
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-muted-foreground/50"
+                                  }`}
                               >
                                 <div className="flex items-center gap-2">
                                   <Volume2 className={`h-4 w-4 ${selectedVoice === voice.id ? "text-primary" : "text-muted-foreground"}`} />

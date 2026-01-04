@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { 
+import {
   Film,
   PanelBottom,
   Square,
@@ -56,6 +56,7 @@ interface VideoEditorSidebarProps {
   onOverlaySettingsChange: (settings: VideoOverlaySettings) => void;
   isPreviewingEndScreen?: boolean;
   onToggleEndScreenPreview?: () => void;
+  onAIAction?: (action: string, context?: any) => void;
 }
 
 const sidebarTabs = [
@@ -86,6 +87,7 @@ const VideoEditorSidebar = ({
   onOverlaySettingsChange,
   isPreviewingEndScreen = false,
   onToggleEndScreenPreview,
+  onAIAction,
 }: VideoEditorSidebarProps) => {
   const [aiInputSource, setAiInputSource] = useState("website");
   const [isPlaying, setIsPlaying] = useState(false);
@@ -127,9 +129,9 @@ const VideoEditorSidebar = ({
   };
 
   return (
-    <div className="flex h-full min-h-0">
-      {/* Icon Tabs */}
-      <div className="w-16 bg-card border-r border-border flex flex-col items-center py-4 gap-1">
+    <div className="flex h-full min-h-0 bg-[#0A0A0A]">
+      {/* Icon Tabs - Slim & Dark */}
+      <div className="w-[72px] bg-[#0F0F0F] border-r border-[#1F1F1F] flex flex-col items-center py-6 gap-2">
         {sidebarTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -137,23 +139,25 @@ const VideoEditorSidebar = ({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`w-full flex flex-col items-center gap-1 py-3 px-2 text-[10px] transition-colors ${
-                isActive 
-                  ? "text-primary bg-primary/10 border-r-2 border-primary" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              }`}
+              className={`w-full flex flex-col items-center gap-1.5 py-3 px-1 transition-all relative ${isActive
+                ? "text-[#C1FF72]"
+                : "text-[#8E8E8E] hover:text-white hover:bg-white/5"
+                }`}
             >
-              <Icon className="h-5 w-5" />
-              <span className="text-center leading-tight">{tab.label}</span>
+              <Icon className={`h-6 w-6 ${isActive ? "scale-110" : ""}`} />
+              <span className="text-[10px] text-center leading-tight font-medium">{tab.label.split(' ')[0]}</span>
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-8 bg-[#C1FF72] rounded-r-full shadow-[0_0_10px_#C1FF72]" />
+              )}
             </button>
           );
         })}
       </div>
 
-      {/* Content Panel */}
-      <div className="w-72 bg-card border-r border-border flex flex-col">
-        <div className="p-4 border-b border-border">
-          <h2 className="font-semibold text-foreground">
+      {/* Content Panel - Dark & Elegant */}
+      <div className="w-[320px] bg-[#0A0A0A] border-r border-[#1F1F1F] flex flex-col">
+        <div className="p-6 border-b border-[#1F1F1F]">
+          <h2 className="text-lg font-semibold text-white tracking-tight">
             {sidebarTabs.find(t => t.id === activeTab)?.label}
           </h2>
         </div>
@@ -161,72 +165,96 @@ const VideoEditorSidebar = ({
         <ScrollArea className="flex-1">
           {/* Slideshow Tab */}
           {activeTab === "slideshow" && (
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-4">
               {scenes.map((scene) => (
-                <div 
+                <div
                   key={scene.id}
-                  className={`flex gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                    scene.isActive 
-                      ? "bg-primary/10 border border-primary/30" 
-                      : "hover:bg-muted/50"
-                  }`}
+                  className={`group relative flex flex-col gap-2 p-3 rounded-xl transition-all border ${scene.isActive
+                    ? "bg-[#1A1A1A] border-[#C1FF72]/40 shadow-lg shadow-black/40"
+                    : "bg-[#0F0F0F] border-transparent hover:bg-[#151515] hover:border-white/10"
+                    }`}
                   onClick={() => onSceneSelect(scene.id)}
                 >
-                  <div className="relative w-20 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
-                    {scene.thumbnailUrl ? (
-                      <img 
-                        src={scene.thumbnailUrl} 
-                        alt={scene.label}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Film className="h-5 w-5 text-muted-foreground" />
+                  <div className="flex gap-4">
+                    <div className="relative w-28 h-16 rounded-lg overflow-hidden bg-[#222] flex-shrink-0 shadow-inner">
+                      {scene.thumbnailUrl ? (
+                        <img
+                          src={scene.thumbnailUrl}
+                          alt={scene.label}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Film className="h-6 w-6 text-[#444]" />
+                        </div>
+                      )}
+
+                      {/* Hover Overlay */}
+                      <button
+                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSceneChange(scene.id);
+                        }}
+                      >
+                        <div className="bg-white/10 p-2 rounded-full border border-white/20">
+                          <Edit3 className="h-4 w-4 text-white" />
+                        </div>
+                      </button>
+                    </div>
+
+                    <div className="flex-1 min-w-0 py-1">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <p className="text-sm font-semibold text-white truncate">{scene.label}</p>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#666] hover:text-white">
+                          <MoreVertical className="h-3 w-3" />
+                        </Button>
                       </div>
-                    )}
-                    <button 
-                      className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSceneChange(scene.id);
-                      }}
-                    >
-                      <span className="text-[10px] text-white flex items-center gap-1">
-                        <Edit3 className="h-3 w-3" />
-                        Change
-                      </span>
-                    </button>
+                      <p className="text-xs text-[#8E8E8E] font-medium">{scene.duration}</p>
+                      {scene.isActive && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="h-1.5 w-1.5 rounded-full bg-[#C1FF72] animate-pulse" />
+                          <span className="text-[10px] text-[#C1FF72] font-semibold uppercase tracking-wider">Currently visible</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{scene.label}</p>
-                    <p className="text-xs text-muted-foreground">{scene.duration}</p>
-                    {scene.isActive && (
-                      <span className="text-[10px] text-primary">Currently visible</span>
-                    )}
+                  {/* Drag Handle (Simulated) */}
+                  <div className="absolute left-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex flex-col gap-0.5">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="flex gap-0.5">
+                          <div className="w-0.5 h-0.5 rounded-full bg-[#444]" />
+                          <div className="w-0.5 h-0.5 rounded-full bg-[#444]" />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-
-                  <Button variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0">
-                    <MoreVertical className="h-3 w-3" />
-                  </Button>
                 </div>
               ))}
 
-              <Button variant="outline" size="sm" className="w-full mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-4 border-[#1F1F1F] bg-[#0F0F0F] text-white hover:bg-[#1A1A1A] hover:border-white/20 h-11 rounded-xl"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Scene
               </Button>
 
-              <div className="pt-4 border-t border-border mt-4">
-                <p className="text-sm font-medium text-foreground mb-1">
-                  Need more images or videos?
-                </p>
-                <p className="text-xs text-muted-foreground mb-3">
-                  Here is our recommended list of stock image libraries.
-                </p>
-                <Button variant="outline" size="sm" className="w-full">
-                  Discover
-                </Button>
+              <div className="pt-6 border-t border-[#1F1F1F] mt-6">
+                <div className="bg-gradient-to-br from-primary/10 to-transparent p-4 rounded-xl border border-primary/5">
+                  <p className="text-sm font-semibold text-white mb-2">
+                    Need more visuals?
+                  </p>
+                  <p className="text-xs text-[#8E8E8E] mb-4 leading-relaxed">
+                    Check out our recommended stock libraries for high-quality assets.
+                  </p>
+                  <Button variant="outline" size="sm" className="w-full border-[#1F1F1F] bg-[#0F0F0F] text-white hover:bg-[#1A1A1A] h-9">
+                    Discover Libraries
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -238,28 +266,39 @@ const VideoEditorSidebar = ({
                 <Label htmlFor="banner-enabled" className="text-sm font-medium">
                   Enable Banner
                 </Label>
-                <Switch 
+                <Switch
                   id="banner-enabled"
-                  checked={overlaySettings.banner.enabled} 
-                  onCheckedChange={(checked) => updateBanner({ enabled: checked })} 
+                  checked={overlaySettings.banner.enabled}
+                  onCheckedChange={(checked) => updateBanner({ enabled: checked })}
                 />
               </div>
 
               {overlaySettings.banner.enabled && (
                 <>
                   <div className="space-y-2">
-                    <Label className="text-sm">Banner Text</Label>
-                    <Input 
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium text-white/70">Banner Text</Label>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-[#C1FF72] hover:text-[#C1FF72] hover:bg-[#C1FF72]/10"
+                        onClick={() => onAIAction?.("improve_banner_text", { text: overlaySettings.banner.text })}
+                      >
+                        <Sparkles className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <Input
                       value={overlaySettings.banner.text}
                       onChange={(e) => updateBanner({ text: e.target.value })}
                       placeholder="Enter banner text..."
+                      className="bg-[#1A1A1A] border-[#333] text-white focus:border-[#C1FF72]/50"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Position</Label>
-                    <RadioGroup 
-                      value={overlaySettings.banner.position} 
+                    <RadioGroup
+                      value={overlaySettings.banner.position}
                       onValueChange={(val) => updateBanner({ position: val as "top" | "bottom" })}
                     >
                       <div className="flex items-center space-x-2">
@@ -276,25 +315,25 @@ const VideoEditorSidebar = ({
                   <div className="space-y-2">
                     <Label className="text-sm">Text Alignment</Label>
                     <div className="flex gap-2">
-                      <Button 
-                        variant={overlaySettings.banner.alignment === "left" ? "default" : "outline"} 
-                        size="icon" 
+                      <Button
+                        variant={overlaySettings.banner.alignment === "left" ? "default" : "outline"}
+                        size="icon"
                         className="h-8 w-8"
                         onClick={() => updateBanner({ alignment: "left" })}
                       >
                         <AlignLeft className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant={overlaySettings.banner.alignment === "center" ? "default" : "outline"} 
-                        size="icon" 
+                      <Button
+                        variant={overlaySettings.banner.alignment === "center" ? "default" : "outline"}
+                        size="icon"
                         className="h-8 w-8"
                         onClick={() => updateBanner({ alignment: "center" })}
                       >
                         <AlignCenter className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant={overlaySettings.banner.alignment === "right" ? "default" : "outline"} 
-                        size="icon" 
+                      <Button
+                        variant={overlaySettings.banner.alignment === "right" ? "default" : "outline"}
+                        size="icon"
                         className="h-8 w-8"
                         onClick={() => updateBanner({ alignment: "right" })}
                       >
@@ -306,13 +345,13 @@ const VideoEditorSidebar = ({
                   <div className="space-y-2">
                     <Label className="text-sm">Background Color</Label>
                     <div className="flex gap-2">
-                      <Input 
-                        type="color" 
+                      <Input
+                        type="color"
                         value={overlaySettings.banner.backgroundColor}
                         onChange={(e) => updateBanner({ backgroundColor: e.target.value })}
                         className="w-12 h-8 p-1 cursor-pointer"
                       />
-                      <Input 
+                      <Input
                         value={overlaySettings.banner.backgroundColor}
                         onChange={(e) => updateBanner({ backgroundColor: e.target.value })}
                         className="flex-1"
@@ -331,10 +370,10 @@ const VideoEditorSidebar = ({
                 <Label htmlFor="endscreen-enabled" className="text-sm font-medium">
                   Enable End Screen
                 </Label>
-                <Switch 
+                <Switch
                   id="endscreen-enabled"
-                  checked={overlaySettings.endScreen.enabled} 
-                  onCheckedChange={(checked) => updateEndScreen({ enabled: checked })} 
+                  checked={overlaySettings.endScreen.enabled}
+                  onCheckedChange={(checked) => updateEndScreen({ enabled: checked })}
                 />
               </div>
 
@@ -343,7 +382,7 @@ const VideoEditorSidebar = ({
                   <div className="space-y-2">
                     <Label className="text-sm">Duration (seconds)</Label>
                     <div className="flex items-center gap-3">
-                      <Slider 
+                      <Slider
                         value={[overlaySettings.endScreen.duration]}
                         onValueChange={([val]) => updateEndScreen({ duration: val })}
                         min={3}
@@ -356,11 +395,22 @@ const VideoEditorSidebar = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm">CTA Button Text</Label>
-                    <Input 
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium text-white/70">CTA Button Text</Label>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-[#C1FF72] hover:text-[#C1FF72] hover:bg-[#C1FF72]/10"
+                        onClick={() => onAIAction?.("improve_cta_text", { text: overlaySettings.endScreen.ctaText })}
+                      >
+                        <Sparkles className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <Input
                       value={overlaySettings.endScreen.ctaText}
                       onChange={(e) => updateEndScreen({ ctaText: e.target.value })}
                       placeholder="e.g., Learn More, Shop Now"
+                      className="bg-[#1A1A1A] border-[#333] text-white focus:border-[#C1FF72]/50"
                     />
                   </div>
 
@@ -368,7 +418,7 @@ const VideoEditorSidebar = ({
                     <Label className="text-sm">CTA Link URL</Label>
                     <div className="flex gap-2">
                       <Link className="h-4 w-4 text-muted-foreground mt-2" />
-                      <Input 
+                      <Input
                         value={overlaySettings.endScreen.ctaUrl}
                         onChange={(e) => updateEndScreen({ ctaUrl: e.target.value })}
                         placeholder="https://..."
@@ -379,23 +429,23 @@ const VideoEditorSidebar = ({
 
                   <div className="flex items-center justify-between">
                     <Label htmlFor="show-logo" className="text-sm">Show Logo</Label>
-                    <Switch 
+                    <Switch
                       id="show-logo"
-                      checked={overlaySettings.endScreen.showLogo} 
-                      onCheckedChange={(checked) => updateEndScreen({ showLogo: checked })} 
+                      checked={overlaySettings.endScreen.showLogo}
+                      onCheckedChange={(checked) => updateEndScreen({ showLogo: checked })}
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm">Background Color</Label>
                     <div className="flex gap-2">
-                      <Input 
-                        type="color" 
+                      <Input
+                        type="color"
                         value={overlaySettings.endScreen.backgroundColor}
                         onChange={(e) => updateEndScreen({ backgroundColor: e.target.value })}
                         className="w-12 h-8 p-1 cursor-pointer"
                       />
-                      <Input 
+                      <Input
                         value={overlaySettings.endScreen.backgroundColor}
                         onChange={(e) => updateEndScreen({ backgroundColor: e.target.value })}
                         className="flex-1"
@@ -403,7 +453,7 @@ const VideoEditorSidebar = ({
                     </div>
                   </div>
 
-                  <Button 
+                  <Button
                     variant={isPreviewingEndScreen ? "default" : "outline"}
                     className="w-full"
                     onClick={onToggleEndScreenPreview}
@@ -423,10 +473,10 @@ const VideoEditorSidebar = ({
                 <Label htmlFor="qr-enabled" className="text-sm font-medium">
                   Enable QR Code
                 </Label>
-                <Switch 
+                <Switch
                   id="qr-enabled"
-                  checked={overlaySettings.qrCode.enabled} 
-                  onCheckedChange={(checked) => updateQRCode({ enabled: checked })} 
+                  checked={overlaySettings.qrCode.enabled}
+                  onCheckedChange={(checked) => updateQRCode({ enabled: checked })}
                 />
               </div>
 
@@ -434,7 +484,7 @@ const VideoEditorSidebar = ({
                 <>
                   <div className="space-y-2">
                     <Label className="text-sm">Destination URL</Label>
-                    <Input 
+                    <Input
                       value={overlaySettings.qrCode.url}
                       onChange={(e) => updateQRCode({ url: e.target.value })}
                       placeholder="https://your-website.com"
@@ -443,8 +493,8 @@ const VideoEditorSidebar = ({
 
                   <div className="space-y-2">
                     <Label className="text-sm">Position</Label>
-                    <RadioGroup 
-                      value={overlaySettings.qrCode.position} 
+                    <RadioGroup
+                      value={overlaySettings.qrCode.position}
                       onValueChange={(val) => updateQRCode({ position: val as QRCodeSettings["position"] })}
                     >
                       <div className="grid grid-cols-2 gap-2">
@@ -471,7 +521,7 @@ const VideoEditorSidebar = ({
                   <div className="space-y-2">
                     <Label className="text-sm">Size</Label>
                     <div className="flex items-center gap-3">
-                      <Slider 
+                      <Slider
                         value={[overlaySettings.qrCode.size]}
                         onValueChange={([val]) => updateQRCode({ size: val })}
                         min={50}
@@ -484,7 +534,7 @@ const VideoEditorSidebar = ({
                   </div>
 
                   <div className="p-4 bg-muted rounded-lg flex items-center justify-center">
-                    <div 
+                    <div
                       className="bg-white rounded flex items-center justify-center"
                       style={{ width: overlaySettings.qrCode.size / 2, height: overlaySettings.qrCode.size / 2 }}
                     >
@@ -514,20 +564,19 @@ const VideoEditorSidebar = ({
                 <Label className="text-sm font-medium">Music Library</Label>
                 <div className="space-y-2">
                   {musicLibrary.map((track) => (
-                    <div 
+                    <div
                       key={track.id}
                       onClick={() => updateMusic({ selectedTrackId: track.id })}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                        overlaySettings.music.selectedTrackId === track.id 
-                          ? "bg-primary/10 border border-primary/30" 
-                          : "bg-muted/50 hover:bg-muted"
-                      }`}
+                      className={`p-3 rounded-lg cursor-pointer transition-colors ${overlaySettings.music.selectedTrackId === track.id
+                        ? "bg-primary/10 border border-primary/30"
+                        : "bg-muted/50 hover:bg-muted"
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -558,9 +607,9 @@ const VideoEditorSidebar = ({
                 <div className="space-y-3 pt-3 border-t border-border">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm">Volume</Label>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       className="h-6 w-6"
                       onClick={() => updateMusic({ isMuted: !overlaySettings.music.isMuted })}
                     >
@@ -571,7 +620,7 @@ const VideoEditorSidebar = ({
                       )}
                     </Button>
                   </div>
-                  <Slider 
+                  <Slider
                     value={[overlaySettings.music.volume]}
                     onValueChange={([val]) => updateMusic({ volume: val })}
                     min={0}
@@ -589,13 +638,23 @@ const VideoEditorSidebar = ({
           {activeTab === "voice-script" && (
             <div className="p-4 space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Script</Label>
-                <Textarea 
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium text-white/70">Script</Label>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-[#C1FF72] hover:text-[#C1FF72] hover:bg-[#C1FF72]/10"
+                    onClick={() => onAIAction?.("improve_script", { script: overlaySettings.voice.script })}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                  </Button>
+                </div>
+                <Textarea
                   value={overlaySettings.voice.script}
                   onChange={(e) => updateVoice({ script: e.target.value })}
                   placeholder="Enter your voiceover script here..."
                   rows={6}
-                  className="resize-none"
+                  className="resize-none bg-[#1A1A1A] border-[#333] text-white focus:border-[#C1FF72]/50"
                 />
                 <p className="text-xs text-muted-foreground">
                   {overlaySettings.voice.script.length} characters • ~{Math.ceil(overlaySettings.voice.script.split(' ').filter(w => w).length / 150)} min read
@@ -604,8 +663,8 @@ const VideoEditorSidebar = ({
 
               <div className="space-y-2">
                 <Label className="text-sm">Voice</Label>
-                <RadioGroup 
-                  value={overlaySettings.voice.selectedVoice} 
+                <RadioGroup
+                  value={overlaySettings.voice.selectedVoice}
                   onValueChange={(val) => updateVoice({ selectedVoice: val })}
                 >
                   <div className="space-y-2">
@@ -637,7 +696,7 @@ const VideoEditorSidebar = ({
               <div className="space-y-2">
                 <Label className="text-sm">Speed</Label>
                 <div className="flex items-center gap-3">
-                  <Slider 
+                  <Slider
                     value={[overlaySettings.voice.speed]}
                     onValueChange={([val]) => updateVoice({ speed: val })}
                     min={0.5}
@@ -676,8 +735,8 @@ const VideoEditorSidebar = ({
                 </p>
               </div>
 
-              <RadioGroup 
-                value={aiInputSource} 
+              <RadioGroup
+                value={aiInputSource}
                 onValueChange={setAiInputSource}
                 className="space-y-3"
               >
