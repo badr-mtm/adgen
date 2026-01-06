@@ -20,7 +20,7 @@ export default function VideoEditorHeader({
     const navigate = useNavigate();
 
     return (
-        <div className="h-14 border-b bg-card flex items-center justify-between px-4 z-20">
+        <div className="h-14 border-b bg-card flex items-center justify-between px-4 z-20 transition-colors duration-300">
             <div className="flex items-center gap-6">
                 <Button
                     variant="ghost"
@@ -55,15 +55,15 @@ export default function VideoEditorHeader({
             </div>
 
             <div className="flex-1 flex justify-center px-12">
-                <h1 className="text-sm font-semibold truncate max-w-[400px]">{title}</h1>
+                <h1 className="text-sm font-semibold truncate max-w-[400px] text-foreground">{title}</h1>
             </div>
 
             <div className="flex items-center gap-3">
                 <div className="relative group">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    <div className="flex items-center gap-1 pl-7 pr-3 py-1.5 bg-muted/50 rounded-md border border-transparent group-hover:border-border transition-all cursor-text">
+                    <div className="flex items-center gap-1 pl-7 pr-3 py-1.5 bg-accent/5 rounded-md border border-transparent group-hover:border-border transition-all cursor-text">
                         <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Search in editor...</span>
-                        <span className="text-[10px] bg-background border px-1 rounded text-muted-foreground">⌘K</span>
+                        <span className="text-[10px] bg-background border border-border px-1 rounded text-muted-foreground">⌘K</span>
                     </div>
                 </div>
             </div>

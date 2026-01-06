@@ -103,10 +103,10 @@ const VideoPreview = ({
   }, [isPlaying, displayedVideo]);
 
   return (
-    <div className="flex-1 bg-[#0A0A0A] flex flex-col">
+    <div className="flex-1 bg-preview-bg flex flex-col transition-colors duration-300">
       {/* Video Preview Area */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-12">
-        <div ref={containerRef} className="relative w-full max-w-5xl aspect-video rounded-[32px] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.8)] bg-black group ring-1 ring-white/10">
+        <div ref={containerRef} className="relative w-full max-w-5xl aspect-video rounded-[32px] overflow-hidden shadow-2xl bg-black group ring-1 ring-white/10">
           {/* Background Media with Transition */}
           <div
             className={`absolute inset-0 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
@@ -127,10 +127,10 @@ const VideoPreview = ({
                 className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-[#1A1A1A] via-black to-[#1A1A1A] flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-900 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-3">
-                  <Film className="h-10 w-10 text-[#222]" />
-                  <p className="text-[#333] text-sm font-bold uppercase tracking-widest">Awaiting Visual</p>
+                  <Film className="h-10 w-10 text-neutral-800" />
+                  <p className="text-neutral-700 text-sm font-bold uppercase tracking-widest">Awaiting Visual</p>
                 </div>
               </div>
             )}
@@ -142,8 +142,8 @@ const VideoPreview = ({
               <span className="text-[10px] font-black text-white uppercase tracking-widest whitespace-nowrap">Scene {currentSceneIndex + 1} / {scenes.length}</span>
               <div className="h-3 w-px bg-white/20" />
               <div className="flex items-center gap-1.5">
-                <Film className="h-3 w-3 text-[#C1FF72]" />
-                <span className="text-[10px] font-black text-[#C1FF72] uppercase tracking-widest">Video</span>
+                <Film className="h-3 w-3 text-primary" />
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Video</span>
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@ const VideoPreview = ({
           {/* Scene Progress Bar - Slim & High-end */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-white/5 z-30">
             <div
-              className="h-full bg-[#C1FF72] transition-all duration-100 ease-linear shadow-[0_0_10px_#C1FF72]"
+              className="h-full bg-primary transition-all duration-100 ease-linear shadow-[0_0_10px_hsl(var(--primary))]"
               style={{ width: `${sceneProgress * 100}%` }}
             />
           </div>
@@ -229,7 +229,7 @@ const VideoPreview = ({
                   </div>
 
                   {/* CTA Button - DESIGN MATCH */}
-                  <Button className="bg-[#C1FF72] hover:bg-[#D4FF9D] text-black font-black uppercase tracking-widest px-8 h-12 rounded-2xl shadow-[0_20px_40px_rgba(193,255,114,0.15)] transition-all flex items-center gap-3">
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest px-8 h-12 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.3)] transition-all flex items-center gap-3">
                     {ctaText}
                   </Button>
                 </div>

@@ -18,6 +18,59 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    --background: 120 20% 98%;
+    --foreground: 120 10% 5%;
+
+    --card: 120 10% 96%;
+    --card-foreground: 120 10% 5%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 120 10% 5%;
+
+    --primary: 85 45% 45%;
+    --primary-foreground: 120 20% 98%;
+
+    --secondary: 120 10% 90%;
+    --secondary-foreground: 120 10% 10%;
+
+    --muted: 120 10% 92%;
+    --muted-foreground: 120 5% 40%;
+
+    --accent: 85 45% 45%;
+    --accent-foreground: 120 20% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 120 20% 98%;
+
+    --border: 120 10% 88%;
+    --input: 120 10% 90%;
+    --ring: 85 45% 45%;
+
+    --radius: 0.75rem;
+    
+    --editor-panel: 120 10% 94%;
+    --preview-bg: 120 10% 90%;
+    --card-hover: 120 10% 92%;
+    
+    --shadow-soft: 0 4px 24px -2px hsl(120 20% 5% / 0.1);
+    --shadow-card: 0 2px 12px -1px hsl(120 20% 5% / 0.05);
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 120 10% 96%;
+    --sidebar-foreground: 120 10% 5%;
+    --sidebar-primary: 85 45% 45%;
+    --sidebar-primary-foreground: 120 20% 98%;
+    --sidebar-accent: 120 10% 92%;
+    --sidebar-accent-foreground: 120 10% 5%;
+    --sidebar-border: 120 10% 90%;
+    --sidebar-ring: 85 45% 45%;
+    
+    --gradient-premium: linear-gradient(135deg, hsl(85 45% 45% / 0.05), hsl(120 10% 94% / 0.8));
+    --gradient-card: linear-gradient(180deg, hsl(120 10% 98%), hsl(120 10% 95%));
+  }
+
+  .dark {
     --background: 120 8% 8%;
     --foreground: 120 5% 95%;
 
@@ -46,16 +99,12 @@ All colors MUST be HSL.
     --input: 120 10% 18%;
     --ring: 85 45% 65%;
 
-    --radius: 0.75rem;
-    
     --editor-panel: 120 12% 14%;
     --preview-bg: 120 15% 10%;
     --card-hover: 120 10% 16%;
     
     --shadow-soft: 0 4px 24px -2px hsl(120 20% 5% / 0.4);
     --shadow-card: 0 2px 12px -1px hsl(120 20% 5% / 0.3);
-    
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --sidebar-background: 120 10% 10%;
     --sidebar-foreground: 120 5% 95%;
@@ -68,11 +117,6 @@ All colors MUST be HSL.
     
     --gradient-premium: linear-gradient(135deg, hsl(85 45% 65% / 0.1), hsl(120 10% 12% / 0.8));
     --gradient-card: linear-gradient(180deg, hsl(120 10% 14%), hsl(120 10% 11%));
-  }
-
-  .dark {
-    --background: 120 8% 8%;
-    --foreground: 120 5% 95%;
   }
 }
 

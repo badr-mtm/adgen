@@ -14,9 +14,9 @@ const EndScreen = ({ settings, qrSettings, brandName, brandLogo, isActive }: End
   if (!settings.enabled || !isActive) return null;
 
   return (
-    <div 
+    <div
       className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-500 z-20"
-      style={{ 
+      style={{
         backgroundColor: settings.backgroundColor,
         backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : undefined,
         backgroundSize: 'cover',
@@ -25,7 +25,7 @@ const EndScreen = ({ settings, qrSettings, brandName, brandLogo, isActive }: End
     >
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
-      
+
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center text-center px-8 space-y-6">
         {/* Logo */}
@@ -42,15 +42,15 @@ const EndScreen = ({ settings, qrSettings, brandName, brandLogo, isActive }: End
         )}
 
         {/* Brand Name */}
-        <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+        <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight drop-shadow-lg">
           {brandName}
         </h2>
 
         {/* CTA Button */}
         {settings.ctaText && (
-          <Button 
+          <Button
             size="lg"
-            className="bg-white text-black hover:bg-white/90 font-semibold px-8 py-6 text-lg rounded-full shadow-2xl transition-transform hover:scale-105"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-8 py-6 text-lg rounded-[20px] shadow-2xl transition-transform hover:scale-105 border border-white/10"
           >
             {settings.ctaText}
           </Button>
@@ -58,16 +58,16 @@ const EndScreen = ({ settings, qrSettings, brandName, brandLogo, isActive }: End
 
         {/* QR Code on End Screen */}
         {qrSettings.enabled && qrSettings.url && (
-          <div className="mt-6 p-3 bg-white rounded-xl shadow-xl">
-            <QrCode className="h-24 w-24 text-black" />
-            <p className="text-xs text-gray-600 mt-2 max-w-[120px] truncate">{qrSettings.url}</p>
+          <div className="mt-6 p-4 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5">
+            <QrCode className="h-20 w-20 text-black" />
+            <p className="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-widest max-w-[120px] truncate">{qrSettings.url.replace('https://', '')}</p>
           </div>
         )}
       </div>
 
       {/* Decorative Elements */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+      <div className="absolute top-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px]" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px]" />
     </div>
   );
 };

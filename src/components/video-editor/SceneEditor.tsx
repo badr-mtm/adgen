@@ -138,25 +138,26 @@ const SceneEditor = ({
 
               {/* Visual Description */}
               <div className="space-y-2">
-                <Label>Visual Description</Label>
+                <Label className="text-sm font-semibold text-foreground">Visual Description</Label>
                 <Textarea
                   value={editedScene.visualDescription}
                   onChange={(e) => setEditedScene({ ...editedScene, visualDescription: e.target.value })}
                   placeholder="Describe what should be shown..."
                   rows={3}
+                  className="bg-accent/5 border-border focus:border-primary/50"
                 />
               </div>
 
               {/* Generation Actions */}
-              <div className="p-4 bg-muted/30 rounded-xl border border-border space-y-4">
+              <div className="p-4 bg-muted/20 rounded-xl border border-border space-y-4">
                 <div className="space-y-2">
-                  <Label>AI Creative Direction</Label>
+                  <Label className="text-sm font-semibold text-foreground">AI Creative Direction</Label>
                   <Textarea
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
                     placeholder="Add specific instructions for generation..."
                     rows={2}
-                    className="bg-background"
+                    className="bg-background border-border"
                   />
                 </div>
 
@@ -187,7 +188,7 @@ const SceneEditor = ({
                         variant={selectedModel === "luma" ? "secondary" : "ghost"}
                         size="sm"
                         onClick={() => setSelectedModel("luma")}
-                        className="text-[10px] h-6 px-2"
+                        className={`text-[10px] h-6 px-2 ${selectedModel === "luma" ? "bg-primary/20 text-primary hover:bg-primary/30" : ""}`}
                       >
                         Luma (Cinematic)
                       </Button>
@@ -195,7 +196,7 @@ const SceneEditor = ({
                         variant={selectedModel === "kling" ? "secondary" : "ghost"}
                         size="sm"
                         onClick={() => setSelectedModel("kling")}
-                        className="text-[10px] h-6 px-2"
+                        className={`text-[10px] h-6 px-2 ${selectedModel === "kling" ? "bg-primary/20 text-primary hover:bg-primary/30" : ""}`}
                       >
                         Kling (Realistic)
                       </Button>
@@ -227,7 +228,7 @@ const SceneEditor = ({
             <>
               {/* Voiceover */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
+                <Label className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <Mic className="h-4 w-4" />
                   Voiceover Script
                 </Label>
@@ -236,17 +237,19 @@ const SceneEditor = ({
                   onChange={(e) => setEditedScene({ ...editedScene, voiceover: e.target.value })}
                   placeholder="Enter voiceover text..."
                   rows={4}
+                  className="bg-accent/5 border-border focus:border-primary/50"
                 />
               </div>
 
               {/* Suggested Visuals */}
               <div className="space-y-2">
-                <Label>Camera & Composition Notes</Label>
+                <Label className="text-sm font-semibold text-foreground">Camera & Composition Notes</Label>
                 <Textarea
                   value={editedScene.suggestedVisuals}
                   onChange={(e) => setEditedScene({ ...editedScene, suggestedVisuals: e.target.value })}
                   placeholder="Camera angles, composition details..."
                   rows={3}
+                  className="bg-accent/5 border-border focus:border-primary/50"
                 />
               </div>
             </>

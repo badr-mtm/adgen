@@ -29,13 +29,12 @@ const OverlayElements = ({ banner, qrCode }: OverlayElementsProps) => {
     <>
       {/* Banner */}
       {banner.enabled && (
-        <div 
-          className={`absolute left-0 right-0 px-4 py-3 ${
-            banner.position === "top" ? "top-0" : "bottom-0"
-          } ${getBannerAlignment()} z-10`}
+        <div
+          className={`absolute left-0 right-0 px-4 py-3 ${banner.position === "top" ? "top-0" : "bottom-0"
+            } ${getBannerAlignment()} z-10`}
           style={{ backgroundColor: banner.backgroundColor }}
         >
-          <p 
+          <p
             className="text-sm font-medium"
             style={{ color: banner.textColor }}
           >
@@ -46,11 +45,11 @@ const OverlayElements = ({ banner, qrCode }: OverlayElementsProps) => {
 
       {/* QR Code */}
       {qrCode.enabled && qrCode.url && (
-        <div 
-          className={`absolute ${getQRPosition()} z-10`}
+        <div
+          className={`absolute ${getQRPosition()} z-10 scale-transition`}
           style={{ width: qrCode.size, height: qrCode.size }}
         >
-          <div className="w-full h-full bg-white rounded-lg p-1.5 flex items-center justify-center shadow-lg">
+          <div className="w-full h-full bg-white rounded-xl p-2 flex items-center justify-center shadow-2xl ring-1 ring-black/5">
             <QrCode className="w-full h-full text-black" />
           </div>
         </div>

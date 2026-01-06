@@ -220,25 +220,25 @@ const AIAssistantPanel = ({
   }
 
   return (
-    <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden">
+    <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
             <Sparkles className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">AI Assistant</h3>
+            <h3 className="font-semibold text-sm text-foreground">AI Assistant</h3>
             <p className="text-xs text-muted-foreground">Scene {currentSceneIndex + 1}</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+        <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground">
           <X className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Quick Actions */}
-      <div className="px-3 py-2 border-b border-border flex gap-1 overflow-x-auto scrollbar-hide">
+      <div className="px-3 py-2 border-b border-border flex gap-1 overflow-x-auto scrollbar-hide bg-muted/50">
         {quickActions.map((action) => {
           const Icon = action.icon;
           return (
@@ -246,11 +246,11 @@ const AIAssistantPanel = ({
               key={action.action}
               variant="outline"
               size="sm"
-              className="flex-shrink-0 h-7 text-xs gap-1"
+              className="flex-shrink-0 h-7 text-[10px] gap-1 bg-background border-border hover:bg-primary/5 hover:border-primary/30 transition-all font-medium"
               onClick={() => handleQuickAction(action.action)}
               disabled={isLoading}
             >
-              <Icon className="h-3 w-3" />
+              <Icon className="h-3 w-3 text-primary" />
               {action.label}
             </Button>
           );
@@ -266,12 +266,12 @@ const AIAssistantPanel = ({
               className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2 ${message.role === "user"
+                className={`max-w-[85%] rounded-2xl px-4 py-2 shadow-sm ${message.role === "user"
                   ? "bg-primary text-primary-foreground rounded-br-md"
-                  : "bg-muted text-foreground rounded-bl-md"
+                  : "bg-muted text-foreground rounded-bl-md border border-border/50"
                   }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
               </div>
             </div>
           ))}
