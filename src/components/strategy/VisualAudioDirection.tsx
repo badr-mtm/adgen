@@ -11,10 +11,17 @@ interface VisualDirectionValue {
 }
 
 interface VisualAudioDirectionProps {
-  value: VisualDirectionValue;
+  value?: VisualDirectionValue;
   onChange: (value: VisualDirectionValue) => void;
   disabled?: boolean;
 }
+
+const defaultValue: VisualDirectionValue = {
+  tone: "cinematic",
+  cameraMovement: "subtle",
+  musicMood: "",
+  voiceoverStyle: "warm"
+};
 
 const toneOptions = [
   { id: "cinematic" as const, label: "Cinematic", description: "Film-like, dramatic" },
@@ -51,6 +58,8 @@ export function VisualAudioDirection({
   onChange,
   disabled,
 }: VisualAudioDirectionProps) {
+  const safeValue = value ?? defaultValue;
+  
   return (
     <div className="space-y-6">
       {/* Visual Tone */}
@@ -61,11 +70,11 @@ export function VisualAudioDirection({
         </Label>
         <div className="grid grid-cols-4 gap-2">
           {toneOptions.map((option) => {
-            const isSelected = value.tone === option.id;
+            const isSelected = safeValue.tone === option.id;
             return (
               <button
                 key={option.id}
-                onClick={() => !disabled && onChange({ ...value, tone: option.id })}
+                onClick={() => !disabled && onChange({ ...safeValue, tone: option.id })}
                 disabled={disabled}
                 className={cn(
                   "p-2 rounded-lg border text-center transition-all",
@@ -97,12 +106,12 @@ export function VisualAudioDirection({
         </Label>
         <div className="grid grid-cols-4 gap-2">
           {cameraOptions.map((option) => {
-            const isSelected = value.cameraMovement === option.id;
+            const isSelected = safeValue.cameraMovement === option.id;
             return (
               <button
                 key={option.id}
                 onClick={() =>
-                  !disabled && onChange({ ...value, cameraMovement: option.id })
+                  !disabled && onChange({ ...safeValue, cameraMovement: option.id })
                 }
                 disabled={disabled}
                 className={cn(
@@ -134,8 +143,8 @@ export function VisualAudioDirection({
           Music Mood
         </Label>
         <Input
-          value={value.musicMood}
-          onChange={(e) => onChange({ ...value, musicMood: e.target.value })}
+          value={safeValue.musicMood}
+          onChange={(e) => onChange({ ...safeValue, musicMood: e.target.value })}
           placeholder="Describe the music mood..."
           disabled={disabled}
         />
@@ -143,11 +152,11 @@ export function VisualAudioDirection({
           {musicMoodSuggestions.map((mood) => (
             <button
               key={mood}
-              onClick={() => !disabled && onChange({ ...value, musicMood: mood })}
+              onClick={() => !disabled && onChange({ ...safeValue, musicMood: mood })}
               disabled={disabled}
               className={cn(
                 "text-xs px-2 py-1 rounded-full border border-border hover:border-primary/30 hover:bg-primary/5 transition-all",
-                value.musicMood === mood && "bg-primary/10 border-primary/30",
+                safeValue.musicMood === mood && "bg-primary/10 border-primary/30",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -165,12 +174,12 @@ export function VisualAudioDirection({
         </Label>
         <div className="grid grid-cols-4 gap-2">
           {voiceoverOptions.map((option) => {
-            const isSelected = value.voiceoverStyle === option.id;
+            const isSelected = safeValue.voiceoverStyle === option.id;
             return (
               <button
                 key={option.id}
                 onClick={() =>
-                  !disabled && onChange({ ...value, voiceoverStyle: option.id })
+                  !disabled && onChange({ ...safeValue, voiceoverStyle: option.id })
                 }
                 disabled={disabled}
                 className={cn(

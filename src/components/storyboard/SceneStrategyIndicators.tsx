@@ -18,6 +18,11 @@ export const SceneStrategyIndicators = ({
 }: SceneStrategyIndicatorsProps) => {
   const indicators: { icon: React.ReactNode; label: string; description: string; color: string }[] = [];
   
+  // Early return if strategy is missing required properties
+  if (!strategy?.coreMessage || !strategy?.cta || !strategy?.visualDirection) {
+    return null;
+  }
+  
   // Parse scene duration to seconds
   const durationSeconds = parseInt(sceneDuration.replace('s', '')) || 5;
   
@@ -27,7 +32,7 @@ export const SceneStrategyIndicators = ({
   const sceneEndTime = sceneStartTime + durationSeconds;
   
   // Check if this scene is the hook scene (based on hookTiming)
-  if (sceneStartTime <= strategy.hookTiming && strategy.hookTiming < sceneEndTime) {
+  if (typeof strategy.hookTiming === 'number' && sceneStartTime <= strategy.hookTiming && strategy.hookTiming < sceneEndTime) {
     indicators.push({
       icon: <Target className="h-3 w-3" />,
       label: "Hook",
@@ -37,7 +42,7 @@ export const SceneStrategyIndicators = ({
   }
   
   // Check if this is the first scene (emotional angle introduction)
-  if (sceneNumber === 1) {
+  if (sceneNumber === 1 && strategy.coreMessage.emotionalAngle) {
     const angleLabels = {
       trust: "Build Trust",
       aspiration: "Inspire Aspiration", 
@@ -53,7 +58,7 @@ export const SceneStrategyIndicators = ({
   }
   
   // Check if this scene has the logo reveal
-  if (sceneStartTime <= strategy.logoRevealTiming && strategy.logoRevealTiming < sceneEndTime) {
+  if (typeof strategy.logoRevealTiming === 'number' && sceneStartTime <= strategy.logoRevealTiming && strategy.logoRevealTiming < sceneEndTime) {
     indicators.push({
       icon: <Palette className="h-3 w-3" />,
       label: "Logo Reveal",
@@ -63,22 +68,24 @@ export const SceneStrategyIndicators = ({
   }
   
   // Check if this is the CTA scene (based on placement)
-  const isCtaScene = 
-    (strategy.cta.placement === "early" && sceneNumber === 1) ||
-    (strategy.cta.placement === "mid" && sceneNumber === Math.ceil(totalScenes / 2)) ||
-    (strategy.cta.placement === "end" && sceneNumber === totalScenes);
+  const ctaPlacement = strategy.cta.placement;
+  const isCtaScene = ctaPlacement && (
+    (ctaPlacement === "early" && sceneNumber === 1) ||
+    (ctaPlacement === "mid" && sceneNumber === Math.ceil(totalScenes / 2)) ||
+    (ctaPlacement === "end" && sceneNumber === totalScenes)
+  );
   
   if (isCtaScene) {
     indicators.push({
       icon: <MousePointer className="h-3 w-3" />,
       label: "CTA",
-      description: `CTA: "${strategy.cta.text}" (${strategy.cta.strength})`,
+      description: `CTA: "${strategy.cta.text || 'Call to action'}" (${strategy.cta.strength || 'soft'})`,
       color: "bg-green-500/10 text-green-500 border-green-500/30"
     });
   }
   
   // Check if this scene should feature the core message
-  if (sceneNumber === Math.ceil(totalScenes / 2)) {
+  if (sceneNumber === Math.ceil(totalScenes / 2) && strategy.coreMessage.primary) {
     indicators.push({
       icon: <MessageSquare className="h-3 w-3" />,
       label: "Core Message",
@@ -88,7 +95,7 @@ export const SceneStrategyIndicators = ({
   }
   
   // Visual tone indicator for first scene
-  if (sceneNumber === 1) {
+  if (sceneNumber === 1 && strategy.pacing && strategy.visualDirection.tone) {
     indicators.push({
       icon: <Clock className="h-3 w-3" />,
       label: strategy.pacing,

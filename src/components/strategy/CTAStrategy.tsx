@@ -10,10 +10,16 @@ interface CTAValue {
 }
 
 interface CTAStrategyProps {
-  value: CTAValue;
+  value?: CTAValue;
   onChange: (value: CTAValue) => void;
   disabled?: boolean;
 }
+
+const defaultValue: CTAValue = {
+  text: "",
+  strength: "soft",
+  placement: "end"
+};
 
 const ctaExamples = [
   "Visit your nearest location",
@@ -35,6 +41,8 @@ const placementOptions = [
 ];
 
 export function CTAStrategy({ value, onChange, disabled }: CTAStrategyProps) {
+  const safeValue = value ?? defaultValue;
+  
   return (
     <div className="space-y-5">
       {/* CTA Text */}
@@ -44,8 +52,8 @@ export function CTAStrategy({ value, onChange, disabled }: CTAStrategyProps) {
           Call-to-Action Text
         </Label>
         <Input
-          value={value.text}
-          onChange={(e) => onChange({ ...value, text: e.target.value })}
+          value={safeValue.text}
+          onChange={(e) => onChange({ ...safeValue, text: e.target.value })}
           placeholder="Enter your CTA..."
           disabled={disabled}
         />
@@ -53,11 +61,11 @@ export function CTAStrategy({ value, onChange, disabled }: CTAStrategyProps) {
           {ctaExamples.map((example) => (
             <button
               key={example}
-              onClick={() => !disabled && onChange({ ...value, text: example })}
+              onClick={() => !disabled && onChange({ ...safeValue, text: example })}
               disabled={disabled}
               className={cn(
                 "text-xs px-2 py-1 rounded-full border border-border hover:border-primary/30 hover:bg-primary/5 transition-all",
-                value.text === example && "bg-primary/10 border-primary/30",
+                safeValue.text === example && "bg-primary/10 border-primary/30",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -75,11 +83,11 @@ export function CTAStrategy({ value, onChange, disabled }: CTAStrategyProps) {
         </Label>
         <div className="grid grid-cols-2 gap-3">
           {strengthOptions.map((option) => {
-            const isSelected = value.strength === option.id;
+            const isSelected = safeValue.strength === option.id;
             return (
               <button
                 key={option.id}
-                onClick={() => !disabled && onChange({ ...value, strength: option.id })}
+                onClick={() => !disabled && onChange({ ...safeValue, strength: option.id })}
                 disabled={disabled}
                 className={cn(
                   "p-3 rounded-xl border text-center transition-all",
@@ -114,11 +122,11 @@ export function CTAStrategy({ value, onChange, disabled }: CTAStrategyProps) {
         </Label>
         <div className="grid grid-cols-3 gap-3">
           {placementOptions.map((option) => {
-            const isSelected = value.placement === option.id;
+            const isSelected = safeValue.placement === option.id;
             return (
               <button
                 key={option.id}
-                onClick={() => !disabled && onChange({ ...value, placement: option.id })}
+                onClick={() => !disabled && onChange({ ...safeValue, placement: option.id })}
                 disabled={disabled}
                 className={cn(
                   "p-3 rounded-xl border text-center transition-all",

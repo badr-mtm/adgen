@@ -20,20 +20,28 @@ const emotionalAngles = [
 ];
 
 interface CoreMessageProps {
-  value: CoreMessageValue;
+  value?: CoreMessageValue;
   onChange: (value: CoreMessageValue) => void;
   disabled?: boolean;
 }
 
+const defaultValue: CoreMessageValue = {
+  primary: "",
+  supporting: "",
+  emotionalAngle: "trust"
+};
+
 export function CoreMessage({ value, onChange, disabled }: CoreMessageProps) {
+  const safeValue = value ?? defaultValue;
+  
   return (
     <div className="space-y-4">
       {/* Primary Message */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Primary Message</Label>
         <Textarea
-          value={value.primary}
-          onChange={(e) => onChange({ ...value, primary: e.target.value })}
+          value={safeValue.primary}
+          onChange={(e) => onChange({ ...safeValue, primary: e.target.value })}
           placeholder="One sentence that captures your core value proposition..."
           className="min-h-[80px] resize-none"
           disabled={disabled}
@@ -47,8 +55,8 @@ export function CoreMessage({ value, onChange, disabled }: CoreMessageProps) {
       <div className="space-y-2">
         <Label className="text-sm font-medium">Supporting Message</Label>
         <Input
-          value={value.supporting}
-          onChange={(e) => onChange({ ...value, supporting: e.target.value })}
+          value={safeValue.supporting}
+          onChange={(e) => onChange({ ...safeValue, supporting: e.target.value })}
           placeholder="Additional context or proof point..."
           disabled={disabled}
         />
@@ -60,13 +68,13 @@ export function CoreMessage({ value, onChange, disabled }: CoreMessageProps) {
         <div className="grid grid-cols-4 gap-2">
           {emotionalAngles.map((angle) => {
             const Icon = angle.icon;
-            const isSelected = value.emotionalAngle === angle.id;
+            const isSelected = safeValue.emotionalAngle === angle.id;
 
             return (
               <button
                 key={angle.id}
                 onClick={() =>
-                  !disabled && onChange({ ...value, emotionalAngle: angle.id })
+                  !disabled && onChange({ ...safeValue, emotionalAngle: angle.id })
                 }
                 disabled={disabled}
                 className={cn(
