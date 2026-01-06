@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export function DashboardHeader() {
   const navigate = useNavigate();
@@ -38,6 +39,8 @@ export function DashboardHeader() {
       </div>
 
       <div className="flex items-center gap-2">
+        <ThemeToggle />
+
         <Button
           variant="ghost"
           size="icon"
@@ -45,7 +48,7 @@ export function DashboardHeader() {
         >
           <HelpCircle className="h-5 w-5" />
         </Button>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

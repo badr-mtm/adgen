@@ -241,6 +241,36 @@ const SceneEditor = ({
                 />
               </div>
 
+              {/* Tone of Voice Selection - Roadmap Milestone */}
+              <div className="space-y-3 bg-primary/5 p-4 rounded-xl border border-primary/20">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2 text-sm font-bold text-primary uppercase tracking-wider">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Tone of Voice Strategy
+                  </Label>
+                  <Button variant="ghost" size="sm" className="h-6 text-[10px] text-primary" onClick={() => { }}>
+                    AI Analyze Brand
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: 'premium', label: 'Premium', desc: 'Sleek & Sophisticated' },
+                    { id: 'urgent', label: 'Urgent', desc: 'Fast & Direct' },
+                    { id: 'educational', label: 'Educational', desc: 'Clear & Trustworthy' },
+                    { id: 'emotional', label: 'Emotional', desc: 'Impactful & Soft' }
+                  ].map((tone) => (
+                    <button
+                      key={tone.id}
+                      onClick={() => setEditedScene({ ...editedScene, suggestedVisuals: `[Tone: ${tone.label}] ${editedScene.suggestedVisuals}` })}
+                      className="group p-2 rounded-lg border border-border bg-background hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
+                    >
+                      <p className="text-[11px] font-bold text-foreground group-hover:text-primary transition-colors">{tone.label}</p>
+                      <p className="text-[9px] text-muted-foreground">{tone.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Suggested Visuals */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold text-foreground">Camera & Composition Notes</Label>

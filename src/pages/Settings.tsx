@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import {
   User,
   Palette,
@@ -222,6 +223,15 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Theme Preference */}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-accent/5 border border-border">
+                  <div>
+                    <Label className="text-sm font-semibold text-foreground">Theme Preference</Label>
+                    <p className="text-xs text-muted-foreground mt-1">Switch between light, dark, and system themes</p>
+                  </div>
+                  <ThemeToggle />
+                </div>
+
                 {/* Default Format */}
                 <div className="space-y-2">
                   <Label>Default Ad Format</Label>

@@ -59,7 +59,11 @@ const EndScreen = ({ settings, qrSettings, brandName, brandLogo, isActive }: End
         {/* QR Code on End Screen */}
         {qrSettings.enabled && qrSettings.url && (
           <div className="mt-6 p-4 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5">
-            <QrCode className="h-20 w-20 text-black" />
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrSettings.url)}`}
+              alt="QR Code"
+              className="h-20 w-20 object-contain mx-auto"
+            />
             <p className="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-widest max-w-[120px] truncate">{qrSettings.url.replace('https://', '')}</p>
           </div>
         )}

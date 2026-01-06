@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -275,6 +275,9 @@ export default function VideoEditor() {
     if (isPlaying) setIsPlaying(false);
   };
 
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [pendingAIAction, setPendingAIAction] = useState<{ action: string; message: string; timestamp: number } | null>(null);
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
@@ -302,14 +305,14 @@ export default function VideoEditor() {
     };
   });
 
-  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
-  const [pendingAIAction, setPendingAIAction] = useState<{ action: string; message: string; timestamp: number } | null>(null);
 
   const handleAIAction = (action: string, context?: any) => {
     const actionMessages: Record<string, string> = {
       improve_banner_text: `Improve this banner text: "${context?.text || ''}"`,
       improve_cta_text: `Make this CTA more compelling: "${context?.text || ''}"`,
-      improve_script: `Refine this script for better flow and impact: "${context?.script || ''}"`
+      improve_script: `Refine this script for better flow and impact: "${context?.script || ''}"`,
+      generate_voiceover: `Generate a professional voiceover for this script: "${context?.script || ''}"`,
+      generate_music: `Generate a background music track that matches this project's vibe.`,
     };
 
     setPendingAIAction({
@@ -330,7 +333,7 @@ export default function VideoEditor() {
         canRedo={historyIndex < history.length - 1}
       />
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left Sidebar */}
         <VideoEditorSidebar
           scenes={scenes.map((s, idx) => ({
@@ -381,6 +384,7 @@ export default function VideoEditor() {
               voiceover: s.voiceover
             }))}
             currentSceneIndex={currentSceneIndex}
+            currentTime={currentTime}
             sceneProgress={timelineScenes[currentSceneIndex] ? (currentTime - timelineScenes[currentSceneIndex].startTime) / (parseInt(scenes[currentSceneIndex]?.duration) || 1) : 0}
             isPlaying={isPlaying}
             onPlayPause={() => setIsPlaying(!isPlaying)}

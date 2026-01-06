@@ -122,56 +122,56 @@ const VideoTimeline = ({
   return (
     <div className="bg-background border-t border-border flex flex-col transition-colors duration-300">
       {/* Main Timeline - scrollable */}
-      <div className="px-6 py-4 flex-1 overflow-auto bg-background transition-colors duration-300">
+      <div className="px-6 py-3 flex-1 overflow-auto bg-background transition-colors duration-300">
         {/* Controls Row */}
-        <div className="flex items-center gap-6 mb-4">
+        <div className="flex items-center gap-6 mb-3">
           {/* Playback Controls */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground" onClick={onSkipBack}>
-              <SkipBack className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={onSkipBack}>
+              <SkipBack className="h-4 w-4" />
             </Button>
 
             <Button
               variant="default"
               size="icon"
-              className="h-12 w-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
+              className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_hsl(var(--primary)/0.2)]"
               onClick={onPlayPause}
             >
-              {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 ml-0.5" />}
+              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
             </Button>
 
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground" onClick={onSkipForward}>
-              <SkipForward className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={onSkipForward}>
+              <SkipForward className="h-4 w-4" />
             </Button>
 
-            <Button variant={isLooping ? "secondary" : "ghost"} size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground" onClick={() => setIsLooping(!isLooping)}>
-              <Repeat className={`h-4 w-4 ${isLooping ? "text-primary" : ""}`} />
+            <Button variant={isLooping ? "secondary" : "ghost"} size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setIsLooping(!isLooping)}>
+              <Repeat className={`h-3.5 w-3.5 ${isLooping ? "text-primary" : ""}`} />
             </Button>
           </div>
 
           {/* Time Display */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-accent/5 rounded-lg border border-border">
-            <span className="text-foreground font-mono text-sm min-w-[70px] tabular-nums">{formatTime(currentTime)}</span>
-            <span className="text-muted-foreground/30">/</span>
-            <span className="text-muted-foreground font-mono text-sm min-w-[70px] tabular-nums">{formatTime(totalDuration)}</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/5 rounded-lg border border-border">
+            <span className="text-foreground font-mono text-xs min-w-[60px] tabular-nums">{formatTime(currentTime)}</span>
+            <span className="text-muted-foreground/30 text-xs">/</span>
+            <span className="text-muted-foreground font-mono text-xs min-w-[60px] tabular-nums">{formatTime(totalDuration)}</span>
           </div>
 
           <div className="flex-1" />
 
           {/* Zoom Controls */}
-          <div className="flex items-center gap-1 bg-accent/5 rounded-lg border border-border p-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}>
-              <ZoomOut className="h-4 w-4" />
+          <div className="flex items-center gap-1 bg-accent/5 rounded-lg border border-border p-0.5">
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}>
+              <ZoomOut className="h-3.5 w-3.5" />
             </Button>
-            <span className="text-xs text-foreground w-12 text-center font-medium">{Math.round(zoom * 100)}%</span>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setZoom(Math.min(2, zoom + 0.25))}>
-              <ZoomIn className="h-4 w-4" />
+            <span className="text-[10px] text-foreground w-10 text-center font-medium">{Math.round(zoom * 100)}%</span>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => setZoom(Math.min(2, zoom + 0.25))}>
+              <ZoomIn className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
 
         {/* Timeline Ruler */}
-        <div ref={timelineRef} className="relative h-10 bg-card rounded-xl border border-border cursor-pointer mb-6 overflow-hidden transition-colors duration-300" onClick={handleTimelineClick}>
+        <div ref={timelineRef} className="relative h-8 bg-card rounded-lg border border-border cursor-pointer mb-4 overflow-hidden transition-colors duration-300" onClick={handleTimelineClick}>
           {/* Time markers */}
           <div className="absolute inset-0 flex items-center pt-6 opacity-20">
             {Array.from({
@@ -191,7 +191,7 @@ const VideoTimeline = ({
         </div>
 
         {/* Scene Thumbnails Track */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide py-2" style={{ transform: `scaleX(${zoom})`, transformOrigin: 'left' }}>
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1" style={{ transform: `scaleX(${zoom})`, transformOrigin: 'left' }}>
           {scenes.map((scene, index) => {
             const widthPercent = totalDuration > 0 ? (scene.endTime - scene.startTime) / totalDuration * 100 : 0;
             const isActive = currentSceneIndex === index;
@@ -199,11 +199,11 @@ const VideoTimeline = ({
               <div
                 key={scene.id}
                 onClick={() => onSceneSelect(index)}
-                className={`relative h-20 flex-shrink-0 rounded-xl overflow-hidden cursor-pointer transition-all border-2 ${isActive
-                  ? "border-primary scale-105 z-10 shadow-[0_0_20px_hsl(var(--primary)/0.15)]"
+                className={`relative h-16 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer transition-all border-2 ${isActive
+                  ? "border-primary scale-102 z-10 shadow-[0_0_15px_hsl(var(--primary)/0.15)]"
                   : "border-transparent opacity-60 hover:opacity-100"
                   }`}
-                style={{ minWidth: `${Math.max(120, widthPercent * 12)}px`, width: `${Math.max(120, widthPercent * 12)}px` }}
+                style={{ minWidth: `${Math.max(100, widthPercent * 10)}px`, width: `${Math.max(100, widthPercent * 10)}px` }}
               >
                 {scene.thumbnailUrl ? (
                   <img src={scene.thumbnailUrl} alt={`Scene ${index + 1}`} className="w-full h-full object-cover" />
@@ -223,31 +223,31 @@ const VideoTimeline = ({
         </div>
 
         {/* Track Lanes */}
-        <div className="space-y-3 mt-8">
+        <div className="space-y-2 mt-4">
           {tracks.map(track => {
             const Icon = track.icon;
             return (
-              <div key={track.key} className="flex items-center gap-4 cursor-pointer group" onClick={() => handleTrackClick(track.key)}>
-                <div className="flex items-center gap-3 w-32 truncate transition-colors">
-                  <div className={`p-1.5 rounded-md ${track.enabled ? "bg-accent/10 text-primary" : "bg-muted/50 text-muted-foreground/30"}`}>
-                    <Icon className="h-4 w-4" />
+              <div key={track.key} className="flex items-center gap-3 cursor-pointer group" onClick={() => handleTrackClick(track.key)}>
+                <div className="flex items-center gap-2 w-28 truncate transition-colors">
+                  <div className={`p-1 rounded-md ${track.enabled ? "bg-accent/10 text-primary" : "bg-muted/50 text-muted-foreground/30"}`}>
+                    <Icon className="h-3.5 w-3.5" />
                   </div>
-                  <span className={`text-[11px] font-bold uppercase tracking-wider ${track.enabled ? "text-muted-foreground group-hover:text-foreground" : "text-muted-foreground/30"}`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${track.enabled ? "text-muted-foreground group-hover:text-foreground" : "text-muted-foreground/30"}`}>
                     {track.label}
                   </span>
                 </div>
-                <div className={`h-8 flex-1 rounded-xl flex items-center px-4 transition-all relative border ${track.enabled
-                  ? `${track.color} border-white/10 shadow-lg shadow-black/10`
+                <div className={`h-6 flex-1 rounded-lg flex items-center px-3 transition-all relative border ${track.enabled
+                  ? `${track.color} border-white/10 shadow-md shadow-black/5`
                   : "bg-muted/30 border-border opacity-40 group-hover:opacity-60"
                   }`}>
                   {track.enabled && track.content && (
-                    <span className="text-[10px] text-white font-bold truncate uppercase tracking-tight">{track.content}</span>
+                    <span className="text-[9px] text-white font-bold truncate uppercase tracking-tight">{track.content}</span>
                   )}
                   {!track.enabled && (
-                    <span className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-tight">Disabled</span>
+                    <span className="text-[9px] text-muted-foreground/50 font-medium uppercase tracking-tight">Disabled</span>
                   )}
                   {track.enabled && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20 rounded-l-xl" />
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20 rounded-l-lg" />
                   )}
                 </div>
               </div>
@@ -257,28 +257,28 @@ const VideoTimeline = ({
       </div>
 
       {/* Footer Bar - always visible */}
-      <div className="px-8 py-5 border-t border-border flex items-center justify-between flex-shrink-0 bg-card transition-colors duration-300">
-        <div className="flex items-center gap-4">
-          <div className="w-[42px] h-[42px] rounded-[14px] bg-background flex items-center justify-center border border-border ring-4 ring-accent/5">
-            <span className="text-lg font-black text-foreground">{brandName.charAt(0)}</span>
+      <div className="px-6 py-3 border-t border-border flex items-center justify-between flex-shrink-0 bg-card transition-colors duration-300">
+        <div className="flex items-center gap-3">
+          <div className="w-[36px] h-[36px] rounded-[10px] bg-background flex items-center justify-center border border-border ring-2 ring-accent/5">
+            <span className="text-base font-black text-foreground">{brandName.charAt(0)}</span>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Brand</p>
-            <p className="text-sm font-black text-foreground">{brandName}</p>
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-0">Brand</p>
+            <p className="text-xs font-black text-foreground">{brandName}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={onDownload} className="text-muted-foreground hover:text-foreground gap-2 font-bold px-4">
-            <Download className="h-4 w-4" />
+          <Button variant="ghost" size="sm" onClick={onDownload} className="text-muted-foreground hover:text-foreground gap-2 font-bold px-3 h-9 text-xs">
+            <Download className="h-3.5 w-3.5" />
             Download
           </Button>
           <Button
-            size="lg"
+            size="sm"
             onClick={onAddToStrategy}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider px-8 h-12 rounded-2xl shadow-[0_0_30px_hsl(var(--primary)/0.1)] hover:shadow-[0_0_40px_hsl(var(--primary)/0.2)] transition-all duration-300"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider px-6 h-10 rounded-xl shadow-[0_0_20px_hsl(var(--primary)/0.1)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)] transition-all duration-300 text-xs"
           >
-            <Plus className="h-5 w-5 mr-3" />
+            <Plus className="h-4 w-4 mr-2" />
             Go to Strategy
           </Button>
         </div>

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, RotateCcw, RotateCw, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 interface VideoEditorHeaderProps {
     title: string;
@@ -58,7 +59,8 @@ export default function VideoEditorHeader({
                 <h1 className="text-sm font-semibold truncate max-w-[400px] text-foreground">{title}</h1>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+                <ThemeToggle />
                 <div className="relative group">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     <div className="flex items-center gap-1 pl-7 pr-3 py-1.5 bg-accent/5 rounded-md border border-transparent group-hover:border-border transition-all cursor-text">

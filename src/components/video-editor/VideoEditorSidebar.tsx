@@ -34,9 +34,17 @@ import {
   AlignCenter,
   AlignRight,
   Download,
-  RefreshCw
+  RefreshCw,
+  HelpCircle,
+  BarChart2,
+  Zap,
+  Layout,
+  Activity,
+  Tv,
+  ShieldCheck,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { PerformanceInsights } from "./PerformanceInsights";
 import type { VideoOverlaySettings, BannerSettings, EndScreenSettings, QRCodeSettings, MusicSettings, VoiceSettings } from "@/types/videoEditor";
 
 interface SceneSlide {
@@ -62,6 +70,7 @@ interface VideoEditorSidebarProps {
 
 const sidebarTabs = [
   { id: "slideshow", label: "Slideshow", icon: Film },
+  { id: "growth", label: "Growth", icon: Activity },
   { id: "bottom-banner", label: "Bottom banner", icon: PanelBottom },
   { id: "end-screen", label: "End screen", icon: Square },
   { id: "qr-code", label: "QR code", icon: QrCode },
@@ -130,10 +139,17 @@ const VideoEditorSidebar = ({
     });
   };
 
+  const updateNetwork = (network: string) => {
+    onOverlaySettingsChange({
+      ...overlaySettings,
+      network: { selected: network as any },
+    });
+  };
+
   return (
     <div className="flex h-full min-h-0 bg-background transition-colors duration-300">
       {/* Icon Tabs - Slim & Elegant */}
-      <div className="w-[72px] bg-card border-r border-border flex flex-col items-center py-6 gap-2 transition-colors duration-300">
+      <div className="w-[60px] bg-card border-r border-border flex flex-col items-center py-4 gap-1 transition-colors duration-300">
         {sidebarTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -141,15 +157,15 @@ const VideoEditorSidebar = ({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`w-full flex flex-col items-center gap-1.5 py-3 px-1 transition-all relative ${isActive
+              className={`w-full flex flex-col items-center gap-1 py-2 px-1 transition-all relative ${isActive
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
                 }`}
             >
-              <Icon className={`h-6 w-6 ${isActive ? "scale-110" : ""}`} />
-              <span className="text-[10px] text-center leading-tight font-medium">{tab.label.split(' ')[0]}</span>
+              <Icon className={`h-5 w-5 ${isActive ? "scale-105" : ""}`} />
+              <span className="text-[9px] text-center leading-tight font-medium scale-90">{tab.label.split(' ')[0]}</span>
               {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-8 bg-primary rounded-r-full shadow-[0_0_10px_hsl(var(--primary))]" />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-6 bg-primary rounded-r-full shadow-[0_0_8px_hsl(var(--primary))]" />
               )}
             </button>
           );
@@ -157,9 +173,9 @@ const VideoEditorSidebar = ({
       </div>
 
       {/* Content Panel - Semantic & Elegant */}
-      <div className="w-[320px] bg-background border-r border-border flex flex-col transition-colors duration-300">
-        <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground tracking-tight">
+      <div className="w-[300px] bg-background border-r border-border flex flex-col transition-colors duration-300">
+        <div className="p-4 border-b border-border">
+          <h2 className="text-base font-semibold text-foreground tracking-tight">
             {sidebarTabs.find(t => t.id === activeTab)?.label}
           </h2>
         </div>
@@ -240,10 +256,49 @@ const VideoEditorSidebar = ({
                 variant="outline"
                 size="sm"
                 className="w-full mt-4 h-11 rounded-xl"
+                onClick={() => {
+                  // Logic to add a new scene
+                }}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Scene
               </Button>
+
+              {/* AI Hook Library - NEW */}
+              <div className="pt-6 border-t border-border mt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-bold uppercase tracking-wider text-foreground">AI Hook Library</Label>
+                  </div>
+                  <Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary uppercase font-bold px-2">Premium</Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground mb-4 leading-relaxed italic">
+                  The first 3 seconds determine 80% of your TV ad's success. Use these high-converting hooks.
+                </p>
+                <div className="grid grid-cols-1 gap-2">
+                  {[
+                    { id: 'question', label: 'The Big Question', icon: HelpCircle, color: 'text-blue-500', desc: 'Engage audience instantly with a relatable pain point.' },
+                    { id: 'stat', label: 'Shocking Stat', icon: BarChart2, color: 'text-orange-500', desc: 'Use data to build immediate authority.' },
+                    { id: 'surprise', label: 'Visual Surprise', icon: Zap, color: 'text-yellow-500', desc: 'Stop viewers with an unexpected statement.' },
+                    { id: 'problem-solution', label: 'Problem/Solution', icon: Layout, color: 'text-green-500', desc: 'Agitate the problem, then present your brand.' }
+                  ].map((hook) => (
+                    <button
+                      key={hook.id}
+                      onClick={() => onAIAction?.("apply_hook", { hookId: hook.id, label: hook.label })}
+                      className="group flex items-start gap-3 p-3 rounded-xl border border-border bg-accent/5 hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
+                    >
+                      <div className={`mt-0.5 p-1.5 rounded-lg bg-background border border-border group-hover:border-primary/30 ${hook.color}`}>
+                        <hook.icon className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-foreground group-hover:text-primary transition-colors">{hook.label}</p>
+                        <p className="text-[10px] text-muted-foreground line-clamp-1 group-hover:text-muted-foreground/80">{hook.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="pt-6 border-t border-border mt-6">
                 <div className="bg-gradient-to-br from-primary/5 to-transparent p-4 rounded-xl border border-primary/10">
@@ -259,6 +314,11 @@ const VideoEditorSidebar = ({
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Growth Tab - Performance Insights */}
+          {activeTab === "growth" && (
+            <PerformanceInsights />
           )}
 
           {/* Bottom Banner Tab */}
@@ -556,7 +616,11 @@ const VideoEditorSidebar = ({
                   <Upload className="h-4 w-4 mr-2" />
                   Upload
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => onAIAction?.("generate_music", { currentSettings: overlaySettings.music })}
+                >
                   <Sparkles className="h-4 w-4 mr-2" />
                   AI Generate
                 </Button>
@@ -721,7 +785,11 @@ const VideoEditorSidebar = ({
                 </Button>
               </div>
 
-              <Button className="w-full" disabled={!overlaySettings.voice.script.trim()}>
+              <Button
+                className="w-full"
+                disabled={!overlaySettings.voice.script.trim()}
+                onClick={() => onAIAction?.("generate_voiceover", { script: overlaySettings.voice.script })}
+              >
                 <Sparkles className="h-4 w-4 mr-2" />
                 Generate Voiceover
               </Button>
@@ -790,6 +858,41 @@ const VideoEditorSidebar = ({
           {activeTab === "settings" && (
             <div className="p-6 space-y-6">
               <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Network Compliance</p>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground">Select a target network to auto-adjust creative for technical requirements.</p>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: "none", label: "General", icon: Layout },
+                      { id: "espn", label: "ESPN", icon: Activity },
+                      { id: "hulu", label: "Hulu", icon: Play },
+                      { id: "peacock", label: "Peacock", icon: Sparkles },
+                      { id: "tubi", label: "Tubi", icon: Zap },
+                    ].map((net) => (
+                      <Button
+                        key={net.id}
+                        variant={overlaySettings.network?.selected === net.id ? "default" : "outline"}
+                        className="h-auto py-3 flex-col gap-2 relative overflow-hidden group"
+                        onClick={() => updateNetwork(net.id)}
+                      >
+                        <net.icon className="h-4 w-4" />
+                        <span className="text-xs">{net.label}</span>
+                        {overlaySettings.network?.selected === net.id && (
+                          <div className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                        )}
+                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-border">
                 <div className="flex items-center justify-between">
                   <div>
                     <Label className="text-sm font-semibold text-foreground">Theme Preference</Label>

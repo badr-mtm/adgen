@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, Edit3, Film } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, Edit3, Film, Tv } from "lucide-react";
+import { cn } from "@/lib/utils";
 import OverlayElements from "./OverlayElements";
 import EndScreen from "./EndScreen";
 import type { VideoOverlaySettings } from "@/types/videoEditor";
@@ -27,6 +28,7 @@ interface VideoPreviewProps {
   currentVoiceover?: string;
   overlaySettings?: VideoOverlaySettings;
   showEndScreen?: boolean;
+  currentTime?: number;
 }
 
 const VideoPreview = ({
@@ -45,15 +47,27 @@ const VideoPreview = ({
   currentVoiceover,
   overlaySettings,
   showEndScreen = false,
+  currentTime = 0,
 }: VideoPreviewProps) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [viewMode, setViewMode] = useState<"standard" | "cinema">("standard");
   const [showVoiceover, setShowVoiceover] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const musicRef = useRef<HTMLAudioElement>(null);
+  const voiceoverRef = useRef<HTMLAudioElement>(null);
   const currentScene = scenes[currentSceneIndex];
 
-  // ... (lines 54-76)
+  // Placeholder music tracks
+  const musicTracks: Record<number, string> = {
+    1: "https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3", // Upbeat Corporate
+    2: "https://cdn.pixabay.com/audio/2021/11/25/audio_1abc4a6568.mp3", // Calm Ambient
+    3: "https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a7343e.mp3", // Tech Innovation
+    4: "https://cdn.pixabay.com/audio/2022/10/25/audio_3c3c7e0f2f.mp3", // Inspiring Journey
+    5: "https://cdn.pixabay.com/audio/2022/05/24/audio_9b9b9b9b9b.mp3", // Minimal Electronic
+  };
+
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
 
@@ -96,17 +110,73 @@ const VideoPreview = ({
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.play().catch(console.error);
+        videoRef.current.currentTime = sceneProgress * (parseInt(currentScene?.duration) || 0);
       } else {
         videoRef.current.pause();
       }
     }
   }, [isPlaying, displayedVideo]);
 
+  // Handle Music Sync
+  useEffect(() => {
+    if (musicRef.current) {
+      if (isPlaying && overlaySettings?.music.selectedTrackId) {
+        musicRef.current.play().catch(console.error);
+        if (Math.abs(musicRef.current.currentTime - currentTime) > 0.5) {
+          musicRef.current.currentTime = currentTime;
+        }
+      } else {
+        musicRef.current.pause();
+      }
+    }
+  }, [isPlaying, currentTime, overlaySettings?.music.selectedTrackId]);
+
+  // Handle Music Volume
+  useEffect(() => {
+    if (musicRef.current) {
+      musicRef.current.volume = (overlaySettings?.music.volume || 0) / 100;
+      musicRef.current.muted = isMuted || (overlaySettings?.music.isMuted || false);
+    }
+  }, [overlaySettings?.music.volume, overlaySettings?.music.isMuted, isMuted]);
+
+  // Handle Voiceover Sync (Simplified for now - just plays the scene's voiceover if available)
+  // In a real app, we'd have a global voiceover track or per-scene audio files
+  useEffect(() => {
+    if (voiceoverRef.current) {
+      if (isPlaying && currentVoiceover) {
+        // This is a placeholder since we don't have actual voiceover audio files yet
+        // If we had them, we'd set the src here
+      } else {
+        voiceoverRef.current.pause();
+      }
+    }
+  }, [isPlaying, currentVoiceover]);
+
   return (
-    <div className="flex-1 bg-preview-bg flex flex-col transition-colors duration-300">
+    <div className={`flex-1 flex flex-col transition-all duration-700 ${viewMode === "cinema" ? "bg-black" : "bg-preview-bg"}`}>
       {/* Video Preview Area */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-12">
-        <div ref={containerRef} className="relative w-full max-w-5xl aspect-video rounded-[32px] overflow-hidden shadow-2xl bg-black group ring-1 ring-white/10">
+      <div className={`flex-1 flex items-center justify-center p-2 md:p-6 lg:p-8 min-h-0 transition-all duration-700 ${viewMode === "cinema" ? "scale-90" : "scale-100"}`}>
+
+        {/* Cinema Background (Simulated Living Room) */}
+        {viewMode === "cinema" && (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-black" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.8)_80%)]" />
+            {/* Ambient TV Light Bloom */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-primary/20 blur-[150px] transition-all duration-1000 animate-pulse" />
+          </div>
+        )}
+
+        <div
+          ref={containerRef}
+          className={cn(
+            "relative w-full max-w-5xl aspect-video rounded-[32px] overflow-hidden shadow-2xl transition-all duration-700 z-10",
+            viewMode === "cinema"
+              ? "ring-8 ring-zinc-800 shadow-[0_0_100px_rgba(0,0,0,1)] scale-110 rotate-x-2"
+              : "bg-black ring-1 ring-white/10"
+          )}
+          style={viewMode === "cinema" ? { perspective: "1000px", transform: "rotateX(2deg)" } : {}}
+        >
           {/* Background Media with Transition */}
           <div
             className={`absolute inset-0 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
@@ -136,6 +206,16 @@ const VideoPreview = ({
             )}
           </div>
 
+          {/* Hidden Audio Elements */}
+          {overlaySettings?.music.selectedTrackId && (
+            <audio
+              ref={musicRef}
+              src={musicTracks[overlaySettings.music.selectedTrackId]}
+              loop
+            />
+          )}
+          <audio ref={voiceoverRef} />
+
           {/* TOP HUD */}
           <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30">
             <div className="px-4 py-1.5 bg-black/60 backdrop-blur-xl rounded-full border border-white/10 flex items-center gap-3">
@@ -157,7 +237,7 @@ const VideoPreview = ({
           </div>
 
           {/* Edit Button - Sleek floating */}
-          {onEditScene && (
+          {onEditScene && viewMode === "standard" && (
             <button
               onClick={() => onEditScene(currentSceneIndex)}
               className="absolute top-6 right-6 px-4 py-2 bg-white/10 hover:bg-white text-white hover:text-black rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md border border-white/20"
@@ -237,14 +317,26 @@ const VideoPreview = ({
                 {/* Vertical Controls */}
                 <div className="flex flex-col gap-3">
                   <button
+                    onClick={() => setViewMode(viewMode === "standard" ? "cinema" : "standard")}
+                    className={cn(
+                      "w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-md border transition-all shadow-xl",
+                      viewMode === "cinema"
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-white/10 hover:bg-white/20 text-white border-white/10"
+                    )}
+                    title={viewMode === "standard" ? "Switch to Cinema Mode" : "Switch to Standard View"}
+                  >
+                    <Tv className="h-5 w-5" />
+                  </button>
+                  <button
                     onClick={() => setIsMuted(!isMuted)}
-                    className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all"
+                    className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all shadow-xl"
                   >
                     {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                   </button>
                   <button
                     onClick={toggleFullscreen}
-                    className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all"
+                    className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white backdrop-blur-md border border-white/10 transition-all shadow-xl"
                   >
                     {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
                   </button>
