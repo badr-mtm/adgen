@@ -195,18 +195,18 @@ const VideoEditorSidebar = ({
         <ScrollArea className="flex-1">
           {/* Slideshow Tab */}
           {activeTab === "slideshow" && (
-            <div className="p-4 space-y-4">
+            <div className="p-3 space-y-2">
               {scenes.map((scene) => (
                 <div
                   key={scene.id}
-                  className={`group relative flex flex-col gap-2 p-3 rounded-xl transition-all border ${scene.isActive
+                  className={`group relative flex flex-col gap-1 p-2 rounded-lg transition-all border ${scene.isActive
                     ? "bg-accent/10 border-primary/40 shadow-lg"
                     : "bg-card border-transparent hover:bg-accent/5 hover:border-border"
                     }`}
                   onClick={() => onSceneSelect(scene.id)}
                 >
-                  <div className="flex gap-4">
-                    <div className="relative w-28 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0 shadow-inner">
+                  <div className="flex gap-3">
+                    <div className="relative w-20 h-14 rounded-md overflow-hidden bg-muted flex-shrink-0 shadow-inner">
                       {scene.thumbnailUrl ? (
                         <img
                           src={scene.thumbnailUrl}

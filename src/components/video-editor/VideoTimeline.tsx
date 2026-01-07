@@ -123,9 +123,9 @@ const VideoTimeline = ({
   return (
     <div className="bg-background border-t border-border flex flex-col transition-colors duration-300">
       {/* Main Timeline - scrollable */}
-      <div className="px-6 py-3 flex-1 overflow-auto bg-background transition-colors duration-300">
+      <div className="px-4 py-2 flex-1 overflow-auto bg-background transition-colors duration-300">
         {/* Controls Row */}
-        <div className="flex items-center gap-6 mb-3">
+        <div className="flex items-center gap-4 mb-2">
           {/* Playback Controls */}
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={onSkipBack}>
@@ -174,7 +174,7 @@ const VideoTimeline = ({
         </div>
 
         {/* Timeline Ruler */}
-        <div ref={timelineRef} className="relative h-8 bg-card rounded-lg border border-border cursor-pointer mb-4 overflow-hidden transition-colors duration-300" onClick={handleTimelineClick}>
+        <div ref={timelineRef} className="relative h-6 bg-card rounded-lg border border-border cursor-pointer mb-2 overflow-hidden transition-colors duration-300" onClick={handleTimelineClick}>
           {/* Time markers */}
           <div className="absolute inset-0 flex items-center pt-6 opacity-20">
             {Array.from({
@@ -194,7 +194,7 @@ const VideoTimeline = ({
         </div>
 
         {/* Scene Thumbnails Track */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1" style={{ transform: `scaleX(${zoom})`, transformOrigin: 'left' }}>
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide py-1" style={{ transform: `scaleX(${zoom})`, transformOrigin: 'left' }}>
           {scenes.map((scene, index) => {
             const widthPercent = totalDuration > 0 ? (scene.endTime - scene.startTime) / totalDuration * 100 : 0;
             const isActive = currentSceneIndex === index;
@@ -202,22 +202,22 @@ const VideoTimeline = ({
               <div
                 key={scene.id}
                 onClick={() => onSceneSelect(index)}
-                className={`relative h-16 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer transition-all border-2 ${isActive
+                className={`relative h-12 flex-shrink-0 rounded-md overflow-hidden cursor-pointer transition-all border-2 ${isActive
                   ? "border-primary scale-102 z-10 shadow-[0_0_15px_hsl(var(--primary)/0.15)]"
                   : "border-transparent opacity-60 hover:opacity-100"
                   }`}
-                style={{ minWidth: `${Math.max(100, widthPercent * 10)}px`, width: `${Math.max(100, widthPercent * 10)}px` }}
+                style={{ minWidth: `${Math.max(80, widthPercent * 8)}px`, width: `${Math.max(80, widthPercent * 8)}px` }}
               >
                 {scene.thumbnailUrl ? (
                   <img src={scene.thumbnailUrl} alt={`Scene ${index + 1}`} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <span className="text-xl font-bold text-muted-foreground/50">{index + 1}</span>
+                    <span className="text-lg font-bold text-muted-foreground/50">{index + 1}</span>
                   </div>
                 )}
 
                 {/* Duration Badge */}
-                <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/60 rounded-lg text-[10px] text-white font-bold backdrop-blur-sm border border-white/10 uppercase">
+                <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/60 rounded text-[9px] text-white font-bold backdrop-blur-sm border border-white/10 uppercase">
                   {scene.duration}
                 </div>
               </div>
@@ -226,7 +226,7 @@ const VideoTimeline = ({
         </div>
 
         {/* Track Lanes */}
-        <div className="space-y-2 mt-4">
+        <div className="space-y-1.5 mt-2">
           {tracks.map(track => {
             const Icon = track.icon;
             return (
@@ -260,14 +260,14 @@ const VideoTimeline = ({
       </div>
 
       {/* Footer Bar - always visible */}
-      <div className="px-6 py-3 border-t border-border flex items-center justify-between flex-shrink-0 bg-card transition-colors duration-300">
-        <div className="flex items-center gap-3">
-          <div className="w-[36px] h-[36px] rounded-[10px] bg-background flex items-center justify-center border border-border ring-2 ring-accent/5">
-            <span className="text-base font-black text-foreground">{brandName.charAt(0)}</span>
+      <div className="px-4 py-2 border-t border-border flex items-center justify-between flex-shrink-0 bg-card transition-colors duration-300">
+        <div className="flex items-center gap-2">
+          <div className="w-[28px] h-[28px] rounded-lg bg-background flex items-center justify-center border border-border ring-1 ring-accent/5">
+            <span className="text-sm font-black text-foreground">{brandName.charAt(0)}</span>
           </div>
           <div>
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-0">Brand</p>
-            <p className="text-xs font-black text-foreground">{brandName}</p>
+            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-0">Brand</p>
+            <p className="text-[11px] font-black text-foreground">{brandName}</p>
           </div>
         </div>
 
