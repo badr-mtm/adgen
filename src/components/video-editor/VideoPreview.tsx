@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, Edit3, Film, Tv } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import OverlayElements from "./OverlayElements";
 import EndScreen from "./EndScreen";
 import type { VideoOverlaySettings } from "@/types/videoEditor";
@@ -153,9 +154,9 @@ const VideoPreview = ({
   }, [isPlaying, currentVoiceover]);
 
   return (
-    <div className={`flex-1 flex flex-col transition-all duration-700 ${viewMode === "cinema" ? "bg-black" : "bg-preview-bg"}`}>
+    <div className={`flex-1 flex flex-col min-h-0 transition-all duration-700 ${viewMode === "cinema" ? "bg-black" : "bg-preview-bg"}`}>
       {/* Video Preview Area */}
-      <div className={`flex-1 flex items-center justify-center p-2 md:p-6 lg:p-8 min-h-0 transition-all duration-700 ${viewMode === "cinema" ? "scale-90" : "scale-100"}`}>
+      <div className={`flex-1 flex items-center justify-center p-2 md:p-4 lg:p-6 min-h-0 transition-all duration-700 ${viewMode === "cinema" ? "scale-90" : "scale-100"}`}>
 
         {/* Cinema Background (Simulated Living Room) */}
         {viewMode === "cinema" && (
@@ -167,15 +168,27 @@ const VideoPreview = ({
           </div>
         )}
 
-        <div
+        <motion.div
           ref={containerRef}
+          layout
+          initial={false}
+          animate={{
+            scale: viewMode === "cinema" ? 1.1 : 1,
+            rotateX: viewMode === "cinema" ? 2 : 0,
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={cn(
-            "relative w-full max-w-5xl aspect-video rounded-[32px] overflow-hidden shadow-2xl transition-all duration-700 z-10",
+            "relative w-full max-w-5xl aspect-video rounded-[32px] overflow-hidden shadow-2xl z-10",
             viewMode === "cinema"
-              ? "ring-8 ring-zinc-800 shadow-[0_0_100px_rgba(0,0,0,1)] scale-110 rotate-x-2"
+              ? "ring-8 ring-zinc-800 shadow-[0_0_100px_rgba(0,0,0,1)]"
               : "bg-black ring-1 ring-white/10"
           )}
-          style={viewMode === "cinema" ? { perspective: "1000px", transform: "rotateX(2deg)" } : {}}
+          style={{
+            perspective: "1000px",
+            maxHeight: "calc(100vh - 450px)", // Ensure space for timeline
+            width: "auto",
+            aspectRatio: "16/9"
+          }}
         >
           {/* Background Media with Transition */}
           <div
@@ -273,8 +286,10 @@ const VideoPreview = ({
 
             {/* Center Play Button - Glassmorphism */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
-              <button
-                className="w-24 h-24 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 hover:scale-110 transition-all border border-white/20 shadow-2xl group/play"
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-24 h-24 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 transition-all border border-white/20 shadow-2xl group/play"
                 onClick={onPlayPause}
               >
                 {isPlaying ? (
@@ -282,7 +297,7 @@ const VideoPreview = ({
                 ) : (
                   <Play className="h-10 w-10 text-white fill-white ml-2 transition-transform group-hover/play:scale-110" />
                 )}
-              </button>
+              </motion.button>
             </div>
 
             {/* Voiceover Subtitle - Refined typography */}
@@ -344,7 +359,7 @@ const VideoPreview = ({
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

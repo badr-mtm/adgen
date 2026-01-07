@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Download, Plus, SkipBack, SkipForward, Repeat, ZoomIn, ZoomOut, PanelBottom, QrCode, Music, Mic } from "lucide-react";
+import { motion } from "framer-motion";
 import type { VideoOverlaySettings } from "@/types/videoEditor";
 interface TimelineScene {
   id: number;
@@ -131,14 +132,16 @@ const VideoTimeline = ({
               <SkipBack className="h-4 w-4" />
             </Button>
 
-            <Button
-              variant="default"
-              size="icon"
-              className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_hsl(var(--primary)/0.2)]"
-              onClick={onPlayPause}
-            >
-              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
-            </Button>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="default"
+                size="icon"
+                className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_hsl(var(--primary)/0.2)]"
+                onClick={onPlayPause}
+              >
+                {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+              </Button>
+            </motion.div>
 
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={onSkipForward}>
               <SkipForward className="h-4 w-4" />
@@ -269,18 +272,22 @@ const VideoTimeline = ({
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={onDownload} className="text-muted-foreground hover:text-foreground gap-2 font-bold px-3 h-9 text-xs">
-            <Download className="h-3.5 w-3.5" />
-            Download
-          </Button>
-          <Button
-            size="sm"
-            onClick={onAddToStrategy}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider px-6 h-10 rounded-xl shadow-[0_0_20px_hsl(var(--primary)/0.1)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)] transition-all duration-300 text-xs"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Go to Strategy
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button variant="ghost" size="sm" onClick={onDownload} className="text-muted-foreground hover:text-foreground gap-2 font-bold px-3 h-9 text-xs">
+              <Download className="h-3.5 w-3.5" />
+              Download
+            </Button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              size="sm"
+              onClick={onAddToStrategy}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider px-6 h-10 rounded-xl shadow-[0_0_20px_hsl(var(--primary)/0.1)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)] transition-all duration-300 text-xs"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Go to Strategy
+            </Button>
+          </motion.div>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -154,20 +155,31 @@ const VideoEditorSidebar = ({
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
-            <button
+            <motion.button
               key={tab.id}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => onTabChange(tab.id)}
-              className={`w-full flex flex-col items-center gap-1 py-2 px-1 transition-all relative ${isActive
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/10"
+              className={`relative w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 group
+                ${isActive
+                  ? "bg-primary text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                  : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/10"
                 }`}
             >
-              <Icon className={`h-5 w-5 ${isActive ? "scale-105" : ""}`} />
-              <span className="text-[9px] text-center leading-tight font-medium scale-90">{tab.label.split(' ')[0]}</span>
+              <Icon className={`w-4 h-4 transition-transform ${isActive ? "scale-110" : ""}`} />
               {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-6 bg-primary rounded-r-full shadow-[0_0_8px_hsl(var(--primary))]" />
+                <motion.div
+                  layoutId="activeTabGlow"
+                  className="absolute inset-0 rounded-xl bg-primary/20 blur-md -z-10"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
               )}
-            </button>
+
+              {/* Tooltip on hover */}
+              <div className="absolute left-[calc(100%+12px)] px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-white/10 uppercase tracking-widest">
+                {tab.label}
+              </div>
+            </motion.button>
           );
         })}
       </div>
