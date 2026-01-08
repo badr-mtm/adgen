@@ -57,72 +57,66 @@ serve(async (req) => {
 
     const storyboard = campaign.storyboard as any;
     const scene = storyboard.scenes.find((s: any) => s.sceneNumber === sceneNumber);
-    
+
     if (!scene) {
       throw new Error('Scene not found');
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
+    // Use the provided Google API Key for Imagen 3
+    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY') || "AIzaSyAJnTBxSqSmsi839Uk44GFiEY0BkdiJlBw";
 
-    // Build prompt purely from user inputs and scene description - no brand kit references
+    // Build prompt purely from user inputs and scene description
     const basePrompt = customPrompt || scene.visualDescription;
-    const enhancedPrompt = `${basePrompt}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality, professional ${campaign.ad_type} advertisement visual. Ultra high resolution.`;
+    const enhancedPrompt = `${basePrompt}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality, professional ${campaign.ad_type} advertisement visual. Ultra high resolution, photorealistic, cinematic lighting.`;
 
     console.log('Generating image with prompt:', enhancedPrompt);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Call Google Imagen 3 API
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generateImages-001:generateImages?key=${GOOGLE_API_KEY}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image',
-        messages: [
-          {
-            role: 'user',
-            content: enhancedPrompt
-          }
-        ],
-        modalities: ['image', 'text']
+        prompt: enhancedPrompt,
+        number_of_images: 1,
+        aspect_ratio: "16:9", // Default for video scenes
+        safety_settings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+        ]
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again in a moment.');
-      }
-      if (response.status === 402) {
-        throw new Error('AI usage limit reached. Please add credits to continue.');
-      }
-      throw new Error(`AI API error: ${response.status}`);
+      console.error('Google AI API error:', response.status, errorText);
+      throw new Error(`Google AI API error: ${response.status} - ${errorText}`);
     }
 
     const aiResponse = await response.json();
     console.log('AI image generation response received');
 
-    const imageUrl = aiResponse.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    if (!imageUrl) {
-      throw new Error('No image generated');
+    // Handle Google's response format: { images: [ { image64: "base64string..." } ] }
+    const imageBase64 = aiResponse.images?.[0]?.image64;
+
+    if (!imageBase64) {
+      console.error('Unexpected response structure:', JSON.stringify(aiResponse).substring(0, 200));
+      throw new Error('No image generated from Google API');
     }
 
     // Convert base64 to blob and upload to storage
-    const base64Data = imageUrl.split(',')[1];
-    const byteCharacters = atob(base64Data);
+    const byteCharacters = atob(imageBase64);
     const byteNumbers = new Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    
+
     const fileName = `${user.id}/${campaignId}/scene-${sceneNumber}-${Date.now()}.png`;
-    
+
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('ad-visuals')
       .upload(fileName, byteArray, {
@@ -170,7 +164,7 @@ serve(async (req) => {
     console.log('Scene visual generated and saved successfully');
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         visualUrl: publicUrl,
         sceneNumber,
         storyboard: updatedStoryboard

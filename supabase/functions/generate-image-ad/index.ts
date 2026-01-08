@@ -55,72 +55,67 @@ serve(async (req) => {
       throw new Error('Campaign not found');
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
+    // Use the provided Google API Key for Imagen 3
+    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY') || "AIzaSyAJnTBxSqSmsi839Uk44GFiEY0BkdiJlBw";
 
     // Build prompt purely from user inputs - no brand kit references
     const aspectRatio = campaign.aspect_ratios?.[0] || '1:1';
     const userPrompt = campaign.prompt || campaign.description;
     const targetAudience = campaign.target_audience;
     const audienceContext = targetAudience?.demographics || targetAudience?.interests || '';
-    
+
     // Concise prompt focused on user's actual inputs
     const enhancedPrompt = `${campaign.creative_style || 'professional'} style advertisement image. ${userPrompt}. Goal: ${campaign.goal}.${audienceContext ? ` Target audience: ${audienceContext}.` : ''} ${aspectRatio} aspect ratio. No text in image, clean design. Ultra high resolution.`;
 
     console.log('Generating image with prompt:', enhancedPrompt);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Call Google Imagen 3 API
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generateImages-001:generateImages?key=${GOOGLE_API_KEY}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview', // Fast image generation
-        messages: [
-          {
-            role: 'user',
-            content: enhancedPrompt
-          }
-        ],
-        modalities: ['image', 'text']
+        prompt: enhancedPrompt,
+        number_of_images: 1,
+        // Map common aspect ratios to Imagen supported stats if needed, or rely on prompt instruction + cropping
+        // Imagen 3 supports specific ratios: "1:1", "3:4", "4:3", "16:9", "9:16"
+        aspect_ratio: aspectRatio === "1:1" ? "1:1" : "16:9",
+        safety_settings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+        ]
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again in a moment.');
-      }
-      if (response.status === 402) {
-        throw new Error('AI usage limit reached. Please add credits to continue.');
-      }
-      throw new Error(`AI API error: ${response.status}`);
+      console.error('Google AI API error:', response.status, errorText);
+      throw new Error(`Google AI API error: ${response.status} - ${errorText}`);
     }
 
     const aiResponse = await response.json();
     console.log('AI image generation response received');
 
-    const imageUrl = aiResponse.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    if (!imageUrl) {
-      throw new Error('No image generated');
+    const imageBase64 = aiResponse.images?.[0]?.image64;
+
+    if (!imageBase64) {
+      console.error('Unexpected response structure:', JSON.stringify(aiResponse).substring(0, 200));
+      throw new Error('No image generated from Google API');
     }
 
     // Convert base64 to blob and upload to storage
-    const base64Data = imageUrl.split(',')[1];
-    const byteCharacters = atob(base64Data);
+    const byteCharacters = atob(imageBase64);
     const byteNumbers = new Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     const byteArray = new Uint8Array(byteNumbers);
-    
+
     const fileName = `${user.id}/${campaignId}/ad-image-${Date.now()}.png`;
-    
+
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('ad-visuals')
       .upload(fileName, byteArray, {
@@ -160,7 +155,7 @@ serve(async (req) => {
     console.log('Image ad generated and saved successfully');
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         imageUrl: publicUrl,
         campaignId
       }),

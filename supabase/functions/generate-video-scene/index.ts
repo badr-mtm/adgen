@@ -48,7 +48,7 @@ serve(async (req) => {
         const scene = storyboard.scenes.find((s: any) => s.sceneNumber === sceneNumber);
         if (!scene) throw new Error('Scene not found');
 
-        const FAL_KEY = Deno.env.get('FAL_KEY');
+        const FAL_KEY = Deno.env.get('FAL_KEY') || "b0988bc88e22414d92aaec70794b5918";
         if (!FAL_KEY) throw new Error('FAL_KEY not configured');
 
         const prompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality cinematic motion.`;
