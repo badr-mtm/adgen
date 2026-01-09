@@ -170,12 +170,15 @@ export default function Strategy() {
                             Save Draft
                         </Button>
                         <Button
-                            onClick={() => handleSave(true)}
+                            onClick={async () => {
+                                await handleSave(false);
+                                navigate('/script-selection', { state: { id, strategy } });
+                            }}
                             disabled={saving}
-                            className="bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-400/20"
+                            className="bg-white text-black hover:bg-gray-200 font-semibold"
                         >
-                            <Send className="w-4 h-4 mr-2" />
-                            Launch Campaign
+                            Continue to Creative
+                            <Zap className="w-4 h-4 ml-2" />
                         </Button>
                     </div>
                 </div>

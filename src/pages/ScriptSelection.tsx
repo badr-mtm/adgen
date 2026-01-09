@@ -157,11 +157,62 @@ export default function ScriptSelection() {
     }, 2500);
   };
 
-  const handleContinue = () => {
-    // Navigate to next step or editor
-    // For now mock navigation
-    toast({ title: "Moving to Production", description: "Initializing video editor environment..." });
-    navigate(`/video-editor/new`, { state: { script: selectedScript, scenes, voice: selectedVoice } });
+  const handleContinue = async () => {
+    const campaignId = campaignData.id;
+
+    // Show cinematic transition feedback
+    toast({
+      title: "Initializing Production Studio",
+      description: "Syncing creative assets and configuring timeline...",
+      duration: 3000
+    });
+
+    if (campaignId) {
+      try {
+        // Persist generated assets to Supabase
+        const { error } = await supabase
+          .from('campaigns')
+          .update({
+            storyboard: {
+              scenes: scenes.map(s => ({
+                id: s.id,
+                name: `Scene ${s.number}`,
+                duration: s.duration,
+                thumbnail: s.imageUrl,
+                description: s.description,
+                type: "generated",
+                url: s.imageUrl
+              })),
+              generatedAt: new Date().toISOString()
+            }
+          })
+          .eq('id', campaignId);
+
+        if (error) throw error;
+
+        // Navigate with state for immediate render (optimistic UI)
+        navigate(`/video-editor/${campaignId}`, {
+          state: {
+            preloadedScenes: scenes,
+            script: selectedScript
+          }
+        });
+
+      } catch (err) {
+        console.error("Failed to save assets:", err);
+        // Fallback navigation
+        navigate(`/video-editor/${campaignId}`);
+      }
+    } else {
+      // Demo/Dev mode handling
+      console.warn("No campaign ID - Entering Demo Mode");
+      navigate(`/video-editor/demo`, {
+        state: {
+          preloadedScenes: scenes,
+          script: selectedScript
+        }
+      });
+    }
   };
 
   if (loading) {

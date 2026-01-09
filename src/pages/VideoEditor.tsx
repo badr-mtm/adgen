@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { VideoProject, Scene, VideoOverlaySettings, defaultOverlaySettings } from "@/types/videoEditor";
@@ -18,6 +18,7 @@ export default function VideoEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const location = useLocation();
 
   // State
   const [loading, setLoading] = useState(true);
@@ -73,7 +74,29 @@ export default function VideoEditor() {
       if (!id) return;
       try {
         // Simulate "System Initialization" delay for cinematic effect
+        // Cinematic initialization delay
         await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Optimistic Load from Transition State
+        // @ts-ignore - location state is untyped but safe here
+        const locationState = location.state as any;
+        if (locationState?.preloadedScenes) {
+          const mappedScenes = locationState.preloadedScenes.map((s: any) => ({
+            id: s.id,
+            name: s.name || `Scene ${s.number || '?'}`,
+            duration: s.duration,
+            thumbnail: s.imageUrl || s.thumbnail,
+            description: s.description,
+            type: "generated",
+            url: s.imageUrl || s.url
+          }));
+          setScenes(mappedScenes);
+        }
+
+        if (id === 'demo') {
+          setLoading(false);
+          return;
+        }
 
         const { data: campaign, error } = await supabase
           .from('campaigns')
