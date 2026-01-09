@@ -1,15 +1,10 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   BarChart3,
   TrendingUp,
@@ -20,364 +15,165 @@ import {
   Calendar,
   ArrowUpRight,
   ArrowDownRight,
+  Activity,
+  Tv,
+  Globe,
+  Zap
 } from "lucide-react";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, AreaChart, Area
 } from "recharts";
-
-const performanceData = [
-  { name: "Mon", views: 4000, clicks: 2400, conversions: 240 },
-  { name: "Tue", views: 3000, clicks: 1398, conversions: 139 },
-  { name: "Wed", views: 2000, clicks: 9800, conversions: 980 },
-  { name: "Thu", views: 2780, clicks: 3908, conversions: 390 },
-  { name: "Fri", views: 1890, clicks: 4800, conversions: 480 },
-  { name: "Sat", views: 2390, clicks: 3800, conversions: 380 },
-  { name: "Sun", views: 3490, clicks: 4300, conversions: 430 },
-];
-
-const audienceData = [
-  { name: "18-24", value: 25, color: "hsl(85, 45%, 65%)" },
-  { name: "25-34", value: 35, color: "hsl(85, 45%, 55%)" },
-  { name: "35-44", value: 20, color: "hsl(85, 45%, 45%)" },
-  { name: "45-54", value: 12, color: "hsl(120, 10%, 40%)" },
-  { name: "55+", value: 8, color: "hsl(120, 10%, 30%)" },
-];
-
-const campaignPerformance = [
-  { name: "Summer Sale", ctr: 4.2, engagement: 12.5, conversions: 342 },
-  { name: "Product Launch", ctr: 3.8, engagement: 10.2, conversions: 256 },
-  { name: "Brand Awareness", ctr: 2.9, engagement: 8.7, conversions: 189 },
-  { name: "Holiday Special", ctr: 5.1, engagement: 15.3, conversions: 423 },
-];
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState("7d");
 
+  // Mock Data
+  const hourlyData = Array.from({ length: 24 }).map((_, i) => ({
+    hour: `${i}:00`,
+    viewers: Math.floor(Math.random() * 5000) + 1000,
+    engagement: Math.floor(Math.random() * 100)
+  }));
+
+  const regionData = [
+    { region: "North America", reach: 85, lift: 4.2 },
+    { region: "Europe", reach: 65, lift: 3.8 },
+    { region: "Asia Pacific", reach: 45, lift: 2.9 },
+  ];
+
   return (
     <DashboardLayout>
-      <div className="p-6 space-y-6">
+      <div className="min-h-screen bg-background p-6 space-y-8 max-w-[1600px] mx-auto">
+
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Reports</h1>
-            <p className="text-muted-foreground">
-              Track and analyze your campaign performance
-            </p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-primary/80">
+              <Activity className="h-4 w-4 animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-widest">Live Feed</span>
+            </div>
+            <h1 className="text-3xl font-black tracking-tight lg:text-4xl text-white">Broadcast Analytics</h1>
+            <p className="text-muted-foreground">Real-time performance across global TV networks.</p>
           </div>
           <div className="flex items-center gap-3">
-            <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger className="w-40">
-                <Calendar className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7d">Last 7 days</SelectItem>
-                <SelectItem value="30d">Last 30 days</SelectItem>
-                <SelectItem value="90d">Last 90 days</SelectItem>
-                <SelectItem value="1y">Last year</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export
+            <div className="flex items-center bg-card/50 border border-white/10 rounded-lg p-1">
+              {['24h', '7d', '30d'].map(d => (
+                <button key={d} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${dateRange === d ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-white'}`} onClick={() => setDateRange(d)}>
+                  {d.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <Button variant="outline" className="gap-2 border-white/10 bg-white/5 hover:bg-white/10 text-white">
+              <Download className="h-4 w-4" /> Export CSV
             </Button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="campaigns" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="campaigns">Campaign Reports</TabsTrigger>
-            <TabsTrigger value="audience">Audience Reports</TabsTrigger>
-          </TabsList>
+        {/* Hero Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard title="Total Impressions" value="4.2M" trend="+12%" icon={<Eye className="text-blue-400" />} />
+          <StatCard title="Household Reach" value="1.8M" trend="+8.4%" icon={<Tv className="text-purple-400" />} />
+          <StatCard title="Avg. Attention" value="18.2s" trend="-2%" icon={<Zap className="text-yellow-400" />} negative />
+          <StatCard title="Brand Lift" value="+14.5%" trend="+5.1%" icon={<TrendingUp className="text-green-400" />} />
+        </div>
 
-          <TabsContent value="campaigns" className="space-y-6">
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="bg-card border-border">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Impressions
-                  </CardTitle>
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">1.2M</div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <ArrowUpRight className="h-3 w-3 text-primary" />
-                    <span className="text-primary">+18.2%</span> from last period
-                  </p>
-                </CardContent>
-              </Card>
+        {/* Main Content Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-              <Card className="bg-card border-border">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Clicks
-                  </CardTitle>
-                  <MousePointerClick className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">45.2K</div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <ArrowUpRight className="h-3 w-3 text-primary" />
-                    <span className="text-primary">+12.5%</span> from last period
-                  </p>
-                </CardContent>
-              </Card>
+          {/* Main Chart Area */}
+          <Card className="lg:col-span-2 bg-card/40 border-white/10 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Prime Time Performance</CardTitle>
+              <CardDescription>Viewership volume by hour (Local Time)</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={hourlyData}>
+                  <defs>
+                    <linearGradient id="colorViewers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="hour" stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} interval={3} />
+                  <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000}k`} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#09090b', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Area type="monotone" dataKey="viewers" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorViewers)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-              <Card className="bg-card border-border">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Average CTR
-                  </CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">3.76%</div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <ArrowDownRight className="h-3 w-3 text-destructive" />
-                    <span className="text-destructive">-0.3%</span> from last period
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Conversions
-                  </CardTitle>
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-foreground">3,039</div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <ArrowUpRight className="h-3 w-3 text-primary" />
-                    <span className="text-primary">+24.1%</span> from last period
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Performance Chart */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Performance Over Time</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={performanceData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(120, 10%, 20%)" />
-                      <XAxis dataKey="name" stroke="hsl(120, 5%, 60%)" />
-                      <YAxis stroke="hsl(120, 5%, 60%)" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "hsl(120, 10%, 12%)",
-                          border: "1px solid hsl(120, 10%, 20%)",
-                          borderRadius: "8px",
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="views"
-                        stroke="hsl(85, 45%, 65%)"
-                        strokeWidth={2}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="clicks"
-                        stroke="hsl(200, 70%, 50%)"
-                        strokeWidth={2}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="conversions"
-                        stroke="hsl(45, 90%, 60%)"
-                        strokeWidth={2}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+          {/* Regional Performance Sidebar */}
+          <Card className="bg-card/40 border-white/10 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-indigo-400" /> Regional Impact</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {regionData.map((region, i) => (
+                <div key={region.region} className="space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-white">{region.region}</span>
+                    <span className="text-green-400 font-bold">+{region.lift}% Lift</span>
+                  </div>
+                  <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${region.reach}%` }} />
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Reach Saturation</span>
+                    <span>{region.reach}% (High)</span>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
 
-            {/* Campaign Performance Table */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Campaign Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {campaignPerformance.map((campaign) => (
-                    <div
-                      key={campaign.name}
-                      className="flex items-center justify-between p-4 rounded-lg bg-muted/30"
-                    >
-                      <div>
-                        <p className="font-medium text-foreground">{campaign.name}</p>
-                      </div>
-                      <div className="flex items-center gap-8">
-                        <div className="text-center">
-                          <p className="text-sm text-muted-foreground">CTR</p>
-                          <p className="font-semibold text-foreground">{campaign.ctr}%</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm text-muted-foreground">Engagement</p>
-                          <p className="font-semibold text-foreground">{campaign.engagement}%</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm text-muted-foreground">Conversions</p>
-                          <p className="font-semibold text-foreground">{campaign.conversions}</p>
-                        </div>
-                      </div>
-                    </div>
+              <div className="pt-4 border-t border-white/10 mt-6">
+                <h4 className="text-xs font-bold uppercase text-muted-foreground mb-4">Top Networks</h4>
+                <div className="flex flex-wrap gap-2">
+                  {['Hulu', 'Roku', 'ESPN', 'Discovery'].map(net => (
+                    <Badge key={net} variant="secondary" className="bg-white/5 hover:bg-white/10 text-white border-white/10 px-3 py-1 cursor-default">
+                      {net}
+                    </Badge>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </CardContent>
+          </Card>
 
-          <TabsContent value="audience" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Age Distribution */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Age Distribution
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={audienceData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={80}
-                          paddingAngle={5}
-                          dataKey="value"
-                        >
-                          {audienceData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "hsl(120, 10%, 12%)",
-                            border: "1px solid hsl(120, 10%, 20%)",
-                            borderRadius: "8px",
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="flex flex-wrap justify-center gap-4 mt-4">
-                    {audienceData.map((item) => (
-                      <div key={item.name} className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-sm text-muted-foreground">
-                          {item.name}: {item.value}%
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+        </div>
 
-              {/* Engagement by Platform */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle>Engagement by Platform</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={[
-                          { platform: "Instagram", engagement: 15.2 },
-                          { platform: "Facebook", engagement: 12.8 },
-                          { platform: "TikTok", engagement: 18.5 },
-                          { platform: "YouTube", engagement: 10.3 },
-                          { platform: "Twitter", engagement: 8.7 },
-                        ]}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(120, 10%, 20%)" />
-                        <XAxis dataKey="platform" stroke="hsl(120, 5%, 60%)" />
-                        <YAxis stroke="hsl(120, 5%, 60%)" />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "hsl(120, 10%, 12%)",
-                            border: "1px solid hsl(120, 10%, 20%)",
-                            borderRadius: "8px",
-                          }}
-                        />
-                        <Bar dataKey="engagement" fill="hsl(85, 45%, 65%)" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+        {/* Detailed Metrics Table Placeholder (could be expanded) */}
 
-            {/* Top Performing Audiences */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Top Performing Audience Segments</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { segment: "Tech Enthusiasts, 25-34", reach: "245K", ctr: "4.8%", conversion: "3.2%" },
-                    { segment: "Fashion Forward, 18-24", reach: "189K", ctr: "4.2%", conversion: "2.8%" },
-                    { segment: "Business Professionals, 35-44", reach: "156K", ctr: "3.9%", conversion: "3.5%" },
-                    { segment: "Health & Fitness, 25-34", reach: "134K", ctr: "3.6%", conversion: "2.4%" },
-                  ].map((audience, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 rounded-lg bg-muted/30"
-                    >
-                      <div>
-                        <p className="font-medium text-foreground">{audience.segment}</p>
-                        <p className="text-sm text-muted-foreground">Reach: {audience.reach}</p>
-                      </div>
-                      <div className="flex items-center gap-8">
-                        <div className="text-center">
-                          <p className="text-sm text-muted-foreground">CTR</p>
-                          <p className="font-semibold text-foreground">{audience.ctr}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm text-muted-foreground">Conversion</p>
-                          <p className="font-semibold text-foreground">{audience.conversion}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
     </DashboardLayout>
   );
 };
+
+// Sub-components
+const StatCard = ({ title, value, trend, icon, negative }: any) => (
+  <Card className="bg-card/40 border-white/10 backdrop-blur-sm relative overflow-hidden group">
+    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    <CardContent className="p-6 relative">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <h3 className="text-3xl font-black mt-1 tracking-tight text-white">{value}</h3>
+        </div>
+        <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 shadow-inner">
+          {icon}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Badge variant="outline" className={`border-0 ${negative ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
+          {trend}
+        </Badge>
+        <span className="text-xs text-muted-foreground">vs previous period</span>
+      </div>
+    </CardContent>
+  </Card>
+);
 
 export default Reports;

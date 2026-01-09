@@ -1,47 +1,34 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { CampaignGoalModal } from "@/components/create/CampaignGoalModal";
 import { TargetAudienceModal, AudienceData } from "@/components/create/TargetAudienceModal";
-import CampaignCard from "@/components/CampaignCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Play, ArrowRight, Paperclip, X } from "lucide-react";
+import {
+  Play,
+  ArrowRight,
+  Sparkles,
+  Tv,
+  Globe,
+  Target,
+  Zap,
+  Upload,
+  X,
+  FileVideo,
+  Image as ImageIcon
+} from "lucide-react";
 import { CreatePageSkeleton } from "@/components/skeletons/CreatePageSkeleton";
 import { Textarea } from "@/components/ui/textarea";
-const containerVariants = {
-  hidden: {
-    opacity: 0
-  },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.1
-    }
-  }
-};
-const itemVariants = {
-  hidden: {
-    opacity: 0,
-    y: 20
-  },
-  visible: {
-    opacity: 1,
-    y: 0
-  }
-};
-type ModalStep = "closed" | "goal" | "audience";
+import { Badge } from "@/components/ui/badge";
+
 const Create = () => {
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [modalStep, setModalStep] = useState<ModalStep>("closed");
-  const [recentCampaigns, setRecentCampaigns] = useState<any[]>([]);
+  const [modalStep, setModalStep] = useState<"closed" | "goal" | "audience">("closed");
 
   // Flow state
   const [concept, setConcept] = useState("");
@@ -50,16 +37,30 @@ const Create = () => {
   const [uploadedFiles, setUploadedFiles] = useState<Array<{
     file: File;
     preview: string;
+    type: 'image' | 'video';
   }>>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    // Quick auth check
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate("/auth"); return; }
+      setLoading(false);
+    };
+    checkAuth();
+  }, [navigate]);
+
   const handleFileUpload = (files: FileList | null) => {
     if (!files) return;
     const newFiles = Array.from(files).map(file => ({
       file,
-      preview: URL.createObjectURL(file)
+      preview: URL.createObjectURL(file),
+      type: file.type.startsWith('video/') ? 'video' as const : 'image' as const
     }));
     setUploadedFiles(prev => [...prev, ...newFiles]);
   };
+
   const removeFile = (index: number) => {
     setUploadedFiles(prev => {
       const updated = [...prev];
@@ -68,34 +69,12 @@ const Create = () => {
       return updated;
     });
   };
-  useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: {
-          session
-        }
-      } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      const {
-        data: campaigns
-      } = await supabase.from("campaigns").select("*").eq("user_id", session.user.id).order("created_at", {
-        ascending: false
-      }).limit(6);
-      if (campaigns) setRecentCampaigns(campaigns);
-      setLoading(false);
-    };
-    checkAuth();
-  }, [navigate]);
 
-  // Step 1: Open Goal Modal when user clicks arrow
   const handleStartCreate = () => {
     if (!concept.trim()) {
       toast({
-        title: "Please describe your ad",
-        description: "Enter a concept for your TV ad to continue.",
+        title: "Concept Required",
+        description: "Please describe your campaign vision to proceed.",
         variant: "destructive"
       });
       return;
@@ -103,21 +82,17 @@ const Create = () => {
     setModalStep("goal");
   };
 
-  // Step 2: Goal selected, move to Audience
   const handleGoalSelect = (goal: string) => {
     setSelectedGoal(goal);
     setIsGenerating(true);
-    // Simulate brief loading then move to audience
     setTimeout(() => {
       setIsGenerating(false);
       setModalStep("audience");
-    }, 500);
+    }, 800);
   };
 
-  // Step 3: Audience configured, navigate to Script Selection
   const handleAudienceContinue = (audience: AudienceData) => {
     setModalStep("closed");
-    // Navigate to script selection with all the data
     navigate("/script-selection", {
       state: {
         concept,
@@ -128,109 +103,183 @@ const Create = () => {
       }
     });
   };
-  const handleCloseModals = () => {
-    setModalStep("closed");
-    setIsGenerating(false);
-  };
-  const handleDelete = async (id: string) => {
-    if (confirm("Delete this campaign?")) {
-      await supabase.from("campaigns").delete().eq("id", id);
-      setRecentCampaigns(prev => prev.filter(c => c.id !== id));
-      toast({
-        title: "Deleted",
-        description: "Campaign deleted"
-      });
-    }
-  };
+
   if (loading) return <DashboardLayout><CreatePageSkeleton /></DashboardLayout>;
-  return <DashboardLayout>
-      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="p-6 max-w-6xl mx-auto space-y-10">
-        {/* Quick TV Ad Creation */}
-        <motion.div variants={itemVariants} className="max-w-2xl mx-auto">
-          <div className="space-y-4">
-            <h1 className="text-2xl font-semibold text-foreground text-center">Describe your campaign idea</h1>
 
-            {/* Uploaded files preview */}
-            {uploadedFiles.length > 0 && <div className="flex gap-2 flex-wrap">
-                {uploadedFiles.map((item, index) => <div key={index} className="relative group">
-                    {item.file.type.startsWith('video/') ? <video src={item.preview} className="w-16 h-16 object-cover rounded-lg border border-border" /> : <img src={item.preview} alt={`Reference ${index + 1}`} className="w-16 h-16 object-cover rounded-lg border border-border" />}
-                    <button onClick={() => removeFile(index)} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <X className="h-3 w-3" />
-                    </button>
-                    {item.file.type.startsWith('video/') && <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-6 h-6 rounded-full bg-background/80 flex items-center justify-center">
-                          <Play className="h-3 w-3 text-foreground" />
+  return (
+    <DashboardLayout>
+      <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center p-6">
+
+        {/* Cinematic Background */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background z-0" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none mix-blend-overlay" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 w-full max-w-4xl space-y-8"
+        >
+
+          {/* Hero Header */}
+          <div className="text-center space-y-6">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4"
+            >
+              <Sparkles className="h-3 w-3" />
+              Campaign Strategy Engine
+            </motion.div>
+
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/50">
+              What's your vision?
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
+              Describe your product or service. Our AI will architect a
+              <span className="text-foreground font-medium"> national TV campaign </span>
+              tailored to your goals.
+            </p>
+          </div>
+
+          {/* Input Area "Launchpad" */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+            className="group relative bg-card/30 backdrop-blur-xl border border-white/10 rounded-3xl p-2 shadow-2xl shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all duration-500"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+            <div className="relative bg-background/40 rounded-2xl p-4 transition-colors group-hover:bg-background/50">
+              <Textarea
+                value={concept}
+                onChange={(e) => setConcept(e.target.value)}
+                placeholder="e.g. A luxury electric car that redefines travel, targeting tech-savvy professionals..."
+                className="min-h-[160px] text-lg md:text-xl bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/50 resize-none leading-relaxed p-4"
+              />
+
+              {/* Uploads Preview Row */}
+              <div className="flex gap-3 px-4 pb-2 overflow-x-auto py-2">
+                <AnimatePresence>
+                  {uploadedFiles.map((file, i) => (
+                    <motion.div
+                      key={file.preview}
+                      initial={{ opacity: 0, scale: 0.8, x: -20 }}
+                      animate={{ opacity: 1, scale: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="relative flex-shrink-0 group/file"
+                    >
+                      <div className="w-16 h-16 rounded-lg overflow-hidden border border-white/10 relative">
+                        {file.type === 'video' ? (
+                          <video src={file.preview} className="w-full h-full object-cover opacity-80" />
+                        ) : (
+                          <img src={file.preview} className="w-full h-full object-cover opacity-80" alt="preview" />
+                        )}
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover/file:opacity-100 transition-opacity hover:cursor-pointer" onClick={() => removeFile(i)}>
+                          <X className="h-4 w-4 text-white" />
                         </div>
-                      </div>}
-                  </div>)}
-              </div>}
+                        {file.type === 'video' && <div className="absolute bottom-1 right-1"><FileVideo className="h-3 w-3 text-white/70" /></div>}
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
 
-            <div className="relative">
-              <Textarea value={concept} onChange={e => setConcept(e.target.value)} placeholder="Describe your TV ad concept..." className="min-h-[120px] bg-secondary/30 border-border text-foreground placeholder:text-muted-foreground resize-none pr-16 pb-14" />
+                <button
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                  className="w-16 h-16 rounded-lg border border-dashed border-white/20 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span className="text-[9px] uppercase font-bold">Add Asset</span>
+                </button>
+                <input
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e.target.files)}
+                />
+              </div>
 
-              {/* Bottom controls inside textarea area */}
-              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                {/* Left side: Upload + Duration chips */}
-                <div className="flex items-center gap-1.5">
-                  <button onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = 'image/*,video/*';
-                  input.multiple = true;
-                  input.onchange = e => {
-                    handleFileUpload((e.target as HTMLInputElement).files);
-                  };
-                  input.click();
-                }} className="w-7 h-7 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors">
-                    <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-
-                  {["15s", "30s", "60s"].map(duration => <button key={duration} onClick={() => setSelectedDuration(duration)} className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${selectedDuration === duration ? "bg-primary text-primary-foreground" : "bg-muted/80 text-muted-foreground hover:bg-muted"}`}>
-                      {duration}
-                    </button>)}
+              {/* Bottom Controls Bar */}
+              <div className="flex items-center justify-between pt-4 border-t border-white/5 px-2">
+                <div className="flex items-center gap-3">
+                  {["15s", "30s", "60s"].map((dur) => (
+                    <button
+                      key={dur}
+                      onClick={() => setSelectedDuration(dur)}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${selectedDuration === dur
+                          ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
+                          : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10"
+                        }`}
+                    >
+                      {dur}
+                    </button>
+                  ))}
                 </div>
 
-                {/* Right side: Submit button */}
-                <Button onClick={handleStartCreate} size="icon" className="h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  <ArrowRight className="h-4 w-4" />
+                <Button
+                  size="lg"
+                  onClick={handleStartCreate}
+                  className="h-12 px-8 rounded-xl bg-white text-black hover:bg-white/90 font-bold transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:scale-105"
+                >
+                  Launch Campaign <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Recent Campaigns */}
-        {recentCampaigns.length > 0 && <motion.div className="space-y-6" variants={itemVariants}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">Recent Generations </h2>
-                <p className="text-muted-foreground">Continue editing</p>
+          {/* Quick Stats / Social Proof */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="grid grid-cols-3 gap-4 max-w-2xl mx-auto pt-8"
+          >
+            <div className="text-center space-y-1">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm uppercase tracking-wide font-medium">
+                <Tv className="h-4 w-4" /> Reach
               </div>
-              <Button variant="ghost" onClick={() => navigate("/ad-operations")} className="text-primary">
-                View all
-              </Button>
+              <div className="text-2xl font-bold text-white">120M+ <span className="text-sm font-normal text-muted-foreground">Households</span></div>
             </div>
-            <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" variants={containerVariants}>
-              {recentCampaigns.slice(0, 6).map(campaign => <motion.div key={campaign.id} variants={itemVariants}>
-                  <CampaignCard image="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?w=800" title={campaign.title} description={campaign.description} onClick={() => navigate(campaign.status === "concept" ? `/storyboard/${campaign.id}` : `/video-editor/${campaign.id}`)} onEdit={() => navigate(campaign.status === "concept" ? `/storyboard/${campaign.id}` : `/video-editor/${campaign.id}`)} onDelete={() => handleDelete(campaign.id)} />
-                </motion.div>)}
-            </motion.div>
-          </motion.div>}
-
-        {/* Empty State */}
-        {recentCampaigns.length === 0 && <motion.div variants={itemVariants} className="text-center py-16 space-y-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-muted mb-4">
-              <Play className="h-10 w-10 text-muted-foreground" />
+            <div className="text-center space-y-1 border-l border-white/10">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm uppercase tracking-wide font-medium">
+                <Globe className="h-4 w-4" /> Networks
+              </div>
+              <div className="text-2xl font-bold text-white">85+ <span className="text-sm font-normal text-muted-foreground">Premium Channels</span></div>
             </div>
-            <h3 className="text-xl font-semibold text-foreground">No campaigns yet</h3>
-            <p className="text-muted-foreground">Create your first TV ad campaign</p>
-          </motion.div>}
-      </motion.div>
+            <div className="text-center space-y-1 border-l border-white/10">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm uppercase tracking-wide font-medium">
+                <Zap className="h-4 w-4" /> Speed
+              </div>
+              <div className="text-2xl font-bold text-white">24h <span className="text-sm font-normal text-muted-foreground">To Air</span></div>
+            </div>
+          </motion.div>
 
-      {/* Modal Flow: Goal → Audience → Script Selection Page */}
-      <CampaignGoalModal open={modalStep === "goal"} onOpenChange={open => !open && handleCloseModals()} onBack={handleCloseModals} onGenerate={handleGoalSelect} isGenerating={isGenerating} />
+        </motion.div>
+      </div>
 
-      <TargetAudienceModal open={modalStep === "audience"} onOpenChange={open => !open && handleCloseModals()} onBack={() => setModalStep("goal")} onContinue={handleAudienceContinue} campaignDescription={concept} />
-    </DashboardLayout>;
+      {/* Modals are still used but will be styled to match */}
+      <CampaignGoalModal
+        open={modalStep === "goal"}
+        onOpenChange={(open) => !open && setModalStep("closed")}
+        onBack={() => setModalStep("closed")}
+        onGenerate={handleGoalSelect}
+        isGenerating={isGenerating}
+      />
+
+      <TargetAudienceModal
+        open={modalStep === "audience"}
+        onOpenChange={(open) => !open && setModalStep("closed")}
+        onBack={() => setModalStep("goal")}
+        onContinue={handleAudienceContinue}
+        campaignDescription={concept}
+      />
+
+    </DashboardLayout>
+  );
 };
+
 export default Create;
