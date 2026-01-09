@@ -22,29 +22,23 @@ import {
   MoreVertical,
   Edit3,
   Plus,
-  Trash2,
   Play,
   Pause,
   Volume2,
   VolumeX,
   Link,
-  Image,
-  Type,
   Palette,
   AlignLeft,
   AlignCenter,
   AlignRight,
-  Download,
-  RefreshCw,
   HelpCircle,
   BarChart2,
   Zap,
   Layout,
   Activity,
-  Tv,
-  ShieldCheck,
+  UserCheck,
+  Heart
 } from "lucide-react";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { PerformanceInsights } from "./PerformanceInsights";
 import type { VideoOverlaySettings, BannerSettings, EndScreenSettings, QRCodeSettings, MusicSettings, VoiceSettings } from "@/types/videoEditor";
 
@@ -101,7 +95,6 @@ const VideoEditorSidebar = ({
   onToggleEndScreenPreview,
   onAIAction,
 }: VideoEditorSidebarProps) => {
-  const [aiInputSource, setAiInputSource] = useState("website");
   const [isPlaying, setIsPlaying] = useState(false);
 
   // Helper functions to update nested settings
@@ -140,17 +133,10 @@ const VideoEditorSidebar = ({
     });
   };
 
-  const updateNetwork = (network: string) => {
-    onOverlaySettingsChange({
-      ...overlaySettings,
-      network: { selected: network as any },
-    });
-  };
-
   return (
-    <div className="flex h-full min-h-0 bg-background transition-colors duration-300">
+    <div className="flex h-full min-h-0 bg-black/20 backdrop-blur-xl border-r border-white/10 transition-colors duration-300">
       {/* Icon Tabs - Slim & Elegant */}
-      <div className="w-[60px] bg-card border-r border-border flex flex-col items-center py-4 gap-1 transition-colors duration-300">
+      <div className="w-[60px] bg-black/40 border-r border-white/10 flex flex-col items-center py-4 gap-1 transition-colors duration-300">
         {sidebarTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -162,21 +148,21 @@ const VideoEditorSidebar = ({
               onClick={() => onTabChange(tab.id)}
               className={`relative w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 group
                 ${isActive
-                  ? "bg-primary text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
-                  : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/10"
+                  ? "bg-blue-600/20 text-blue-400 shadow-[0_0_20px_-5px_rgba(59,130,246,0.5)] border border-blue-500/30"
+                  : "text-white/40 hover:text-white hover:bg-white/5"
                 }`}
             >
               <Icon className={`w-4 h-4 transition-transform ${isActive ? "scale-110" : ""}`} />
               {isActive && (
                 <motion.div
                   layoutId="activeTabGlow"
-                  className="absolute inset-0 rounded-xl bg-primary/20 blur-md -z-10"
+                  className="absolute inset-0 rounded-xl bg-blue-500/10 blur-[8px] -z-10"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
 
               {/* Tooltip on hover */}
-              <div className="absolute left-[calc(100%+12px)] px-2 py-1 bg-zinc-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-white/10 uppercase tracking-widest">
+              <div className="absolute left-[calc(100%+12px)] px-2 py-1 bg-black/90 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-white/10 uppercase tracking-widest backdrop-blur-md">
                 {tab.label}
               </div>
             </motion.button>
@@ -185,11 +171,12 @@ const VideoEditorSidebar = ({
       </div>
 
       {/* Content Panel - Semantic & Elegant */}
-      <div className="w-[300px] bg-background border-r border-border flex flex-col transition-colors duration-300">
-        <div className="p-4 border-b border-border">
-          <h2 className="text-base font-semibold text-foreground tracking-tight">
+      <div className="w-[300px] bg-transparent flex flex-col transition-colors duration-300">
+        <div className="p-4 border-b border-white/10 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-white tracking-tight flex items-center gap-2">
             {sidebarTabs.find(t => t.id === activeTab)?.label}
           </h2>
+          {activeTab === 'slideshow' && <Badge variant="outline" className="text-[10px] border-white/10 text-white/50">{scenes.length} SCENES</Badge>}
         </div>
 
         <ScrollArea className="flex-1">
@@ -200,13 +187,13 @@ const VideoEditorSidebar = ({
                 <div
                   key={scene.id}
                   className={`group relative flex flex-col gap-1 p-2 rounded-lg transition-all border ${scene.isActive
-                    ? "bg-accent/10 border-primary/40 shadow-lg"
-                    : "bg-card border-transparent hover:bg-accent/5 hover:border-border"
+                    ? "bg-white/10 border-blue-500/30 shadow-lg"
+                    : "bg-white/5 border-transparent hover:bg-white/10 hover:border-white/10"
                     }`}
                   onClick={() => onSceneSelect(scene.id)}
                 >
                   <div className="flex gap-3">
-                    <div className="relative w-20 h-14 rounded-md overflow-hidden bg-muted flex-shrink-0 shadow-inner">
+                    <div className="relative w-24 h-14 rounded-md overflow-hidden bg-black/40 flex-shrink-0 shadow-inner border border-white/5">
                       {scene.thumbnailUrl ? (
                         <img
                           src={scene.thumbnailUrl}
@@ -215,50 +202,43 @@ const VideoEditorSidebar = ({
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Film className="h-6 w-6 text-muted-foreground" />
+                          <Film className="h-6 w-6 text-white/20" />
                         </div>
                       )}
 
                       {/* Hover Overlay */}
                       <button
-                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]"
+                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]"
                         onClick={(e) => {
                           e.stopPropagation();
                           onSceneChange(scene.id);
                         }}
                       >
-                        <div className="bg-white/20 p-2 rounded-full border border-white/20">
-                          <Edit3 className="h-4 w-4 text-white" />
+                        <div className="bg-white/10 p-1.5 rounded-full border border-white/20 hover:scale-110 transition-transform">
+                          <Edit3 className="h-3.5 w-3.5 text-white" />
                         </div>
                       </button>
+
+                      {/* Duration Badge */}
+                      <div className="absolute bottom-1 right-1 px-1 py-0.5 rounded bg-black/60 text-[8px] text-white font-mono border border-white/10 backdrop-blur-sm">
+                        {scene.duration}
+                      </div>
                     </div>
 
-                    <div className="flex-1 min-w-0 py-1">
+                    <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
                       <div className="flex items-center justify-between mb-0.5">
-                        <p className="text-sm font-semibold text-foreground truncate">{scene.label}</p>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                        <p className={`text-xs font-semibold truncate ${scene.isActive ? 'text-blue-200' : 'text-white'}`}>{scene.label}</p>
+                        <Button variant="ghost" size="icon" className="h-5 w-5 text-white/30 hover:text-white">
                           <MoreVertical className="h-3 w-3" />
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground font-medium">{scene.duration}</p>
+
                       {scene.isActive && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                          <span className="text-[10px] text-primary font-semibold uppercase tracking-wider">Currently visible</span>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse box-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                          <span className="text-[9px] text-blue-400 font-medium uppercase tracking-wider">Active</span>
                         </div>
                       )}
-                    </div>
-                  </div>
-
-                  {/* Drag Handle (Simulated) */}
-                  <div className="absolute left-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="flex flex-col gap-0.5">
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="flex gap-0.5">
-                          <div className="w-0.5 h-0.5 rounded-full bg-muted-foreground" />
-                          <div className="w-0.5 h-0.5 rounded-full bg-muted-foreground" />
-                        </div>
-                      ))}
                     </div>
                   </div>
                 </div>
@@ -267,7 +247,7 @@ const VideoEditorSidebar = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full mt-4 h-11 rounded-xl"
+                className="w-full mt-4 h-10 rounded-xl bg-white/5 border-dashed border-white/20 hover:bg-white/10 hover:border-white/40 hover:text-white text-white/60"
                 onClick={() => {
                   // Logic to add a new scene
                 }}
@@ -277,52 +257,36 @@ const VideoEditorSidebar = ({
               </Button>
 
               {/* AI Hook Library - NEW */}
-              <div className="pt-6 border-t border-border mt-6">
+              <div className="pt-6 border-t border-white/10 mt-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    <Label className="text-sm font-bold uppercase tracking-wider text-foreground">AI Hook Library</Label>
+                    <Sparkles className="h-4 w-4 text-purple-400" />
+                    <Label className="text-xs font-bold uppercase tracking-wider text-white">AI Hook Library</Label>
                   </div>
-                  <Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary uppercase font-bold px-2">Premium</Badge>
+                  <Badge variant="secondary" className="text-[9px] bg-purple-500/10 text-purple-300 border-purple-500/20 uppercase font-bold px-1.5">Premium</Badge>
                 </div>
-                <p className="text-[11px] text-muted-foreground mb-4 leading-relaxed italic">
-                  The first 3 seconds determine 80% of your TV ad's success. Use these high-converting hooks.
-                </p>
+
                 <div className="grid grid-cols-1 gap-2">
                   {[
-                    { id: 'question', label: 'The Big Question', icon: HelpCircle, color: 'text-blue-500', desc: 'Engage audience instantly with a relatable pain point.' },
-                    { id: 'stat', label: 'Shocking Stat', icon: BarChart2, color: 'text-orange-500', desc: 'Use data to build immediate authority.' },
-                    { id: 'surprise', label: 'Visual Surprise', icon: Zap, color: 'text-yellow-500', desc: 'Stop viewers with an unexpected statement.' },
-                    { id: 'problem-solution', label: 'Problem/Solution', icon: Layout, color: 'text-green-500', desc: 'Agitate the problem, then present your brand.' }
+                    { id: 'question', label: 'The Big Question', icon: HelpCircle, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20', desc: 'Engage with relatable pain point' },
+                    { id: 'stat', label: 'Shocking Stat', icon: BarChart2, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', desc: 'Use data for authority' },
+                    { id: 'surprise', label: 'Visual Surprise', icon: Zap, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', desc: 'Unexpected statement' },
+                    { id: 'problem-solution', label: 'Problem/Solution', icon: Layout, color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20', desc: 'Present brand as solution' }
                   ].map((hook) => (
                     <button
                       key={hook.id}
                       onClick={() => onAIAction?.("apply_hook", { hookId: hook.id, label: hook.label })}
-                      className="group flex items-start gap-3 p-3 rounded-xl border border-border bg-accent/5 hover:border-primary/50 hover:bg-primary/5 transition-all text-left"
+                      className="group flex items-start gap-3 p-2.5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all text-left"
                     >
-                      <div className={`mt-0.5 p-1.5 rounded-lg bg-background border border-border group-hover:border-primary/30 ${hook.color}`}>
+                      <div className={`mt-0.5 p-1.5 rounded-lg border ${hook.bg} ${hook.border} ${hook.color}`}>
                         <hook.icon className="h-3.5 w-3.5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-bold text-foreground group-hover:text-primary transition-colors">{hook.label}</p>
-                        <p className="text-[10px] text-muted-foreground line-clamp-1 group-hover:text-muted-foreground/80">{hook.desc}</p>
+                        <p className="text-[11px] font-bold text-white group-hover:text-white/90 transition-colors">{hook.label}</p>
+                        <p className="text-[9px] text-white/40 line-clamp-1 group-hover:text-white/60">{hook.desc}</p>
                       </div>
                     </button>
                   ))}
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-border mt-6">
-                <div className="bg-gradient-to-br from-primary/5 to-transparent p-4 rounded-xl border border-primary/10">
-                  <p className="text-sm font-semibold text-foreground mb-2">
-                    Need more visuals?
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-                    Check out our recommended stock libraries for high-quality assets.
-                  </p>
-                  <Button variant="outline" size="sm" className="w-full h-9">
-                    Discover Libraries
-                  </Button>
                 </div>
               </div>
             </div>
@@ -335,9 +299,9 @@ const VideoEditorSidebar = ({
 
           {/* Bottom Banner Tab */}
           {activeTab === "bottom-banner" && (
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="banner-enabled" className="text-sm font-medium">
+            <div className="p-4 space-y-5">
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                <Label htmlFor="banner-enabled" className="text-sm font-medium text-white">
                   Enable Banner
                 </Label>
                 <Switch
@@ -348,100 +312,92 @@ const VideoEditorSidebar = ({
               </div>
 
               {overlaySettings.banner.enabled && (
-                <>
+                <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium text-muted-foreground">Banner Text</Label>
+                      <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Banner Text</Label>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 text-primary hover:text-primary hover:bg-primary/10"
+                        className="h-5 w-5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
                         onClick={() => onAIAction?.("improve_banner_text", { text: overlaySettings.banner.text })}
                       >
                         <Sparkles className="h-3 w-3" />
                       </Button>
                     </div>
-                    <Input
+                    <Textarea
                       value={overlaySettings.banner.text}
                       onChange={(e) => updateBanner({ text: e.target.value })}
                       placeholder="Enter banner text..."
-                      className="bg-accent/5 border-border text-foreground focus:border-primary/50"
+                      className="bg-black/20 border-white/10 text-white focus:border-blue-500/50 resize-none"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm">Position</Label>
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Position</Label>
                     <RadioGroup
                       value={overlaySettings.banner.position}
                       onValueChange={(val) => updateBanner({ position: val as "top" | "bottom" })}
+                      className="grid grid-cols-2 gap-2"
                     >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="top" id="pos-top" />
-                        <Label htmlFor="pos-top" className="text-sm cursor-pointer">Top</Label>
+                      <div className="flex items-center space-x-2 border border-white/10 rounded-md p-2 hover:bg-white/5 cursor-pointer has-[:checked]:bg-blue-500/10 has-[:checked]:border-blue-500/30">
+                        <RadioGroupItem value="top" id="pos-top" className="text-blue-500 border-white/20" />
+                        <Label htmlFor="pos-top" className="text-xs cursor-pointer text-white">Top</Label>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="bottom" id="pos-bottom" />
-                        <Label htmlFor="pos-bottom" className="text-sm cursor-pointer">Bottom</Label>
+                      <div className="flex items-center space-x-2 border border-white/10 rounded-md p-2 hover:bg-white/5 cursor-pointer has-[:checked]:bg-blue-500/10 has-[:checked]:border-blue-500/30">
+                        <RadioGroupItem value="bottom" id="pos-bottom" className="text-blue-500 border-white/20" />
+                        <Label htmlFor="pos-bottom" className="text-xs cursor-pointer text-white">Bottom</Label>
                       </div>
                     </RadioGroup>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm">Text Alignment</Label>
-                    <div className="flex gap-2">
-                      <Button
-                        variant={overlaySettings.banner.alignment === "left" ? "default" : "outline"}
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => updateBanner({ alignment: "left" })}
-                      >
-                        <AlignLeft className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={overlaySettings.banner.alignment === "center" ? "default" : "outline"}
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => updateBanner({ alignment: "center" })}
-                      >
-                        <AlignCenter className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={overlaySettings.banner.alignment === "right" ? "default" : "outline"}
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => updateBanner({ alignment: "right" })}
-                      >
-                        <AlignRight className="h-4 w-4" />
-                      </Button>
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Alignment</Label>
+                    <div className="flex gap-2 p-1 bg-white/5 rounded-lg border border-white/5">
+                      {['left', 'center', 'right'].map((align) => (
+                        <Button
+                          key={align}
+                          variant="ghost"
+                          size="sm"
+                          className={`flex-1 h-7 ${overlaySettings.banner.alignment === align ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}
+                          onClick={() => updateBanner({ alignment: align as any })}
+                        >
+                          {align === 'left' && <AlignLeft className="h-3.5 w-3.5" />}
+                          {align === 'center' && <AlignCenter className="h-3.5 w-3.5" />}
+                          {align === 'right' && <AlignRight className="h-3.5 w-3.5" />}
+                        </Button>
+                      ))}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm">Background Color</Label>
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Background Color</Label>
                     <div className="flex gap-2">
+                      <div className="relative w-10 h-10 rounded-md overflow-hidden border border-white/20 shadow-sm cursor-pointer hover:scale-105 transition-transform">
+                        <Input
+                          type="color"
+                          value={overlaySettings.banner.backgroundColor}
+                          onChange={(e) => updateBanner({ backgroundColor: e.target.value })}
+                          className="absolute -top-2 -left-2 w-[150%] h-[150%] p-0 border-0 cursor-pointer"
+                        />
+                      </div>
                       <Input
-                        type="color"
                         value={overlaySettings.banner.backgroundColor}
                         onChange={(e) => updateBanner({ backgroundColor: e.target.value })}
-                        className="w-12 h-8 p-1 cursor-pointer"
-                      />
-                      <Input
-                        value={overlaySettings.banner.backgroundColor}
-                        onChange={(e) => updateBanner({ backgroundColor: e.target.value })}
-                        className="flex-1"
+                        className="flex-1 bg-white/5 border-white/10 text-white font-mono text-xs uppercase"
                       />
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </div>
           )}
 
           {/* End Screen Tab */}
           {activeTab === "end-screen" && (
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="endscreen-enabled" className="text-sm font-medium">
+            <div className="p-4 space-y-5">
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                <Label htmlFor="endscreen-enabled" className="text-sm font-medium text-white">
                   Enable End Screen
                 </Label>
                 <Switch
@@ -452,9 +408,9 @@ const VideoEditorSidebar = ({
               </div>
 
               {overlaySettings.endScreen.enabled && (
-                <>
-                  <div className="space-y-2">
-                    <Label className="text-sm">Duration (seconds)</Label>
+                <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="space-y-3">
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Duration</Label>
                     <div className="flex items-center gap-3">
                       <Slider
                         value={[overlaySettings.endScreen.duration]}
@@ -462,19 +418,19 @@ const VideoEditorSidebar = ({
                         min={3}
                         max={10}
                         step={1}
-                        className="flex-1"
+                        className="flex-1 [&>.relative>.bg-primary]:bg-blue-500"
                       />
-                      <span className="text-sm text-muted-foreground w-8">{overlaySettings.endScreen.duration}s</span>
+                      <span className="text-xs font-mono text-blue-400 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">{overlaySettings.endScreen.duration}s</span>
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium text-white/70">CTA Button Text</Label>
+                      <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">CTA Button Text</Label>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 text-[#C1FF72] hover:text-[#C1FF72] hover:bg-[#C1FF72]/10"
+                        className="h-5 w-5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
                         onClick={() => onAIAction?.("improve_cta_text", { text: overlaySettings.endScreen.ctaText })}
                       >
                         <Sparkles className="h-3 w-3" />
@@ -484,25 +440,25 @@ const VideoEditorSidebar = ({
                       value={overlaySettings.endScreen.ctaText}
                       onChange={(e) => updateEndScreen({ ctaText: e.target.value })}
                       placeholder="e.g., Learn More, Shop Now"
-                      className="bg-[#1A1A1A] border-[#333] text-white focus:border-[#C1FF72]/50"
+                      className="bg-black/20 border-white/10 text-white focus:border-blue-500/50"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm">CTA Link URL</Label>
-                    <div className="flex gap-2">
-                      <Link className="h-4 w-4 text-muted-foreground mt-2" />
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">CTA Link URL</Label>
+                    <div className="flex gap-2 relative">
+                      <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30" />
                       <Input
                         value={overlaySettings.endScreen.ctaUrl}
                         onChange={(e) => updateEndScreen({ ctaUrl: e.target.value })}
                         placeholder="https://..."
-                        className="flex-1"
+                        className="pl-9 bg-black/20 border-white/10 text-white focus:border-blue-500/50"
                       />
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="show-logo" className="text-sm">Show Logo</Label>
+                    <Label htmlFor="show-logo" className="text-sm text-white/80">Show Logo</Label>
                     <Switch
                       id="show-logo"
                       checked={overlaySettings.endScreen.showLogo}
@@ -511,40 +467,42 @@ const VideoEditorSidebar = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm">Background Color</Label>
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Background Color</Label>
                     <div className="flex gap-2">
+                      <div className="relative w-10 h-10 rounded-md overflow-hidden border border-white/20 shadow-sm cursor-pointer hover:scale-105 transition-transform">
+                        <Input
+                          type="color"
+                          value={overlaySettings.endScreen.backgroundColor}
+                          onChange={(e) => updateEndScreen({ backgroundColor: e.target.value })}
+                          className="absolute -top-2 -left-2 w-[150%] h-[150%] p-0 border-0 cursor-pointer"
+                        />
+                      </div>
                       <Input
-                        type="color"
                         value={overlaySettings.endScreen.backgroundColor}
                         onChange={(e) => updateEndScreen({ backgroundColor: e.target.value })}
-                        className="w-12 h-8 p-1 cursor-pointer"
-                      />
-                      <Input
-                        value={overlaySettings.endScreen.backgroundColor}
-                        onChange={(e) => updateEndScreen({ backgroundColor: e.target.value })}
-                        className="flex-1"
+                        className="flex-1 bg-white/5 border-white/10 text-white font-mono text-xs uppercase"
                       />
                     </div>
                   </div>
 
                   <Button
-                    variant={isPreviewingEndScreen ? "default" : "outline"}
-                    className="w-full"
+                    variant={isPreviewingEndScreen ? "secondary" : "outline"}
+                    className={`w-full ${isPreviewingEndScreen ? "bg-white text-black hover:bg-white/90" : "bg-transparent border-white/20 text-white hover:bg-white/5"}`}
                     onClick={onToggleEndScreenPreview}
                   >
                     <Square className="h-4 w-4 mr-2" />
                     {isPreviewingEndScreen ? "Hide End Screen" : "Preview End Screen"}
                   </Button>
-                </>
+                </div>
               )}
             </div>
           )}
 
           {/* QR Code Tab */}
           {activeTab === "qr-code" && (
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="qr-enabled" className="text-sm font-medium">
+            <div className="p-4 space-y-5">
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                <Label htmlFor="qr-enabled" className="text-sm font-medium text-white">
                   Enable QR Code
                 </Label>
                 <Switch
@@ -555,45 +513,36 @@ const VideoEditorSidebar = ({
               </div>
 
               {overlaySettings.qrCode.enabled && (
-                <>
+                <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="space-y-2">
-                    <Label className="text-sm">Destination URL</Label>
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Destination URL</Label>
                     <Input
                       value={overlaySettings.qrCode.url}
                       onChange={(e) => updateQRCode({ url: e.target.value })}
                       placeholder="https://your-website.com"
+                      className="bg-black/20 border-white/10 text-white focus:border-blue-500/50"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm">Position</Label>
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Position</Label>
                     <RadioGroup
                       value={overlaySettings.qrCode.position}
                       onValueChange={(val) => updateQRCode({ position: val as QRCodeSettings["position"] })}
                     >
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="top-left" id="qr-tl" />
-                          <Label htmlFor="qr-tl" className="text-xs cursor-pointer">Top Left</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="top-right" id="qr-tr" />
-                          <Label htmlFor="qr-tr" className="text-xs cursor-pointer">Top Right</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="bottom-left" id="qr-bl" />
-                          <Label htmlFor="qr-bl" className="text-xs cursor-pointer">Bottom Left</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="bottom-right" id="qr-br" />
-                          <Label htmlFor="qr-br" className="text-xs cursor-pointer">Bottom Right</Label>
-                        </div>
+                        {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((pos) => (
+                          <div key={pos} className="flex items-center space-x-2 border border-white/10 rounded-md p-2 hover:bg-white/5 cursor-pointer has-[:checked]:bg-blue-500/10 has-[:checked]:border-blue-500/30">
+                            <RadioGroupItem value={pos} id={`qr-${pos}`} className="text-blue-500 border-white/20" />
+                            <Label htmlFor={`qr-${pos}`} className="text-[10px] cursor-pointer text-white uppercase">{pos.replace('-', ' ')}</Label>
+                          </div>
+                        ))}
                       </div>
                     </RadioGroup>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-sm">Size</Label>
+                  <div className="space-y-3">
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Size</Label>
                     <div className="flex items-center gap-3">
                       <Slider
                         value={[overlaySettings.qrCode.size]}
@@ -601,21 +550,21 @@ const VideoEditorSidebar = ({
                         min={50}
                         max={200}
                         step={10}
-                        className="flex-1"
+                        className="flex-1 [&>.relative>.bg-primary]:bg-blue-500"
                       />
-                      <span className="text-sm text-muted-foreground w-12">{overlaySettings.qrCode.size}px</span>
+                      <span className="text-xs font-mono text-blue-400 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">{overlaySettings.qrCode.size}px</span>
                     </div>
                   </div>
 
-                  <div className="p-4 bg-muted rounded-lg flex items-center justify-center">
+                  <div className="p-4 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center">
                     <div
-                      className="bg-white rounded flex items-center justify-center"
+                      className="bg-white rounded flex items-center justify-center shadow-lg"
                       style={{ width: overlaySettings.qrCode.size / 2, height: overlaySettings.qrCode.size / 2 }}
                     >
-                      <QrCode className="w-full h-full p-2 text-foreground" />
+                      <QrCode className="w-full h-full p-2 text-black" />
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </div>
           )}
@@ -624,13 +573,13 @@ const VideoEditorSidebar = ({
           {activeTab === "music" && (
             <div className="p-4 space-y-4">
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1 bg-white/5 border-white/10 hover:bg-white/10 text-white">
                   <Upload className="h-4 w-4 mr-2" />
                   Upload
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20 text-purple-200"
                   onClick={() => onAIAction?.("generate_music", { currentSettings: overlaySettings.music })}
                 >
                   <Sparkles className="h-4 w-4 mr-2" />
@@ -639,40 +588,40 @@ const VideoEditorSidebar = ({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Music Library</Label>
+                <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Music Library</Label>
                 <div className="space-y-2">
                   {musicLibrary.map((track) => (
                     <div
                       key={track.id}
                       onClick={() => updateMusic({ selectedTrackId: track.id })}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${overlaySettings.music.selectedTrackId === track.id
-                        ? "bg-accent/10 border border-primary/30"
-                        : "bg-muted/50 hover:bg-muted"
+                      className={`p-3 rounded-lg cursor-pointer transition-colors border ${overlaySettings.music.selectedTrackId === track.id
+                        ? "bg-blue-600/20 border-blue-500/30"
+                        : "bg-white/5 border-transparent hover:bg-white/10 hover:border-white/10"
                         }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className={`h-8 w-8 rounded-full ${overlaySettings.music.selectedTrackId === track.id ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-white/10 text-white hover:bg-white/20"}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               setIsPlaying(!isPlaying);
                             }}
                           >
                             {isPlaying && overlaySettings.music.selectedTrackId === track.id ? (
-                              <Pause className="h-4 w-4" />
+                              <Pause className="h-3.5 w-3.5" />
                             ) : (
-                              <Play className="h-4 w-4" />
+                              <Play className="h-3.5 w-3.5 ml-0.5" />
                             )}
                           </Button>
                           <div>
-                            <p className="text-sm font-medium">{track.name}</p>
-                            <p className="text-xs text-muted-foreground">{track.duration}</p>
+                            <p className="text-sm font-medium text-white">{track.name}</p>
+                            <p className="text-xs text-white/40">{track.duration}</p>
                           </div>
                         </div>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-[10px] bg-white/10 text-white/60 hover:bg-white/20">
                           {track.mood}
                         </Badge>
                       </div>
@@ -682,13 +631,13 @@ const VideoEditorSidebar = ({
               </div>
 
               {overlaySettings.music.selectedTrackId && (
-                <div className="space-y-3 pt-3 border-t border-border">
+                <div className="space-y-4 pt-4 border-t border-white/10">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm">Volume</Label>
+                    <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Volume Mixer</Label>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6"
+                      className="h-6 w-6 text-white/60 hover:text-white"
                       onClick={() => updateMusic({ isMuted: !overlaySettings.music.isMuted })}
                     >
                       {overlaySettings.music.isMuted ? (
@@ -698,15 +647,18 @@ const VideoEditorSidebar = ({
                       )}
                     </Button>
                   </div>
-                  <Slider
-                    value={[overlaySettings.music.volume]}
-                    onValueChange={([val]) => updateMusic({ volume: val })}
-                    min={0}
-                    max={100}
-                    step={1}
-                    disabled={overlaySettings.music.isMuted}
-                  />
-                  <span className="text-xs text-muted-foreground">{overlaySettings.music.volume}%</span>
+                  <div className="flex items-center gap-3">
+                    <Slider
+                      value={[overlaySettings.music.volume]}
+                      onValueChange={([val]) => updateMusic({ volume: val })}
+                      min={0}
+                      max={100}
+                      step={1}
+                      disabled={overlaySettings.music.isMuted}
+                      className="flex-1 [&>.relative>.bg-primary]:bg-blue-500"
+                    />
+                    <span className="text-xs font-mono text-white/60 w-8 text-right">{overlaySettings.music.volume}%</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -714,14 +666,14 @@ const VideoEditorSidebar = ({
 
           {/* Voice & Script Tab */}
           {activeTab === "voice-script" && (
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-5">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-muted-foreground">Script</Label>
+                  <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Script</Label>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-primary hover:text-primary hover:bg-primary/10"
+                    className="h-6 w-6 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
                     onClick={() => onAIAction?.("improve_script", { script: overlaySettings.voice.script })}
                   >
                     <Sparkles className="h-3 w-3" />
@@ -732,47 +684,39 @@ const VideoEditorSidebar = ({
                   onChange={(e) => updateVoice({ script: e.target.value })}
                   placeholder="Enter your voiceover script here..."
                   rows={6}
-                  className="resize-none bg-accent/5 border-border text-foreground focus:border-primary/50"
+                  className="resize-none bg-black/20 border-white/10 text-white focus:border-blue-500/50"
                 />
-                <p className="text-xs text-muted-foreground">
-                  {overlaySettings.voice.script.length} characters • ~{Math.ceil(overlaySettings.voice.script.split(' ').filter(w => w).length / 150)} min read
+                <p className="text-[10px] text-white/30 text-right">
+                  {overlaySettings.voice.script.length} chars • ~{Math.ceil(overlaySettings.voice.script.split(' ').filter(w => w).length / 150)} min read
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm">Voice</Label>
+                <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Voice Persona</Label>
                 <RadioGroup
                   value={overlaySettings.voice.selectedVoice}
                   onValueChange={(val) => updateVoice({ selectedVoice: val })}
                 >
                   <div className="space-y-2">
-                    <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted/50">
-                      <RadioGroupItem value="professional" id="voice-pro" />
-                      <Label htmlFor="voice-pro" className="flex-1 cursor-pointer">
-                        <span className="text-sm">Professional</span>
-                        <p className="text-xs text-muted-foreground">Clear, confident tone</p>
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted/50">
-                      <RadioGroupItem value="friendly" id="voice-friend" />
-                      <Label htmlFor="voice-friend" className="flex-1 cursor-pointer">
-                        <span className="text-sm">Friendly</span>
-                        <p className="text-xs text-muted-foreground">Warm, approachable tone</p>
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted/50">
-                      <RadioGroupItem value="energetic" id="voice-energy" />
-                      <Label htmlFor="voice-energy" className="flex-1 cursor-pointer">
-                        <span className="text-sm">Energetic</span>
-                        <p className="text-xs text-muted-foreground">Upbeat, dynamic tone</p>
-                      </Label>
-                    </div>
+                    {[
+                      { id: 'professional', label: 'Professional', desc: 'Clear, confident tone', icon: UserCheck },
+                      { id: 'friendly', label: 'Friendly', desc: 'Warm, approachable tone', icon: Heart },
+                      { id: 'energetic', label: 'Energetic', desc: 'Upbeat, dynamic tone', icon: Zap }
+                    ].map((voice) => (
+                      <div key={voice.id} className="flex items-center space-x-2 p-3 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 has-[:checked]:bg-blue-500/10 has-[:checked]:border-blue-500/30 transition-all cursor-pointer">
+                        <RadioGroupItem value={voice.id} id={`voice-${voice.id}`} className="text-blue-500 border-white/20 mt-1" />
+                        <Label htmlFor={`voice-${voice.id}`} className="flex-1 cursor-pointer">
+                          <span className="text-sm font-medium text-white block">{voice.label}</span>
+                          <span className="text-xs text-white/40">{voice.desc}</span>
+                        </Label>
+                      </div>
+                    ))}
                   </div>
                 </RadioGroup>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm">Speed</Label>
+              <div className="space-y-3 pt-2 border-t border-white/10">
+                <Label className="text-xs uppercase tracking-wider text-white/50 font-semibold">Playback Speed</Label>
                 <div className="flex items-center gap-3">
                   <Slider
                     value={[overlaySettings.voice.speed]}
@@ -780,152 +724,21 @@ const VideoEditorSidebar = ({
                     min={0.5}
                     max={2}
                     step={0.1}
-                    className="flex-1"
+                    className="flex-1 [&>.relative>.bg-primary]:bg-blue-500"
                   />
-                  <span className="text-sm text-muted-foreground w-12">{overlaySettings.voice.speed}x</span>
+                  <span className="text-xs font-mono text-white/60 w-8 text-right">{overlaySettings.voice.speed}x</span>
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1">
-                  <Upload className="h-4 w-4 mr-2" />
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10 text-white h-9 text-xs">
+                  <Upload className="h-3.5 w-3.5 mr-2" />
                   Upload Audio
                 </Button>
-                <Button variant="outline" className="flex-1">
-                  <Mic className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 text-white h-9 text-xs">
+                  <Mic className="h-3.5 w-3.5 mr-2" />
                   Record
                 </Button>
-              </div>
-
-              <Button
-                className="w-full"
-                disabled={!overlaySettings.voice.script.trim()}
-                onClick={() => onAIAction?.("generate_voiceover", { script: overlaySettings.voice.script })}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generate Voiceover
-              </Button>
-            </div>
-          )}
-
-          {/* AI Settings Tab */}
-          {activeTab === "ai-settings" && (
-            <div className="p-4 space-y-4">
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Select the input source you want the AI use to generate your creative.
-                </p>
-              </div>
-
-              <RadioGroup
-                value={aiInputSource}
-                onValueChange={setAiInputSource}
-                className="space-y-3"
-              >
-                <div className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors">
-                  <RadioGroupItem value="website" id="website" className="mt-0.5" />
-                  <div className="flex-1">
-                    <Label htmlFor="website" className="text-sm font-medium cursor-pointer">
-                      Advertiser business website URL
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Generate from your business website URL
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors">
-                  <RadioGroupItem value="any-url" id="any-url" className="mt-0.5" />
-                  <div className="flex-1">
-                    <Label htmlFor="any-url" className="text-sm font-medium cursor-pointer">
-                      Any website URL
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Generate from a website URL
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors">
-                  <RadioGroupItem value="business-place" id="business-place" className="mt-0.5" />
-                  <div className="flex-1">
-                    <Label htmlFor="business-place" className="text-sm font-medium cursor-pointer">
-                      Business place
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Generate from a business on Google Maps
-                    </p>
-                  </div>
-                </div>
-              </RadioGroup>
-
-              <Button className="w-full">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generate a creative
-              </Button>
-            </div>
-          )}
-
-          {/* General Settings Tab */}
-          {activeTab === "settings" && (
-            <div className="p-6 space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Network Compliance</p>
-                </div>
-
-                <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground">Select a target network to auto-adjust creative for technical requirements.</p>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { id: "none", label: "General", icon: Layout },
-                      { id: "espn", label: "ESPN", icon: Activity },
-                      { id: "hulu", label: "Hulu", icon: Play },
-                      { id: "peacock", label: "Peacock", icon: Sparkles },
-                      { id: "tubi", label: "Tubi", icon: Zap },
-                    ].map((net) => (
-                      <Button
-                        key={net.id}
-                        variant={overlaySettings.network?.selected === net.id ? "default" : "outline"}
-                        className="h-auto py-3 flex-col gap-2 relative overflow-hidden group"
-                        onClick={() => updateNetwork(net.id)}
-                      >
-                        <net.icon className="h-4 w-4" />
-                        <span className="text-xs">{net.label}</span>
-                        {overlaySettings.network?.selected === net.id && (
-                          <div className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                        )}
-                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-semibold text-foreground">Theme Preference</Label>
-                    <p className="text-xs text-muted-foreground mt-1">Switch between light and dark modes</p>
-                  </div>
-                  <ThemeToggle />
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-border">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mb-3">Editor Preferences</p>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm text-foreground/80">Auto-save changes</Label>
-                    <Switch checked={true} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm text-foreground/80">High quality preview</Label>
-                    <Switch checked={false} />
-                  </div>
-                </div>
               </div>
             </div>
           )}
