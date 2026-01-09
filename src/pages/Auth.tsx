@@ -1,15 +1,23 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Loader2, ArrowLeft, Mail } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowLeft, Mail, ShieldCheck, Tv, Zap } from "lucide-react";
 import adgenLogo from "@/assets/adgen-logo.jpeg";
 import tvLifestyleHero from "@/assets/tv-lifestyle-hero.jpg";
 
 type AuthMode = "login" | "signup" | "forgot-password" | "reset-sent";
+
+const taglines = [
+  "Your ads, on every screen.",
+  "TV-first advertising, reimagined.",
+  "Reach audiences in their living rooms.",
+  "Broadcast-quality, made simple.",
+];
 
 export default function Auth() {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
@@ -18,22 +26,28 @@ export default function Auth() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [taglineIndex, setTaglineIndex] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Tagline Carousel
   useEffect(() => {
-    // Set up auth state listener
+    const interval = setInterval(() => {
+      setTaglineIndex((prev) => (prev + 1) % taglines.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
-          // Clear any session-based dismissal so prompt shows on new sign-in
           sessionStorage.removeItem("brand-setup-prompt-dismissed");
           navigate("/dashboard");
         }
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate("/dashboard");
@@ -94,9 +108,9 @@ export default function Auth() {
         },
       });
       if (error) throw error;
-      toast({ 
-        title: "Account created!", 
-        description: "Check your email to verify your account." 
+      toast({
+        title: "Account created!",
+        description: "Check your email to verify your account."
       });
     } catch (error: any) {
       toast({
@@ -174,55 +188,65 @@ export default function Auth() {
   const getHeadline = () => {
     switch (authMode) {
       case "login":
-        return { title: "Welcome back", subtitle: "Log in to continue" };
+        return { title: "Welcome back", subtitle: "Sign in to your command center" };
       case "signup":
-        return { title: "Create your account", subtitle: "Sign up to get started" };
+        return { title: "Join the broadcast", subtitle: "Create your account to get started" };
       case "forgot-password":
-        return { title: "Reset your password", subtitle: "Enter your email to receive a reset link" };
+        return { title: "Reset credentials", subtitle: "We'll send a secure recovery link" };
       case "reset-sent":
-        return { title: "Check your email", subtitle: "We've sent you a password reset link" };
+        return { title: "Check your inbox", subtitle: "A password reset link has been dispatched" };
       default:
-        return { title: "Welcome back", subtitle: "Log in to continue" };
+        return { title: "Welcome back", subtitle: "Sign in to continue" };
     }
   };
 
   const { title, subtitle } = getHeadline();
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Column — Authentication Panel (Functional Zone) */}
-      <div className="w-full lg:w-[480px] xl:w-[520px] flex flex-col justify-center px-8 lg:px-12 xl:px-16 py-12 bg-background">
-        <div className="w-full max-w-sm mx-auto space-y-8">
+    <div className="min-h-screen flex bg-black">
+      {/* Left Column — Authentication Panel (Dark Mode) */}
+      <div className="w-full lg:w-[520px] xl:w-[560px] flex flex-col justify-center px-8 lg:px-14 xl:px-16 py-12 bg-zinc-950 relative overflow-hidden">
+        {/* Subtle Background Effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.015] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==')] pointer-events-none" />
+
+        <div className="w-full max-w-sm mx-auto space-y-8 relative z-10">
           {/* Header */}
           <div className="space-y-6">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <img 
-                src={adgenLogo} 
-                alt="AdGen Logo" 
-                className="h-10 w-10 rounded-lg object-cover"
-              />
-              <span className="text-xl font-semibold text-foreground">AdGen</span>
+            {/* Logo & Status */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img
+                  src={adgenLogo}
+                  alt="AdGen Logo"
+                  className="h-10 w-10 rounded-lg object-cover ring-1 ring-white/10"
+                />
+                <span className="text-xl font-semibold text-white">AdGen</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] text-green-400 font-mono uppercase tracking-widest">
+                <ShieldCheck className="h-3 w-3" />
+                Secure
+              </div>
             </div>
-            
+
             {/* Back button for forgot password */}
             {(authMode === "forgot-password" || authMode === "reset-sent") && (
               <button
                 type="button"
                 onClick={() => setAuthMode("login")}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to login
               </button>
             )}
-            
+
             {/* Headline */}
             <div className="space-y-2">
-              <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+              <h1 className="text-3xl font-bold text-white tracking-tight">
                 {title}
               </h1>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-white/50 text-sm">
                 {subtitle}
               </p>
             </div>
@@ -232,31 +256,31 @@ export default function Auth() {
           {authMode === "reset-sent" && (
             <div className="space-y-6">
               <div className="flex justify-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Mail className="h-8 w-8 text-primary" />
+                <div className="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                  <Mail className="h-8 w-8 text-blue-400" />
                 </div>
               </div>
               <div className="text-center space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  We've sent a password reset link to:
+                <p className="text-sm text-white/50">
+                  Recovery link sent to:
                 </p>
-                <p className="font-medium text-foreground">{email}</p>
-                <p className="text-sm text-muted-foreground pt-2">
-                  Didn't receive the email? Check your spam folder or{" "}
+                <p className="font-medium text-white font-mono">{email}</p>
+                <p className="text-sm text-white/40 pt-2">
+                  Didn't receive it?{" "}
                   <button
                     type="button"
                     onClick={() => setAuthMode("forgot-password")}
-                    className="text-primary hover:underline"
+                    className="text-blue-400 hover:underline"
                   >
-                    try again
+                    Resend
                   </button>
                 </p>
               </div>
-              <Button 
+              <Button
                 onClick={() => setAuthMode("login")}
-                className="w-full h-11 font-medium"
+                className="w-full h-11 font-semibold bg-white text-black hover:bg-white/90"
               >
-                Back to login
+                Return to Login
               </Button>
             </div>
           )}
@@ -265,24 +289,24 @@ export default function Auth() {
           {authMode === "forgot-password" && (
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reset-email" className="text-sm font-medium">
-                  Email
+                <Label htmlFor="reset-email" className="text-sm font-medium text-white/70">
+                  Email Address
                 </Label>
                 <Input
                   id="reset-email"
                   type="email"
-                  placeholder="name@company.com"
+                  placeholder="you@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-11 bg-input border-border"
+                  className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-blue-500/20"
                   autoComplete="email"
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full h-11 font-medium" 
-                size="lg" 
+              <Button
+                type="submit"
+                className="w-full h-12 font-semibold bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-900/30"
+                size="lg"
                 disabled={loading}
               >
                 {loading ? (
@@ -291,7 +315,7 @@ export default function Auth() {
                     Sending...
                   </>
                 ) : (
-                  "Send reset link"
+                  "Send Recovery Link"
                 )}
               </Button>
             </form>
@@ -305,7 +329,7 @@ export default function Auth() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-11 bg-card border-border hover:bg-accent/50 font-medium"
+                  className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-medium"
                   onClick={handleGoogleAuth}
                 >
                   <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
@@ -328,18 +352,18 @@ export default function Auth() {
                   </svg>
                   Continue with Google
                 </Button>
-                
+
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-11 bg-card border-border hover:bg-accent/50 font-medium"
+                  className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-medium"
                   onClick={handleMicrosoftAuth}
                 >
                   <svg className="mr-3 h-5 w-5" viewBox="0 0 21 21">
-                    <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-                    <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-                    <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-                    <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                    <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+                    <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+                    <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+                    <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
                   </svg>
                   Continue with Microsoft
                 </Button>
@@ -348,48 +372,48 @@ export default function Auth() {
               {/* Divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
+                  <span className="w-full border-t border-white/10" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-4 text-muted-foreground font-medium">or</span>
+                  <span className="bg-zinc-950 px-4 text-white/30 font-medium tracking-widest">or</span>
                 </div>
               </div>
 
               {/* Email & Password Form */}
               <form onSubmit={authMode === "login" ? handleLogin : handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
+                  <Label htmlFor="email" className="text-sm font-medium text-white/70">
                     Email
                   </Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="name@company.com"
+                    placeholder="you@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 bg-input border-border"
+                    className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-blue-500/20"
                     autoComplete="email"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">
+                  <Label htmlFor="password" className="text-sm font-medium text-white/70">
                     Password
                   </Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+                      placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="h-11 bg-input border-border pr-10"
+                      className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 pr-10 focus:border-blue-500/50 focus:ring-blue-500/20"
                       autoComplete={authMode === "login" ? "current-password" : "new-password"}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -402,16 +426,16 @@ export default function Auth() {
 
                 {authMode === "signup" && (
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                    <Label htmlFor="confirmPassword" className="text-sm font-medium text-white/70">
                       Confirm Password
                     </Label>
                     <Input
                       id="confirmPassword"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Confirm your password"
+                      placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="h-11 bg-input border-border"
+                      className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-blue-500/20"
                       autoComplete="new-password"
                     />
                   </div>
@@ -422,17 +446,17 @@ export default function Auth() {
                     <button
                       type="button"
                       onClick={() => setAuthMode("forgot-password")}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-sm text-white/40 hover:text-white transition-colors"
                     >
                       Forgot password?
                     </button>
                   </div>
                 )}
 
-                <Button 
-                  type="submit" 
-                  className="w-full h-11 font-medium" 
-                  size="lg" 
+                <Button
+                  type="submit"
+                  className="w-full h-12 font-semibold bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-900/30"
+                  size="lg"
                   disabled={loading}
                 >
                   {loading ? (
@@ -441,22 +465,22 @@ export default function Auth() {
                       {authMode === "login" ? "Signing in..." : "Creating account..."}
                     </>
                   ) : (
-                    authMode === "login" ? "Continue" : "Create account"
+                    authMode === "login" ? "Sign In" : "Create Account"
                   )}
                 </Button>
               </form>
 
               {/* Secondary Action */}
-              <div className="text-center text-sm text-muted-foreground">
+              <div className="text-center text-sm text-white/40">
                 {authMode === "login" ? (
                   <>
-                    Don't have an account?{" "}
+                    New to AdGen?{" "}
                     <button
                       type="button"
                       onClick={() => setAuthMode("signup")}
-                      className="text-foreground font-medium hover:underline"
+                      className="text-white font-medium hover:underline"
                     >
-                      Sign up
+                      Create an account
                     </button>
                   </>
                 ) : (
@@ -465,9 +489,9 @@ export default function Auth() {
                     <button
                       type="button"
                       onClick={() => setAuthMode("login")}
-                      className="text-foreground font-medium hover:underline"
+                      className="text-white font-medium hover:underline"
                     >
-                      Log in
+                      Sign in
                     </button>
                   </>
                 )}
@@ -477,26 +501,62 @@ export default function Auth() {
         </div>
       </div>
 
-      {/* Right Column — Brand & Context Visual (Emotional Zone) */}
+      {/* Right Column — Cinematic Hero Visual */}
       <div className="hidden lg:flex flex-1 relative overflow-hidden">
-        {/* Full-height immersive image */}
-        <img
+        {/* Immersive Image with Ken Burns Effect */}
+        <motion.img
           src={tvLifestyleHero}
-          alt="Family enjoying TV together"
+          alt="Premium TV viewing experience"
           className="absolute inset-0 w-full h-full object-cover"
+          initial={{ scale: 1 }}
+          animate={{ scale: 1.05 }}
+          transition={{ duration: 20, ease: "linear", repeat: Infinity, repeatType: "reverse" }}
         />
-        
-        {/* Subtle gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-transparent" />
-        
-        {/* Bottom context text */}
-        <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/60 via-black/30 to-transparent">
-          <div className="max-w-lg">
-            <p className="text-white/90 text-lg font-medium mb-2">
-              Your ads, on every screen
-            </p>
-            <p className="text-white/70 text-sm">
-              Create TV-first advertising that reaches audiences where they're most engaged — in their living rooms.
+
+        {/* Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-transparent to-transparent opacity-80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+
+        {/* Tech Overlay - Scanlines */}
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.03)_2px,rgba(0,0,0,0.03)_4px)] pointer-events-none" />
+
+        {/* Header - Broadcast Status */}
+        <div className="absolute top-8 right-8 flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-full border border-white/10">
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-[10px] font-mono text-white/80 uppercase tracking-widest">Live Preview</span>
+          </div>
+        </div>
+
+        {/* Feature Badges */}
+        <div className="absolute top-8 left-8 space-y-3">
+          <div className="flex items-center gap-2 px-3 py-2 bg-black/40 backdrop-blur-md rounded-lg border border-white/10">
+            <Tv className="h-4 w-4 text-blue-400" />
+            <span className="text-xs text-white/80 font-medium">CTV Networks</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-black/40 backdrop-blur-md rounded-lg border border-white/10">
+            <Zap className="h-4 w-4 text-amber-400" />
+            <span className="text-xs text-white/80 font-medium">AI-Powered Creatives</span>
+          </div>
+        </div>
+
+        {/* Bottom Tagline Carousel */}
+        <div className="absolute bottom-0 left-0 right-0 p-10 bg-gradient-to-t from-black via-black/70 to-transparent">
+          <div className="max-w-xl">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={taglineIndex}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.5 }}
+                className="text-white/90 text-2xl font-semibold tracking-tight"
+              >
+                {taglines[taglineIndex]}
+              </motion.p>
+            </AnimatePresence>
+            <p className="text-white/50 text-sm mt-3">
+              Create TV-first advertising that reaches audiences where they're most engaged.
             </p>
           </div>
         </div>
