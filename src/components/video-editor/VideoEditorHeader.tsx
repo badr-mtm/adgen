@@ -1,17 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RotateCcw, RotateCw, Search } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
-
-interface VideoEditorHeaderProps {
-    title: string;
-    onUndo: () => void;
-    onRedo: () => void;
-    canUndo: boolean;
-    canRedo: boolean;
-}
-
-import { Button } from "@/components/ui/button";
 import { ArrowLeft, RotateCcw, RotateCw, Search, Bell, Wifi, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
