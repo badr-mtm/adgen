@@ -47,7 +47,7 @@ type WeeklySchedule = Record<string, ScheduleRange[]>;
 // Preset Definitions
 const PRESETS = [
     {
-        id: "all", label: "Any time, Any day", icon: Globe, ranges: {
+        id: "any", label: "Any time, Any day", icon: Globe, ranges: {
             "sun": [{ start: "00:00", end: "23:30" }],
             "mon": [{ start: "00:00", end: "23:30" }],
             "tue": [{ start: "00:00", end: "23:30" }],
@@ -58,7 +58,7 @@ const PRESETS = [
         }
     },
     {
-        id: "business", label: "Business hours", icon: Briefcase, ranges: {
+        id: "business_hours", label: "Business hours", icon: Briefcase, ranges: {
             "mon": [{ start: "09:00", end: "17:00" }],
             "tue": [{ start: "09:00", end: "17:00" }],
             "wed": [{ start: "09:00", end: "17:00" }],
@@ -67,7 +67,7 @@ const PRESETS = [
         }
     },
     {
-        id: "after_work", label: "After work", icon: Moon, ranges: {
+        id: "evenings", label: "After work", icon: Moon, ranges: {
             "mon": [{ start: "17:00", end: "23:30" }],
             "tue": [{ start: "17:00", end: "23:30" }],
             "wed": [{ start: "17:00", end: "23:30" }],
@@ -76,16 +76,7 @@ const PRESETS = [
         }
     },
     {
-        id: "work_hours", label: "Work hours", icon: Monitor, ranges: {
-            "mon": [{ start: "08:00", end: "18:00" }],
-            "tue": [{ start: "08:00", end: "18:00" }],
-            "wed": [{ start: "08:00", end: "18:00" }],
-            "thu": [{ start: "08:00", end: "18:00" }],
-            "fri": [{ start: "08:00", end: "18:00" }]
-        }
-    },
-    {
-        id: "weekend", label: "Weekend", icon: Sun, ranges: {
+        id: "weekends", label: "Weekend", icon: Sun, ranges: {
             "sat": [{ start: "08:00", end: "22:00" }],
             "sun": [{ start: "08:00", end: "22:00" }]
         }
@@ -97,15 +88,15 @@ export function StrategySchedule({ strategy, setStrategy, date, setDate }: Strat
     // Initial state could be parsed from strategy.schedule.deliveryTime if complicated, 
     // but for now we default to "All Time" if empty
     const [schedule, setSchedule] = useState<WeeklySchedule>(PRESETS[0].ranges as any);
-    const [activePreset, setActivePreset] = useState("all");
+    const [activePreset, setActivePreset] = useState("any");
 
     const applyPreset = (presetId: string) => {
         const preset = PRESETS.find(p => p.id === presetId);
         if (preset) {
             setActivePreset(presetId);
             setSchedule(preset.ranges as any);
-            // Sync with parent strategy object (simplified)
-            setStrategy({ ...strategy, schedule: { ...strategy.schedule, deliveryTime: presetId } });
+            // Sync with parent strategy object
+            setStrategy({ ...strategy, schedule: { ...strategy.schedule, deliveryTime: presetId as any } });
         }
     };
 
@@ -136,42 +127,42 @@ export function StrategySchedule({ strategy, setStrategy, date, setDate }: Strat
     };
 
     return (
-        <Card className="w-full">
+        <Card className="w-full bg-white/5 border-white/10 backdrop-blur-sm shadow-none">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-primary" />
+                <CardTitle className="flex items-center gap-2 text-white">
+                    <DollarSign className="w-5 h-5 text-blue-500" />
                     Budget & Schedule
                 </CardTitle>
-                <CardDescription>Set your spending limits and precise delivery schedule.</CardDescription>
+                <CardDescription className="text-white/50">Set your spending limits and precise delivery schedule.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
 
                 {/* Budget Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <Label>Budget Amount</Label>
+                        <Label className="text-white">Budget Amount</Label>
                         <div className="relative">
-                            <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
                             <Input
                                 type="number"
                                 value={strategy.budget.amount}
                                 onChange={(e) => setStrategy({ ...strategy, budget: { ...strategy.budget, amount: parseInt(e.target.value) || 0 } })}
-                                className="pl-9 h-11"
+                                className="pl-9 h-11 bg-black/20 border-white/10 text-white focus:border-blue-500/50 focus:ring-blue-500/10 placeholder:text-white/20"
                             />
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label>Budget Type</Label>
+                        <Label className="text-white">Budget Type</Label>
                         <Select
                             value={strategy.budget.interval}
                             onValueChange={(val: any) => setStrategy({ ...strategy, budget: { ...strategy.budget, interval: val } })}
                         >
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-11 bg-black/20 border-white/10 text-white focus:ring-blue-500/10">
                                 <SelectValue placeholder="Select type" />
                             </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="daily">Daily Budget</SelectItem>
-                                <SelectItem value="lifetime">Lifetime Budget</SelectItem>
+                            <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                                <SelectItem value="daily" className="focus:bg-white/10 hover:bg-white/10">Daily Budget</SelectItem>
+                                <SelectItem value="lifetime" className="focus:bg-white/10 hover:bg-white/10">Lifetime Budget</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -179,31 +170,31 @@ export function StrategySchedule({ strategy, setStrategy, date, setDate }: Strat
 
                 {/* Start Date */}
                 <div className="space-y-2">
-                    <Label>Schedule</Label>
+                    <Label className="text-white">Schedule</Label>
                     <div className="flex gap-4">
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className={cn("w-[240px] justify-start text-left font-normal h-11", !date && "text-muted-foreground")}>
+                                <Button variant="outline" className={cn("w-[240px] justify-start text-left font-normal h-11 bg-black/20 border-white/10 text-white hover:bg-white/10 hover:text-white", !date && "text-muted-foreground")}>
                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                     {date ? format(date, "yyyy-MM-dd") : <span>Start date</span>}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+                            <PopoverContent className="w-auto p-0 bg-zinc-900 border-white/10" align="start">
+                                <Calendar mode="single" selected={date} onSelect={setDate} initialFocus className="text-white" />
                             </PopoverContent>
                         </Popover>
-                        <Input className="w-[240px] h-11" placeholder="End date (Optional)" disabled />
+                        <Input className="w-[240px] h-11 bg-black/20 border-white/10 text-white placeholder:text-white/20" placeholder="End date (Optional)" disabled />
                     </div>
                 </div>
 
                 {/* Presets */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <Label className="text-base font-medium">Delivery Time Slots</Label>
-                        <span className="text-xs text-muted-foreground">Times are in local timezone</span>
+                        <Label className="text-base font-medium text-white">Delivery Time Slots</Label>
+                        <span className="text-xs text-white/40">Times are in local timezone</span>
                     </div>
 
-                    <div className="bg-primary/5 rounded-lg p-1.5 flex flex-wrap gap-2">
+                    <div className="bg-white/5 rounded-lg p-1.5 flex flex-wrap gap-2 border border-white/5">
                         {PRESETS.map(preset => {
                             const Icon = preset.icon;
                             return (
@@ -211,10 +202,10 @@ export function StrategySchedule({ strategy, setStrategy, date, setDate }: Strat
                                     key={preset.id}
                                     onClick={() => applyPreset(preset.id)}
                                     className={cn(
-                                        "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
+                                        "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all transform hover:scale-105",
                                         activePreset === preset.id
-                                            ? "bg-background shadow-sm text-primary"
-                                            : "text-muted-foreground hover:bg-background/50"
+                                            ? "bg-blue-600 shadow-lg shadow-blue-900/50 text-white"
+                                            : "text-white/60 hover:bg-white/10 hover:text-white"
                                     )}
                                 >
                                     <Icon className="w-3.5 h-3.5" />
@@ -225,7 +216,7 @@ export function StrategySchedule({ strategy, setStrategy, date, setDate }: Strat
                     </div>
 
                     {/* Range List */}
-                    <div className="border rounded-lg divide-y bg-card">
+                    <div className="border border-white/10 rounded-lg divide-y divide-white/10 bg-black/20">
                         {DAYS.map(day => {
                             const ranges = schedule[day.id] || [];
                             const hasRanges = ranges.length > 0;
@@ -233,47 +224,47 @@ export function StrategySchedule({ strategy, setStrategy, date, setDate }: Strat
                             return (
                                 <div key={day.id} className="grid grid-cols-[120px_1fr] group">
                                     <div className="p-4 flex flex-col justify-start">
-                                        <div className="flex items-center gap-2 font-medium text-sm text-foreground">
-                                            <Clock className={cn("w-4 h-4", hasRanges ? "text-primary" : "text-muted-foreground/30")} />
+                                        <div className={cn("flex items-center gap-2 font-medium text-sm transition-colors", hasRanges ? "text-blue-400" : "text-white/30")}>
+                                            <Clock className={cn("w-4 h-4", hasRanges ? "text-blue-400" : "text-white/20")} />
                                             {day.label}
                                         </div>
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="mt-2 w-fit h-6 text-xs px-2 text-primary hover:text-primary hover:bg-primary/10 -ml-2"
+                                            className="mt-2 w-fit h-6 text-xs px-2 text-white/40 hover:text-white hover:bg-white/10 -ml-2"
                                             onClick={() => addRange(day.id)}
                                         >
                                             <Plus className="w-3 h-3 mr-1" /> Add
                                         </Button>
                                     </div>
 
-                                    <div className="p-4 space-y-3 bg-muted/5">
+                                    <div className="p-4 space-y-3 bg-white/5">
                                         {ranges.length === 0 && (
-                                            <div className="text-sm text-muted-foreground italic py-2">No delivery scheduled</div>
+                                            <div className="text-sm text-white/20 italic py-2">No delivery scheduled</div>
                                         )}
                                         {ranges.map((range, idx) => (
                                             <div key={idx} className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-300">
                                                 <Select value={range.start} onValueChange={(v) => updateRange(day.id, idx, 'start', v)}>
-                                                    <SelectTrigger className="w-[140px] h-9">
+                                                    <SelectTrigger className="w-[140px] h-9 bg-black/40 border-white/10 text-white">
                                                         <SelectValue />
                                                     </SelectTrigger>
-                                                    <SelectContent>
-                                                        {TIME_OPTIONS.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                                                    <SelectContent className="bg-zinc-900">
+                                                        {TIME_OPTIONS.map(t => <SelectItem key={t.value} value={t.value} className="text-white hover:bg-white/10">{t.label}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
-                                                <span className="text-muted-foreground">-</span>
+                                                <span className="text-white/40">-</span>
                                                 <Select value={range.end} onValueChange={(v) => updateRange(day.id, idx, 'end', v)}>
-                                                    <SelectTrigger className="w-[140px] h-9">
+                                                    <SelectTrigger className="w-[140px] h-9 bg-black/40 border-white/10 text-white">
                                                         <SelectValue />
                                                     </SelectTrigger>
-                                                    <SelectContent>
-                                                        {TIME_OPTIONS.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                                                    <SelectContent className="bg-zinc-900">
+                                                        {TIME_OPTIONS.map(t => <SelectItem key={t.value} value={t.value} className="text-white hover:bg-white/10">{t.label}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                                                    className="h-9 w-9 text-white/40 hover:text-red-400 hover:bg-red-900/20"
                                                     onClick={() => removeRange(day.id, idx)}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -286,7 +277,7 @@ export function StrategySchedule({ strategy, setStrategy, date, setDate }: Strat
                         })}
                     </div>
 
-                    <Button variant="ghost" className="w-full text-primary hover:text-primary hover:bg-primary/5 gap-2" onClick={() => applyPreset("all")}>
+                    <Button variant="ghost" className="w-full text-white/40 hover:text-white hover:bg-white/5 gap-2" onClick={() => applyPreset("all")}>
                         <Clock className="w-4 h-4" /> Reset to 24/7 Delivery
                     </Button>
                 </div>

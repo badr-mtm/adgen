@@ -102,22 +102,22 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
     };
 
     return (
-        <Card className="w-full">
+        <Card className="w-full bg-white/5 border-white/10 backdrop-blur-sm shadow-none">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><MonitorPlay className="w-5 h-5 text-primary" /> Placements & Channels</CardTitle>
-                <CardDescription>Choose where your ads will appear across premium TV networks and streaming platforms.</CardDescription>
+                <CardTitle className="flex items-center gap-2 text-white"><MonitorPlay className="w-5 h-5 text-blue-500" /> Placements & Channels</CardTitle>
+                <CardDescription className="text-white/50">Choose where your ads will appear across premium TV networks and streaming platforms.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="manual" className="flex items-center gap-2">
+                    <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/5 text-white/50">
+                        <TabsTrigger value="manual" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                             <Tv className="w-4 h-4" />
                             Apps & Channels
                         </TabsTrigger>
-                        <TabsTrigger value="smart" className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-primary" />
+                        <TabsTrigger value="smart" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                            <Sparkles className="w-4 h-4 text-purple-300" />
                             Auto Sports
-                            <Badge variant="secondary" className="ml-2 text-[10px] bg-primary/10 text-primary">AI</Badge>
+                            <Badge variant="secondary" className="ml-2 text-[10px] bg-white/20 text-white">AI</Badge>
                         </TabsTrigger>
                     </TabsList>
 
@@ -125,19 +125,19 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
                     <TabsContent value="manual" className="space-y-4">
                         <div className="flex items-center gap-4 mb-4">
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
                                 <Input
                                     placeholder="Search for channels..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-9 h-11"
+                                    className="pl-9 h-11 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-blue-500/10"
                                 />
                             </div>
                         </div>
 
-                        <div className="border rounded-lg bg-card overflow-hidden">
+                        <div className="border border-white/10 rounded-lg bg-black/20 overflow-hidden">
                             {/* List Header */}
-                            <div className="flex items-center justify-between p-3 px-6 bg-muted/40 border-b text-xs font-semibold text-muted-foreground">
+                            <div className="flex items-center justify-between p-3 px-6 bg-white/5 border-b border-white/10 text-xs font-semibold text-white/40">
                                 <div>Available ({Object.values(CHANNELS_DATA).flat().length})</div>
                                 <div className="flex gap-8">
                                     <span className="w-24 text-right">Weekly Est. Audience</span>
@@ -154,21 +154,21 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
                                         const isExpanded = expandedCategories[category];
 
                                         return (
-                                            <div key={category} className="border-b last:border-0">
+                                            <div key={category} className="border-b border-white/5 last:border-0">
                                                 {/* Category Header */}
-                                                <div className="flex items-center p-4 bg-muted/10 hover:bg-muted/20 cursor-pointer select-none" >
-                                                    <button onClick={() => toggleCategory(category)} className="flex items-center gap-2 flex-1">
-                                                        {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                                                <div className="flex items-center p-4 bg-white/5 hover:bg-white/10 cursor-pointer select-none" >
+                                                    <button onClick={() => toggleCategory(category)} className="flex items-center gap-2 flex-1 text-white">
+                                                        {isExpanded ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
                                                         <span className="font-semibold text-sm">{category}</span>
                                                     </button>
-                                                    <Button variant="ghost" size="sm" className="h-6 text-xs text-primary" onClick={() => toggleAllInCategory(category)}>
+                                                    <Button variant="ghost" size="sm" className="h-6 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10" onClick={() => toggleAllInCategory(category)}>
                                                         Select all
                                                     </Button>
                                                 </div>
 
                                                 {/* Channels List */}
                                                 {isExpanded && (
-                                                    <div className="divide-y">
+                                                    <div className="divide-y divide-white/5">
                                                         {filteredChannels.map(channel => {
                                                             const isSelected = strategy.placements?.includes(channel.name);
                                                             const score = getAIScore(channel.name);
@@ -179,32 +179,32 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
                                                                     key={channel.name}
                                                                     onClick={() => toggleChannel(channel.name)}
                                                                     className={cn(
-                                                                        "flex items-center justify-between p-3 px-6 cursor-pointer transition-colors hover:bg-muted/30",
-                                                                        isSelected && "bg-primary/5 hover:bg-primary/10"
+                                                                        "flex items-center justify-between p-3 px-6 cursor-pointer transition-colors hover:bg-white/5",
+                                                                        isSelected && "bg-blue-500/10 hover:bg-blue-500/20"
                                                                     )}
                                                                 >
                                                                     <div className="flex items-center gap-4">
                                                                         <CheckboxWithCheck isChecked={!!isSelected} />
 
                                                                         {/* Logo / Icon */}
-                                                                        <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm", channel.logoColor)}>
+                                                                        <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm shadow-black/50", channel.logoColor)}>
                                                                             {channel.name.substring(0, 1)}
                                                                         </div>
 
-                                                                        <span className="font-medium text-sm">{channel.name}</span>
+                                                                        <span className="font-medium text-sm text-white">{channel.name}</span>
 
                                                                         {isHighMatch && (
-                                                                            <Badge variant="outline" className="text-[10px] text-green-600 border-green-200 bg-green-50">
+                                                                            <Badge variant="outline" className="text-[10px] text-green-400 border-green-500/30 bg-green-500/10">
                                                                                 <Sparkles className="w-3 h-3 mr-1" /> Best Match
                                                                             </Badge>
                                                                         )}
                                                                     </div>
 
                                                                     <div className="flex items-center gap-8">
-                                                                        <span className="text-sm font-medium text-muted-foreground w-24 text-right">
+                                                                        <span className="text-sm font-medium text-white/40 w-24 text-right">
                                                                             {channel.audience}
                                                                         </span>
-                                                                        <span className={cn("text-sm font-bold w-16 text-right", isHighMatch ? "text-green-600" : "text-muted-foreground")}>
+                                                                        <span className={cn("text-sm font-bold w-16 text-right", isHighMatch ? "text-green-400" : "text-white/40")}>
                                                                             {score}%
                                                                         </span>
                                                                     </div>
@@ -222,8 +222,8 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
                     </TabsContent>
 
                     <TabsContent value="smart">
-                        <div className="p-12 text-center text-muted-foreground border rounded-lg border-dashed">
-                            <Sparkles className="w-12 h-12 mx-auto mb-4 text-primary/30" />
+                        <div className="p-12 text-center text-white/40 border border-white/10 rounded-lg border-dashed bg-black/20">
+                            <Sparkles className="w-12 h-12 mx-auto mb-4 text-purple-400/50" />
                             <p>AI Auto-Sports mode will automatically select the best live sports inventory.</p>
                         </div>
                     </TabsContent>
