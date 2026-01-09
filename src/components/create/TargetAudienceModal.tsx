@@ -181,12 +181,7 @@ export function TargetAudienceModal({
                 const info = LOCATION_DATA[loc];
                 if (!info) return null;
                 return (
-                  <Marker key={loc} position={[info.lat, info.lng]}>
-                    <Popup className="text-black">
-                      <strong>{loc}</strong><br />
-                      {info.type}
-                    </Popup>
-                  </Marker>
+                  <Marker key={loc} position={[info.lat, info.lng]} />
                 )
               })}
             </MapContainer>
@@ -329,8 +324,8 @@ export function TargetAudienceModal({
                       key={interest}
                       onClick={() => toggleInterest(interest)}
                       className={`px-4 py-3 rounded-xl text-sm font-medium text-left flex items-center justify-between transition-all duration-300 ${data.inMarketInterests.includes(interest)
-                          ? "bg-purple-500/20 text-purple-200 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
-                          : "bg-white/5 text-white/60 border border-white/5 hover:bg-white/10 hover:border-white/20"
+                        ? "bg-purple-500/20 text-purple-200 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+                        : "bg-white/5 text-white/60 border border-white/5 hover:bg-white/10 hover:border-white/20"
                         }`}
                     >
                       {interest}
