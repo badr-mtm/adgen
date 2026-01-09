@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { VideoProject, Scene, VideoOverlaySettings, defaultOverlaySettings } from "@/types/videoEditor";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, Zap } from "lucide-react";
 
 // Components
 import VideoEditorSidebar from "@/components/video-editor/VideoEditorSidebar";
@@ -70,6 +72,9 @@ export default function VideoEditor() {
     async function loadProject() {
       if (!id) return;
       try {
+        // Simulate "System Initialization" delay for cinematic effect
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
         const { data: campaign, error } = await supabase
           .from('campaigns')
           .select('*')
@@ -280,10 +285,50 @@ export default function VideoEditor() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground">Loading video editor...</p>
+      <div className="h-screen flex items-center justify-center bg-black text-white relative overflow-hidden">
+        {/* Cinematic Loading Background */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black opacity-80" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+
+        <div className="z-10 flex flex-col items-center gap-6 max-w-md w-full px-6">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-[0_0_50px_-12px_rgba(59,130,246,0.5)]"
+          >
+            <Zap className="w-10 h-10 text-blue-500 fill-blue-500/20" />
+          </motion.div>
+
+          <div className="space-y-2 text-center w-full">
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/40"
+            >
+              Initializing Studio
+            </motion.h2>
+
+            <div className="relative h-1 w-full bg-white/10 rounded-full overflow-hidden">
+              <motion.div
+                className="absolute top-0 bottom-0 left-0 bg-blue-500"
+                initial={{ width: "0%" }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+              />
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex justify-between text-xs text-white/30 font-mono"
+            >
+              <span>Asset Loader</span>
+              <span>Online</span>
+            </motion.div>
+          </div>
         </div>
       </div>
     );
@@ -324,105 +369,34 @@ export default function VideoEditor() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
-      <VideoEditorHeader
-        title={project?.title || "Untitled Campaign"}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        canUndo={historyIndex > 0}
-        canRedo={historyIndex < history.length - 1}
-      />
+    <div className="h-screen flex flex-col bg-black text-white overflow-hidden font-sans selection:bg-blue-500/30">
+      {/* Background Gradients */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/10 blur-[150px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/10 blur-[150px]" />
+      </div>
 
-      <div className="flex-1 flex overflow-hidden min-h-0">
-        {/* Left Sidebar */}
-        <VideoEditorSidebar
-          scenes={scenes.map((s, idx) => ({
-            id: idx,
-            label: `Scene ${s.sceneNumber}`,
-            duration: s.duration,
-            thumbnailUrl: s.visualUrl,
-            isActive: currentSceneIndex === idx
-          }))}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onSceneSelect={(idx) => {
-            let startTime = 0;
-            for (let i = 0; i < idx; i++) {
-              startTime += parseInt(scenes[i].duration) || 0;
-            }
-            setCurrentTime(startTime);
-            setCurrentSceneIndex(idx);
-          }}
-          onSceneChange={(idx) => {
-            setCurrentSceneIndex(idx);
-            setIsEditingScene(true);
-          }}
-          overlaySettings={overlaySettings}
-          onOverlaySettingsChange={handleOverlaySettingsChange}
-          isPreviewingEndScreen={showEndScreen}
-          onToggleEndScreenPreview={() => {
-            if (!showEndScreen) {
-              const scenesDuration = scenes.reduce((acc, s) => acc + (parseInt(s.duration) || 0), 0);
-              setCurrentTime(scenesDuration);
-            } else {
-              setCurrentTime(0);
-            }
-            setShowEndScreen(!showEndScreen);
-          }}
-          onAIAction={handleAIAction}
+      <div className="relative z-10 flex flex-col h-full">
+        <VideoEditorHeader
+          title={project?.title || "Untitled Campaign"}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < history.length - 1}
         />
 
-        {/* Main Editor Area */}
-        <div className="flex-1 flex flex-col min-h-0 min-w-0 relative">
-          {/* Preview Player */}
-          <VideoPreview
+        <div className="flex-1 flex overflow-hidden min-h-0">
+          {/* Left Sidebar */}
+          <VideoEditorSidebar
             scenes={scenes.map((s, idx) => ({
               id: idx,
-              visualUrl: s.visualUrl,
-              videoUrl: s.videoUrl,
+              label: `Scene ${s.sceneNumber}`,
               duration: s.duration,
-              voiceover: s.voiceover
+              thumbnailUrl: s.visualUrl,
+              isActive: currentSceneIndex === idx
             }))}
-            currentSceneIndex={currentSceneIndex}
-            currentTime={currentTime}
-            sceneProgress={timelineScenes[currentSceneIndex] ? (currentTime - timelineScenes[currentSceneIndex].startTime) / (parseInt(scenes[currentSceneIndex]?.duration) || 1) : 0}
-            isPlaying={isPlaying}
-            onPlayPause={() => setIsPlaying(!isPlaying)}
-            onEditScene={() => setIsEditingScene(true)}
-            currentVoiceover={scenes[currentSceneIndex]?.voiceover}
-            overlaySettings={overlaySettings}
-            showEndScreen={showEndScreen}
-            brandName={project?.brand_name || "Brand"}
-            headline={scenes[currentSceneIndex]?.visualDescription?.split('.')[0]}
-            description={scenes[currentSceneIndex]?.visualDescription}
-            ctaText={overlaySettings.endScreen.ctaText}
-            ctaUrl={overlaySettings.endScreen.ctaUrl}
-          />
-
-          {/* Assistant Toggle */}
-          <AIAssistantPanel
-            campaignId={id!}
-            storyboard={project?.storyboard}
-            currentSceneIndex={currentSceneIndex}
-            onStoryboardUpdate={(newStoryboard) => {
-              saveToHistory(scenes, overlaySettings);
-              setProject({ ...project, storyboard: newStoryboard });
-              setScenes(newStoryboard.scenes);
-            }}
-            onActionComplete={(action) => {
-              toast({ title: "AI Action Applied", description: `Applied changes for: ${action.replace('_', ' ')}` });
-            }}
-            isOpen={isAssistantOpen}
-            onOpenChange={setIsAssistantOpen}
-            externalMessage={pendingAIAction}
-          />
-
-          {/* Timeline */}
-          <VideoTimeline
-            scenes={timelineScenes}
-            currentTime={currentTime}
-            totalDuration={totalDuration}
-            currentSceneIndex={currentSceneIndex}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
             onSceneSelect={(idx) => {
               let startTime = 0;
               for (let i = 0; i < idx; i++) {
@@ -431,30 +405,111 @@ export default function VideoEditor() {
               setCurrentTime(startTime);
               setCurrentSceneIndex(idx);
             }}
-            onPlayPause={() => setIsPlaying(!isPlaying)}
-            onSeek={handleSeek}
-            isPlaying={isPlaying}
-            brandName={project?.brand_name || "Brand"}
-            onDownload={() => toast({ title: "Rendering...", description: "Your video is being rendered for download." })}
-            onAddToStrategy={() => navigate(`/strategy/${id}`)}
+            onSceneChange={(idx) => {
+              setCurrentSceneIndex(idx);
+              setIsEditingScene(true);
+            }}
             overlaySettings={overlaySettings}
-            onTabChange={setActiveTab}
+            onOverlaySettingsChange={handleOverlaySettingsChange}
+            isPreviewingEndScreen={showEndScreen}
+            onToggleEndScreenPreview={() => {
+              if (!showEndScreen) {
+                const scenesDuration = scenes.reduce((acc, s) => acc + (parseInt(s.duration) || 0), 0);
+                setCurrentTime(scenesDuration);
+              } else {
+                setCurrentTime(0);
+              }
+              setShowEndScreen(!showEndScreen);
+            }}
+            onAIAction={handleAIAction}
           />
-        </div>
-      </div>
 
-      {/* Scene Editor Dialog */}
-      {scenes[currentSceneIndex] && (
-        <SceneEditor
-          scene={scenes[currentSceneIndex]}
-          isOpen={isEditingScene}
-          onClose={() => setIsEditingScene(false)}
-          onSave={handleSaveScene}
-          onRegenerateVisual={handleRegenerateVisual}
-          onGenerateVideo={handleGenerateVideo}
-          isRegenerating={isRegenerating}
-        />
-      )}
+          {/* Main Editor Area */}
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 relative">
+            {/* Preview Player */}
+            <VideoPreview
+              scenes={scenes.map((s, idx) => ({
+                id: idx,
+                visualUrl: s.visualUrl,
+                videoUrl: s.videoUrl,
+                duration: s.duration,
+                voiceover: s.voiceover
+              }))}
+              currentSceneIndex={currentSceneIndex}
+              currentTime={currentTime}
+              sceneProgress={timelineScenes[currentSceneIndex] ? (currentTime - timelineScenes[currentSceneIndex].startTime) / (parseInt(scenes[currentSceneIndex]?.duration) || 1) : 0}
+              isPlaying={isPlaying}
+              onPlayPause={() => setIsPlaying(!isPlaying)}
+              onEditScene={() => setIsEditingScene(true)}
+              currentVoiceover={scenes[currentSceneIndex]?.voiceover}
+              overlaySettings={overlaySettings}
+              showEndScreen={showEndScreen}
+              brandName={project?.brand_name || "Brand"}
+              headline={scenes[currentSceneIndex]?.visualDescription?.split('.')[0]}
+              description={scenes[currentSceneIndex]?.visualDescription}
+              ctaText={overlaySettings.endScreen.ctaText}
+              ctaUrl={overlaySettings.endScreen.ctaUrl}
+            />
+
+            {/* Assistant Toggle - now positioned relative effectively */}
+            <AIAssistantPanel
+              campaignId={id!}
+              storyboard={project?.storyboard}
+              currentSceneIndex={currentSceneIndex}
+              onStoryboardUpdate={(newStoryboard) => {
+                saveToHistory(scenes, overlaySettings);
+                setProject({ ...project, storyboard: newStoryboard });
+                setScenes(newStoryboard.scenes);
+              }}
+              onActionComplete={(action) => {
+                toast({ title: "AI Action Applied", description: `Applied changes for: ${action.replace('_', ' ')}` });
+              }}
+              isOpen={isAssistantOpen}
+              onOpenChange={setIsAssistantOpen}
+              externalMessage={pendingAIAction}
+            />
+
+            {/* Timeline - Ensuring it stays at bottom */}
+            <div className="mt-auto z-20">
+              <VideoTimeline
+                scenes={timelineScenes}
+                currentTime={currentTime}
+                totalDuration={totalDuration}
+                currentSceneIndex={currentSceneIndex}
+                onSceneSelect={(idx) => {
+                  let startTime = 0;
+                  for (let i = 0; i < idx; i++) {
+                    startTime += parseInt(scenes[i].duration) || 0;
+                  }
+                  setCurrentTime(startTime);
+                  setCurrentSceneIndex(idx);
+                }}
+                onPlayPause={() => setIsPlaying(!isPlaying)}
+                onSeek={handleSeek}
+                isPlaying={isPlaying}
+                brandName={project?.brand_name || "Brand"}
+                onDownload={() => toast({ title: "Rendering...", description: "Your video is being rendered for download." })}
+                onAddToStrategy={() => navigate(`/strategy/${id}`)}
+                overlaySettings={overlaySettings}
+                onTabChange={setActiveTab}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Scene Editor Dialog */}
+        {scenes[currentSceneIndex] && (
+          <SceneEditor
+            scene={scenes[currentSceneIndex]}
+            isOpen={isEditingScene}
+            onClose={() => setIsEditingScene(false)}
+            onSave={handleSaveScene}
+            onRegenerateVisual={handleRegenerateVisual}
+            onGenerateVideo={handleGenerateVideo}
+            isRegenerating={isRegenerating}
+          />
+        )}
+      </div>
     </div>
   );
 }
