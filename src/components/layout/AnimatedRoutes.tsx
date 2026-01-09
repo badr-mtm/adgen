@@ -3,7 +3,7 @@ import { AnimatePresence } from "framer-motion";
 import { PageTransitionWrapper } from "./PageTransitionWrapper";
 import Dashboard from "@/pages/Dashboard";
 import Create from "@/pages/Create";
-import AdOperations from "@/pages/AdOperations";
+import Campaigns from "@/pages/Campaigns";
 import CampaignDetails from "@/pages/CampaignDetails";
 import CampaignSchedules from "@/pages/CampaignSchedules";
 import Assets from "@/pages/Assets";
@@ -45,13 +45,14 @@ export function AnimatedRoutes() {
           }
         />
         <Route
-          path="/ad-operations"
+          path="/campaigns"
           element={
             <PageTransitionWrapper>
-              <AdOperations />
+              <Campaigns />
             </PageTransitionWrapper>
           }
         />
+        <Route path="/ad-operations" element={<Navigate to="/campaigns" replace />} />
         <Route
           path="/campaign/:id"
           element={
@@ -68,7 +69,6 @@ export function AnimatedRoutes() {
             </PageTransitionWrapper>
           }
         />
-        <Route path="/campaigns" element={<Navigate to="/ad-operations" replace />} />
         <Route
           path="/assets"
           element={

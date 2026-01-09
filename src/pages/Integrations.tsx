@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -19,8 +18,11 @@ import {
   MonitorPlay,
   Activity,
   Globe,
-  Database
+  Database,
+  HelpCircle,
+  FileKey
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // --- Types ---
 
@@ -31,6 +33,8 @@ interface IntegrationField {
   label: string;
   placeholder: string;
   type: "text" | "password";
+  helpText?: string; // Short tooltip
+  helpLink?: string; // External URL
 }
 
 interface Integration {
@@ -42,6 +46,7 @@ interface Integration {
   connected: boolean;
   features: string[];
   fields: IntegrationField[]; // Fields required to connect
+  docLink?: string; // Main documentation link
 }
 
 // --- Data ---
@@ -56,9 +61,23 @@ const integrationData: Integration[] = [
     category: "dsp",
     connected: false,
     features: ["OneView DSP", "Roku City Placements", "Automatic Content Recognition (ACR)"],
+    docLink: "https://advertising.roku.com/support",
     fields: [
-      { key: "seat_id", label: "Roku Seat ID", placeholder: "e.g. 1234-5678", type: "text" },
-      { key: "api_key", label: "API Key", placeholder: "Enter your OneView API Key", type: "password" }
+      {
+        key: "seat_id",
+        label: "Roku Seat ID",
+        placeholder: "e.g. 1234-5678",
+        type: "text",
+        helpText: "Found in your Roku Ads Dashboard under Settings > Agency Accounts.",
+        helpLink: "https://advertising.roku.com/onboarding"
+      },
+      {
+        key: "api_key",
+        label: "API Key",
+        placeholder: "Enter your OneView API Key",
+        type: "password",
+        helpText: "Generate a read/write key in the API Access section of your profile."
+      }
     ],
   },
   {
@@ -70,8 +89,20 @@ const integrationData: Integration[] = [
     connected: false,
     features: ["Native UI Ads", "FAST Channel Insertion", "First-Screen Takeover"],
     fields: [
-      { key: "partner_id", label: "Samsung Partner ID", placeholder: "e.g. SP-998877", type: "text" },
-      { key: "client_secret", label: "Client Secret", placeholder: "Enter OAuth Client Secret", type: "password" }
+      {
+        key: "partner_id",
+        label: "Samsung Partner ID",
+        placeholder: "e.g. SP-998877",
+        type: "text",
+        helpText: "Your unique 6-digit partner code."
+      },
+      {
+        key: "client_secret",
+        label: "Client Secret",
+        placeholder: "Enter OAuth Client Secret",
+        type: "password",
+        helpLink: "https://developer.samsung.com/smarttv/develop/guides/smart-view/authentication.html"
+      }
     ],
   },
   {
@@ -82,20 +113,15 @@ const integrationData: Integration[] = [
     category: "dsp",
     connected: false,
     features: ["Pause Ads", "Binge Ads", "Interactive Living Room"],
+    docLink: "https://home.admanager.hulu.com/",
     fields: [
-      { key: "account_id", label: "Hulu Account ID", placeholder: "e.g. HA-554433", type: "text" }
-    ],
-  },
-  {
-    id: "vizio",
-    name: "Vizio Ads",
-    description: "Home screen and in-stream placements on Vizio SmartCast.",
-    icon: <Tv className="h-6 w-6 text-[#FF4F00]" />, // Placeholder color
-    category: "dsp",
-    connected: false,
-    features: ["Home Screen Hero", "In-Stream Video", "Direct-to-Device"],
-    fields: [
-      { key: "portal_id", label: "Vizio Portal ID", placeholder: "e.g. VZ-1122", type: "text" }
+      {
+        key: "account_id",
+        label: "Hulu Account ID",
+        placeholder: "e.g. HA-554433",
+        type: "text",
+        helpText: "Located in the top-right account dropdown menu."
+      }
     ],
   },
   {
@@ -239,120 +265,186 @@ const Integrations = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-8 space-y-10 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-primary/10 rounded-xl">
-              <Tv className="h-6 w-6 text-primary" />
+      <TooltipProvider>
+        <div className="p-8 space-y-10 max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary/10 rounded-xl">
+                <Tv className="h-6 w-6 text-primary" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Connectivity Hub</h1>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Connectivity Hub</h1>
-          </div>
-          <p className="text-muted-foreground text-lg max-w-3xl">
-            Manage your seamless connections to major TV Networks, DSPs, and Attribution partners.
-            All integrations are verified for automated creative delivery.
-          </p>
-        </div>
-
-        {/* Section: Connected TV & DSPs */}
-        <section className="space-y-5">
-          <div className="flex items-center justify-between border-b border-border/40 pb-2">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <Globe className="h-5 w-5 text-primary" />
-              Connected TV & DSPs
-            </h2>
-            <span className="text-xs font-medium text-muted-foreground px-2 py-1 bg-secondary rounded-md">
-              {dspIntegrations.filter(i => i.connected).length} Connected
-            </span>
+            <p className="text-muted-foreground text-lg max-w-3xl">
+              Manage your seamless connections to major TV Networks, DSPs, and Attribution partners.
+              All integrations are verified for automated creative delivery.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {dspIntegrations.map(integration => (
-              <IntegrationCard
-                key={integration.id}
-                integration={integration}
-                onConnect={() => handleOpenConnect(integration)}
-                onDisconnect={() => handleDisconnect(integration)}
-              />
-            ))}
-          </div>
-        </section>
+          {/* Section: Connected TV & DSPs */}
+          <section className="space-y-5">
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" />
+                Connected TV & DSPs
+              </h2>
+              <span className="text-xs font-medium text-muted-foreground px-2 py-1 bg-secondary rounded-md">
+                {dspIntegrations.filter(i => i.connected).length} Connected
+              </span>
+            </div>
 
-        {/* Section: Attribution */}
-        <section className="space-y-5">
-          <div className="flex items-center justify-between border-b border-border/40 pb-2">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <BarChart2 className="h-5 w-5 text-indigo-400" />
-              TV Attribution & Analytics
-            </h2>
-            <span className="text-xs font-medium text-muted-foreground px-2 py-1 bg-secondary rounded-md">
-              {analyticsIntegrations.filter(i => i.connected).length} Connected
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {analyticsIntegrations.map(integration => (
-              <IntegrationCard
-                key={integration.id}
-                integration={integration}
-                onConnect={() => handleOpenConnect(integration)}
-                onDisconnect={() => handleDisconnect(integration)}
-              />
-            ))}
-          </div>
-        </section>
-
-
-        {/* Connection Modal */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {selectedIntegration?.icon}
-                Connect {selectedIntegration?.name}
-              </DialogTitle>
-              <DialogDescription>
-                Enter your credentials to authorize AdGen to publish ads and retrieve performance data.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4">
-              {selectedIntegration?.fields.map((field) => (
-                <div key={field.key} className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor={field.key} className="text-right col-span-1">
-                    {field.label}
-                  </Label>
-                  <Input
-                    id={field.key}
-                    type={field.type}
-                    placeholder={field.placeholder}
-                    className="col-span-3 font-mono text-sm"
-                    value={fieldValues[field.key] || ""}
-                    onChange={(e) => setFieldValues(prev => ({ ...prev, [field.key]: e.target.value }))}
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {dspIntegrations.map(integration => (
+                <IntegrationCard
+                  key={integration.id}
+                  integration={integration}
+                  onConnect={() => handleOpenConnect(integration)}
+                  onDisconnect={() => handleDisconnect(integration)}
+                />
               ))}
             </div>
+          </section>
 
-            <DialogFooter>
-              <Button variant="ghost" onClick={() => setIsDialogOpen(false)} disabled={isConnecting}>
-                Cancel
-              </Button>
-              <Button onClick={handleConnectSubmit} disabled={isConnecting}>
-                {isConnecting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  <>Connect Platform</>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          {/* Section: Attribution */}
+          <section className="space-y-5">
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <BarChart2 className="h-5 w-5 text-indigo-400" />
+                TV Attribution & Analytics
+              </h2>
+              <span className="text-xs font-medium text-muted-foreground px-2 py-1 bg-secondary rounded-md">
+                {analyticsIntegrations.filter(i => i.connected).length} Connected
+              </span>
+            </div>
 
-      </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {analyticsIntegrations.map(integration => (
+                <IntegrationCard
+                  key={integration.id}
+                  integration={integration}
+                  onConnect={() => handleOpenConnect(integration)}
+                  onDisconnect={() => handleDisconnect(integration)}
+                />
+              ))}
+            </div>
+          </section>
+
+
+          {/* Connection Modal */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-secondary rounded-lg">
+                    {selectedIntegration?.icon}
+                  </div>
+                  <div>
+                    <DialogTitle className="text-xl">
+                      Connect {selectedIntegration?.name}
+                    </DialogTitle>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-[10px] font-normal text-muted-foreground bg-transparent border-border/50">
+                        Secure Connection
+                      </Badge>
+                      {selectedIntegration?.docLink && (
+                        <a
+                          href={selectedIntegration.docLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+                        >
+                          View Documentation <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <DialogDescription>
+                  Enter your credentials below. This allows AdGen to securely sync campaigns and performance data.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid gap-5 py-6">
+                {selectedIntegration?.fields.map((field) => (
+                  <div key={field.key} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={field.key} className="text-sm font-medium">
+                        {field.label}
+                      </Label>
+
+                      {/* Contextual Help Links */}
+                      {field.helpLink && (
+                        <a
+                          href={field.helpLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                        >
+                          Where do I find this? <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="relative">
+                      <Input
+                        id={field.key}
+                        type={field.type}
+                        placeholder={field.placeholder}
+                        className="font-mono text-sm pl-9"
+                        value={fieldValues[field.key] || ""}
+                        onChange={(e) => setFieldValues(prev => ({ ...prev, [field.key]: e.target.value }))}
+                      />
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50">
+                        <FileKey className="h-4 w-4" />
+                      </div>
+
+                      {/* Contextual Validation/Help Tooltip */}
+                      {field.helpText && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Tooltip delayDuration={0}>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-4 w-4 text-muted-foreground/40 hover:text-primary/60 cursor-help transition-colors" />
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-[250px] text-xs">
+                              {field.helpText}
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="bg-primary/5 rounded-lg p-3 flex items-start gap-3 border border-primary/10">
+                  <div className="p-1 bg-primary/10 rounded-full mt-0.5">
+                    <Check className="h-3 w-3 text-primary" />
+                  </div>
+                  <div className="text-xs text-muted-foreground leading-relaxed">
+                    <span className="font-semibold text-foreground">Pre-Flight Check:</span> Connecting executes a read-only validation. We will verify permissions for <strong>Campaign Managment</strong> and <strong>Reporting</strong> immediately.
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setIsDialogOpen(false)} disabled={isConnecting}>
+                  Cancel
+                </Button>
+                <Button onClick={handleConnectSubmit} disabled={isConnecting}>
+                  {isConnecting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifying Access...
+                    </>
+                  ) : (
+                    <>Connect Platform</>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+        </div>
+      </TooltipProvider>
     </DashboardLayout>
   );
 };

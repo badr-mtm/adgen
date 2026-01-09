@@ -182,7 +182,7 @@ const Dashboard = () => {
                 <Clock className="h-5 w-5 text-primary" />
                 On-Air Status
               </h2>
-              <Button variant="link" className="text-muted-foreground">View All</Button>
+              <Button variant="link" className="text-muted-foreground" onClick={() => navigate("/campaigns")}>View All</Button>
             </div>
             <div className="space-y-3">
               {RECENT_CAMPAIGNS.map((campaign, i) => (
@@ -250,9 +250,9 @@ const Dashboard = () => {
                 />
                 <QuickAction
                   icon={<Globe className="h-5 w-5" />}
-                  label="Network Availability"
-                  desc="View real-time inventory"
-                  onClick={() => { }}
+                  label="Global Inventory"
+                  desc="View real-time network availability"
+                  onClick={() => navigate("/campaigns")}
                 />
               </div>
 
@@ -276,6 +276,7 @@ const Dashboard = () => {
             </div>
           </ScrollReveal>
         </div>
+
 
       </div>
     </DashboardLayout>
