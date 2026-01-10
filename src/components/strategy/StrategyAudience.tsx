@@ -257,7 +257,7 @@ export function StrategyAudience({ strategy, setStrategy }: StrategyAudienceProp
 
                     <div className="space-y-4">
                         <Label className="text-base text-white">Gender</Label>
-                        <Tabs value={(strategy.targeting.genders[0] as "male" | "female" | "all") === 'all' ? 'all' : (strategy.targeting.genders[0] as "male" | "female" | "all")} onValueChange={(v) => setStrategy({ ...strategy, targeting: { ...strategy.targeting, genders: [v] } })}>
+                        <Tabs value={(strategy.targeting.genders[0] as string) || 'all'} onValueChange={(v) => setStrategy({ ...strategy, targeting: { ...strategy.targeting, genders: [v as "male" | "female" | "all"] } })}>
                             <TabsList className="w-full h-10 bg-white/5 text-white/40">
                                 <TabsTrigger value="all" className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white">All Genders</TabsTrigger>
                                 <TabsTrigger value="male" className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white">Male</TabsTrigger>

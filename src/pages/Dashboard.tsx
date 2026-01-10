@@ -238,8 +238,8 @@ const Dashboard = () => {
               <div className="grid gap-3">
                 <QuickAction
                   icon={<Tv className="h-5 w-5" />}
-                  label="Generate Mockup"
-                  desc="Preview ads in a living room"
+                  label="Generate New Ad"
+                  desc="Create a new TV advertisement"
                   onClick={() => navigate("/create")}
                 />
                 <QuickAction
