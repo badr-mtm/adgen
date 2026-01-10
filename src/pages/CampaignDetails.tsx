@@ -77,8 +77,9 @@ const CampaignDetails = () => {
       }
 
       setCampaign(data);
-      if (data.storyboard?.strategy) {
-        setStrategy(data.storyboard.strategy);
+      const storyboardData = data.storyboard as { strategy?: any } | null;
+      if (storyboardData?.strategy) {
+        setStrategy(storyboardData.strategy);
       }
       setLoading(false);
     };
