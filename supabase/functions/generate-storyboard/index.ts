@@ -37,29 +37,36 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    
+
     // Check if this is a concept generation request (new modal flow)
     if (body.prompt && body.duration && body.goal) {
       console.log('Generating storyboard concepts for:', body.prompt);
-      
+
       const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
       if (!LOVABLE_API_KEY) {
         throw new Error('LOVABLE_API_KEY not configured');
       }
 
-      const systemPrompt = `You are a creative director for TV advertising. Generate 3 unique storyboard concepts for a TV ad.
+      const targetAudience = body.targetAudience ? (typeof body.targetAudience === 'string' ? body.targetAudience : JSON.stringify(body.targetAudience)) : 'General Audience';
+      const assets = body.assets && Array.isArray(body.assets) ? body.assets.join(', ') : 'No reference assets provided';
 
-User's concept/script: ${body.prompt}
-Duration: ${body.duration}
-Campaign Goal: ${body.goal}
+      const systemPrompt = `You are a world-class creative director at a top-tier ad agency. Generate 3 unique, high-fidelity storyboard concepts for a professional TV ad.
+      
+      STRICT REQUIREMENT: NO GENERIC CONTENT. Use specific details from the user's vision and reference assets.
+      
+      User's Vision: ${body.prompt}
+      Reference Assets: ${assets}
+      Duration: ${body.duration}
+      Campaign Goal: ${body.goal}
+      Target Audience: ${targetAudience}
 
-Create 3 distinct creative approaches, each with:
-- A compelling title
-- Brief description of the concept
-- Scene breakdown with timing
-- Tone and style
+      Create 3 distinct creative approaches, each with:
+      - A compelling title
+      - A detailed "Script Structure" (Hook, Narrative, CTA)
+      - A visual storyboard breakdown (4-6 scenes)
+      - Tone, style, and persona recommendations.
 
-Make each concept meaningfully different in approach (e.g., emotional vs humorous vs informational).`;
+      Make each concept meaningfully different (e.g., Emotional Storytelling vs. Technical/Analytical vs. Bold/Visionary).`;
 
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
@@ -90,6 +97,9 @@ Make each concept meaningfully different in approach (e.g., emotional vs humorou
                           id: { type: "string" },
                           title: { type: "string" },
                           description: { type: "string" },
+                          hook: { type: "string", description: "The opening 5-second hook" },
+                          body: { type: "string", description: "The main narrative body" },
+                          cta: { type: "string", description: "The final call to action" },
                           scenes: {
                             type: "array",
                             items: {
@@ -97,15 +107,17 @@ Make each concept meaningfully different in approach (e.g., emotional vs humorou
                               properties: {
                                 number: { type: "number" },
                                 description: { type: "string" },
+                                visualPrompt: { type: "string", description: "AI prompt for generating the scene visual" },
                                 duration: { type: "string" }
                               },
-                              required: ["number", "description", "duration"]
+                              required: ["number", "description", "visualPrompt", "duration"]
                             }
                           },
                           tone: { type: "string" },
-                          style: { type: "string" }
+                          style: { type: "string" },
+                          persona: { type: "string", enum: ["visionary", "storyteller", "analyst"] }
                         },
-                        required: ["id", "title", "description", "scenes", "tone", "style"]
+                        required: ["id", "title", "description", "hook", "body", "cta", "scenes", "tone", "style", "persona"]
                       },
                       minItems: 3,
                       maxItems: 3
@@ -124,7 +136,7 @@ Make each concept meaningfully different in approach (e.g., emotional vs humorou
       if (!response.ok) {
         const errorText = await response.text();
         console.error('AI API error:', response.status, errorText);
-        
+
         if (response.status === 429) {
           throw new Error('Rate limit exceeded. Please try again in a moment.');
         }
@@ -136,7 +148,7 @@ Make each concept meaningfully different in approach (e.g., emotional vs humorou
 
       const aiResponse = await response.json();
       const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
-      
+
       if (!toolCall?.function?.arguments) {
         throw new Error('Invalid AI response format');
       }
@@ -175,7 +187,7 @@ Make each concept meaningfully different in approach (e.g., emotional vs humorou
 
     const targetAudience = campaign.target_audience;
     const audienceStr = targetAudience?.demographics || targetAudience?.interests || '';
-    
+
     const systemPrompt = `Create a ${campaign.creative_style || 'professional'} video ad storyboard.
 
 Campaign: ${campaign.title}
@@ -253,7 +265,7 @@ Generate 3 script variants (15s, 30s, 60s), 4-6 scenes with duration, visual des
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI API error:', response.status, errorText);
-      
+
       if (response.status === 429) {
         throw new Error('Rate limit exceeded. Please try again in a moment.');
       }

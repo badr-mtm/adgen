@@ -173,13 +173,13 @@ export default function Strategy() {
                         <Button
                             onClick={async () => {
                                 await handleSave(false);
-                                navigate(`/script-selection/${id}`, { state: { id, strategy } });
+                                navigate(`/video-editor/${id}`);
                             }}
                             disabled={saving}
                             className="bg-white text-black hover:bg-gray-200 font-semibold"
                         >
-                            Continue to Creative
-                            <Zap className="w-4 h-4 ml-2" />
+                            Back to Editor
+                            <ArrowLeft className="w-4 h-4 ml-2" />
                         </Button>
                     </div>
                 </div>

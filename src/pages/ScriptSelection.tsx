@@ -37,6 +37,7 @@ interface Script {
   duration: string;
   voiceover?: string;
   persona?: string; // New: AI Persona ID
+  scenes?: any[]; // Added to store scenes within the script
 }
 
 interface Scene {
@@ -105,50 +106,54 @@ export default function ScriptSelection() {
   };
 
   const generateScripts = async () => {
+    if (!campaignData.id && !id) return;
+
     setLoading(true);
-    // Simulate API latency for "processing" feel
-    setTimeout(() => {
-      const mockScripts: Script[] = [
-        {
-          id: "1",
-          title: "The Emotional Arc",
-          hook: "What if the perfect moment wasn't about time, but about feeling?",
-          body: "We often rush through life, missing the details. But with AdGen Premium, every second is crafted for impact. It's not just advertising; it's a connection. Rediscover what it means to truly reach your audience.",
-          cta: "Experience the difference today.",
-          tone: "Inspirational",
-          duration: "30s",
-          persona: "storyteller"
-        },
-        {
-          id: "2",
-          title: "The Power Move",
-          hook: "Stop competing. Start dominating.",
-          body: "The market is crowded. Noise is everywhere. You need a signal that cuts through. Our platform delivers precision targeting and creative excellence that your competitors can't match. Be the leader.",
-          cta: "Claim your market share.",
-          tone: "Assertive",
-          duration: "30s",
-          persona: "visionary"
-        },
-        {
-          id: "3",
-          title: "The Smart Choice",
-          hook: "30% of your budget is being wasted. Here's why.",
-          body: "Inefficiency is the silent killer of growth. We analyzed the data, and the solution is clear. Optimize your spend, maximize your ROAS, and stop guessing. Science meets art.",
-          cta: "Start optimizing now.",
-          tone: "Analytical",
-          duration: "30s",
-          persona: "analyst"
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-storyboard', {
+        body: {
+          prompt: campaignData.description || campaignData.prompt,
+          duration: campaignData.storyboard?.duration || "30s",
+          goal: campaignData.goal || "awareness",
+          targetAudience: campaignData.target_audience,
+          assets: campaignData.storyboard?.assets || []
         }
-      ];
-      setScripts(mockScripts);
-      setSelectedScript(mockScripts[0]);
-      setEditedScript(mockScripts[0]);
-      setLoading(false);
-      toast({
-        title: "AI Concepts Generated",
-        description: "The Writers Room has produced 3 unique scripts.",
       });
-    }, 2000);
+
+      if (error) throw error;
+
+      if (data?.concepts) {
+        const mappedScripts: Script[] = data.concepts.map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          hook: c.hook,
+          body: c.body,
+          cta: c.cta,
+          tone: c.tone,
+          duration: campaignData.storyboard?.duration || "30s",
+          persona: c.persona,
+          // Store scenes in the script object for easy access
+          scenes: c.scenes
+        }));
+
+        setScripts(mappedScripts);
+        setSelectedScript(mappedScripts[0]);
+        setEditedScript(mappedScripts[0]);
+        toast({
+          title: "AI Concepts Generated",
+          description: "The Writers Room has produced 3 unique scripts.",
+        });
+      }
+    } catch (err: any) {
+      console.error("Error generating scripts:", err);
+      toast({
+        title: "Generation Failed",
+        description: err.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectScript = (script: Script) => {
@@ -161,26 +166,34 @@ export default function ScriptSelection() {
     if (!selectedScript) return;
     setGeneratingScenes(true);
 
-    // Simulate generation
+    // AI already generated concepts with scenes in the new flow
+    if ((selectedScript as any).scenes) {
+      setScenes((selectedScript as any).scenes);
+      setTimeout(() => {
+        setGeneratingScenes(false);
+        setView("storyboard-studio");
+        toast({
+          title: "Storyboard Visualized",
+          description: "Scenes have been rendered from your script.",
+        });
+      }, 800);
+      return;
+    }
+
+    // Fallback if scenes weren't pre-generated (should not happen in new flow)
     setTimeout(() => {
-      const mockScenes: Scene[] = [
-        { id: "1", number: 1, duration: "5s", description: "Opening shot: close up on eye opening, pupil dilating", visualPrompt: "Cinematic macro shot of human eye, golden hour lighting", imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800" },
-        { id: "2", number: 2, duration: "10s", description: "Montage of fast-paced city life, blurring into light streaks", visualPrompt: "Time-lapse of city traffic at night, cyberpunk colors", imageUrl: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800" },
-        { id: "3", number: 3, duration: "10s", description: "Product hero shot, floating in zero gravity", visualPrompt: "3D render of abstract geometric product, clean studio background", imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800" },
-        { id: "4", number: 4, duration: "5s", description: "Closing logo animation on black background", visualPrompt: "Minimalist white logo on black, smooth fade out", imageUrl: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800" },
-      ];
-      setScenes(mockScenes);
       setGeneratingScenes(false);
       setView("storyboard-studio");
-      toast({
-        title: "Storyboard Visualized",
-        description: "Scenes have been rendered from your script.",
-      });
-    }, 2500);
+    }, 1000);
   };
 
   const handleContinue = async () => {
     const campaignId = id || campaignData.id;
+
+    if (!campaignId) {
+      toast({ title: "Session Error", description: "Campaign ID missing. Please restart.", variant: "destructive" });
+      return;
+    }
 
     // Show cinematic transition feedback
     toast({
@@ -189,51 +202,44 @@ export default function ScriptSelection() {
       duration: 3000
     });
 
-    if (campaignId) {
-      try {
-        // Persist generated assets to Supabase
-        const { error } = await supabase
-          .from('campaigns')
-          .update({
-            storyboard: {
-              scenes: scenes.map(s => ({
-                id: s.id,
-                name: `Scene ${s.number}`,
-                duration: s.duration,
-                thumbnail: s.imageUrl,
-                description: s.description,
-                type: "generated",
-                url: s.imageUrl
-              })),
-              generatedAt: new Date().toISOString()
-            }
-          })
-          .eq('id', campaignId);
-
-        if (error) throw error;
-
-        // Navigate with state for immediate render (optimistic UI)
-        navigate(`/video-editor/${campaignId}`, {
-          state: {
-            preloadedScenes: scenes,
-            script: selectedScript
+    try {
+      // Persist generated assets to Supabase
+      const { error } = await supabase
+        .from('campaigns')
+        .update({
+          storyboard: {
+            ...campaignData.storyboard,
+            scenes: scenes.map((s, idx) => ({
+              id: s.id || `scene-${idx + 1}`,
+              name: `Scene ${idx + 1}`,
+              duration: s.duration || "5s",
+              thumbnail: s.imageUrl,
+              description: s.description,
+              visualDescription: s.description,
+              visualPrompt: s.visualPrompt,
+              type: "generated",
+              url: s.imageUrl
+            })),
+            script: selectedScript,
+            generatedAt: new Date().toISOString()
           }
-        });
+        })
+        .eq('id', campaignId);
 
-      } catch (err) {
-        console.error("Failed to save assets:", err);
-        // Fallback navigation
-        navigate(`/video-editor/${campaignId}`);
-      }
-    } else {
-      // Demo/Dev mode handling
-      console.warn("No campaign ID - Entering Demo Mode");
-      navigate(`/video-editor/demo`, {
+      if (error) throw error;
+
+      // Navigate with state for immediate render (optimistic UI)
+      navigate(`/video-editor/${campaignId}`, {
         state: {
           preloadedScenes: scenes,
           script: selectedScript
         }
       });
+
+    } catch (err: any) {
+      console.error("Failed to save assets:", err);
+      toast({ title: "Persistence Error", description: err.message, variant: "destructive" });
+      navigate(`/video-editor/${campaignId}`);
     }
   };
 

@@ -138,7 +138,7 @@ const Create = () => {
           storyboard: {
             duration: selectedDuration,
             concept: concept,
-            assets: uploadedFiles.map(f => f.file.name)
+            assets: [] // Placeholder for URLs
           } as any
         }])
         .select()
@@ -146,13 +146,48 @@ const Create = () => {
 
       if (error) throw error;
 
+      // Now upload fles if any
+      let assetUrls: string[] = [];
+      if (uploadedFiles.length > 0) {
+        toast({ title: "Uploading Assets", description: `Archiving ${uploadedFiles.length} reference files...` });
+
+        for (const fileObj of uploadedFiles) {
+          const fileExt = fileObj.file.name.split('.').pop();
+          const fileName = `${data.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `references/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('ad-visuals')
+            .upload(filePath, fileObj.file);
+
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('ad-visuals')
+              .getPublicUrl(filePath);
+            assetUrls.push(publicUrl);
+          }
+        }
+
+        // Update campaign with real URLs
+        await supabase
+          .from('campaigns')
+          .update({
+            storyboard: {
+              duration: selectedDuration,
+              concept: concept,
+              assets: assetUrls
+            } as any
+          })
+          .eq('id', data.id);
+      }
+
       toast({
         title: "Campaign Initialized",
-        description: "Moving to Strategy Command Center...",
+        description: "Entering AI Creative Hub...",
       });
 
-      // Flow: Create -> Strategy
-      navigate(`/strategy/${data.id}`);
+      // Flow: Create -> Script Selection (as requested)
+      navigate(`/script-selection/${data.id}`);
 
     } catch (err: any) {
       console.error("Failed to create campaign:", err);
