@@ -23,8 +23,7 @@ import {
     List as ListIcon,
     Signal,
     Calendar,
-    ArrowUpRight,
-    Trash2
+    ArrowUpRight
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -51,7 +50,7 @@ const Campaigns = () => {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
-    const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
     useEffect(() => {
         const fetchCampaigns = async () => {
@@ -73,41 +72,6 @@ const Campaigns = () => {
 
         fetchCampaigns();
     }, [navigate]);
-
-    const handleToggleStatus = async (id: string, currentStatus: string) => {
-        const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-        try {
-            const { error } = await supabase
-                .from('campaigns')
-                .update({ status: newStatus })
-                .eq('id', id);
-
-            if (error) throw error;
-
-            setCampaigns(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
-            toast({ title: `Campaign ${newStatus === 'active' ? 'Resumed' : 'Paused'}` });
-        } catch (err: any) {
-            toast({ title: "Update Failed", description: err.message, variant: "destructive" });
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this campaign? This cannot be undone.")) return;
-
-        try {
-            const { error } = await supabase
-                .from('campaigns')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-
-            setCampaigns(prev => prev.filter(c => c.id !== id));
-            toast({ title: "Campaign Deleted" });
-        } catch (err: any) {
-            toast({ title: "Delete Failed", description: err.message, variant: "destructive" });
-        }
-    };
 
     const filteredCampaigns = useMemo(() => {
         return campaigns.filter((c) => {
@@ -162,8 +126,8 @@ const Campaigns = () => {
                                 key={tab}
                                 onClick={() => setStatusFilter(tab)}
                                 className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-all ${statusFilter === tab
-                                    ? "bg-background shadow-sm text-foreground"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                                        ? "bg-background shadow-sm text-foreground"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                                     }`}
                             >
                                 {tab}
@@ -270,27 +234,11 @@ const Campaigns = () => {
                                     {viewMode === 'list' && (
                                         <div className="flex items-center gap-3 pr-4 border-l border-border/50 pl-6 h-full">
                                             <div className="text-right mr-4">
-                                                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-0.5">Yield</div>
-                                                <div className="font-mono text-sm font-bold text-green-500">+{Math.floor(Math.random() * 15)}%</div>
+                                                <div className="text-xs text-muted-foreground">Daily Budget</div>
+                                                <div className="font-bold">$100.00</div>
                                             </div>
-                                            <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/campaign/${campaign.id}`); }}>Manage</Button>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted"><MoreHorizontal className="h-4 w-4" /></Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-48 bg-card border-border/50 shadow-2xl backdrop-blur-md">
-                                                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/video-editor/${campaign.id}`); }}>
-                                                        <Play className="h-4 w-4" /> Open Editor
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={(e) => { e.stopPropagation(); handleToggleStatus(campaign.id, campaign.status); }}>
-                                                        {campaign.status === 'active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                                                        {campaign.status === 'active' ? 'Pause Campaign' : 'Resume Campaign'}
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="gap-2 cursor-pointer text-destructive focus:text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(campaign.id); }}>
-                                                        <Trash2 className="h-4 w-4" /> Delete Campaign
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            <Button variant="outline" size="sm">Manage</Button>
+                                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                         </div>
                                     )}
                                 </motion.div>

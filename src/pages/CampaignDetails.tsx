@@ -36,15 +36,8 @@ import {
   Globe,
   MonitorPlay,
   Share2,
-  Zap,
-  MoreHorizontal
+  Zap
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AreaChart,
   Area,
@@ -96,57 +89,6 @@ const CampaignDetails = () => {
 
     fetchCampaign();
   }, [id, navigate, toast]);
-
-  const handleToggleStatus = async () => {
-    const newStatus = campaign.status === 'active' ? 'paused' : 'active';
-    try {
-      const { error } = await supabase
-        .from('campaigns')
-        .update({ status: newStatus })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setCampaign({ ...campaign, status: newStatus });
-      toast({ title: `Campaign ${newStatus === 'active' ? 'Resumed' : 'Paused'}` });
-    } catch (err: any) {
-      toast({ title: "Update Failed", description: err.message, variant: "destructive" });
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this campaign? This cannot be undone.")) return;
-
-    try {
-      const { error } = await supabase
-        .from('campaigns')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast({ title: "Campaign Deleted" });
-      navigate("/campaigns");
-    } catch (err: any) {
-      toast({ title: "Delete Failed", description: err.message, variant: "destructive" });
-    }
-  };
-
-  const handleUpdateMetadata = async (updates: any) => {
-    try {
-      const { error } = await supabase
-        .from('campaigns')
-        .update(updates)
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setCampaign({ ...campaign, ...updates });
-      toast({ title: "Campaign Updated" });
-    } catch (err: any) {
-      toast({ title: "Update Failed", description: err.message, variant: "destructive" });
-    }
-  };
 
   const handleDuplicate = async () => {
     // ... (keep existing logic but simplified for brevity in this rewrite)
@@ -217,29 +159,9 @@ const CampaignDetails = () => {
               </div>
 
               <div className="mb-2 flex gap-3">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="border-white/20 bg-black/20 text-white hover:bg-white/10 hover:text-white backdrop-blur-md gap-2">
-                      <MoreHorizontal className="h-4 w-4" /> Actions
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-zinc-900 border-white/10 text-white shadow-2xl">
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate(`/video-editor/${id}`)}>
-                      <Film className="h-4 w-4" /> Open Production Studio
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={handleToggleStatus}>
-                      {campaign.status === 'active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                      {campaign.status === 'active' ? 'Pause Campaign' : 'Resume Campaign'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={handleDuplicate}>
-                      <Copy className="h-4 w-4" /> Duplicate Campaign
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-500/10" onClick={handleDelete}>
-                      <Trash2 className="h-4 w-4" /> Delete Permanently
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
+                <Button variant="outline" className="border-white/20 bg-black/20 text-white hover:bg-white/10 hover:text-white backdrop-blur-md gap-2" onClick={handleDuplicate}>
+                  <Copy className="h-4 w-4" /> Clone
+                </Button>
                 <Button className="bg-white text-black hover:bg-white/90 gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)]" onClick={() => setPublishDialogOpen(true)}>
                   <Rocket className="h-4 w-4" /> Publish to Network
                 </Button>
@@ -257,7 +179,6 @@ const CampaignDetails = () => {
               <TabsTrigger value="strategy" className="h-10 px-6 rounded-lg data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Strategy Engine</TabsTrigger>
               <TabsTrigger value="creative" className="h-10 px-6 rounded-lg data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Creative Yield</TabsTrigger>
               <TabsTrigger value="audience" className="h-10 px-6 rounded-lg data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Audience DNA</TabsTrigger>
-              <TabsTrigger value="settings" className="h-10 px-6 rounded-lg data-[state=active]:bg-primary/20 data-[state=active]:text-primary">Settings</TabsTrigger>
             </TabsList>
 
             {/* OVERVIEW TAB */}
@@ -339,62 +260,33 @@ const CampaignDetails = () => {
             </TabsContent>
 
             {/* Other tabs placeholders for now - keeping it focused on the "Wow" factor */}
-            <TabsContent value="creative" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
-                <Film className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                <p className="text-muted-foreground">Creative Yield Analytics will appear once your campaign starts broadcasting.</p>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="audience" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
-                <Users className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                <p className="text-muted-foreground">Audience DNA profiling is being processed by the AdGen targeting engine.</p>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="settings" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle>Campaign Metadata</CardTitle>
-                    <CardDescription>Update the primary information for this broadcast.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-white/60 uppercase tracking-widest">Campaign Title</label>
-                      <input
-                        className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-primary transition-colors"
-                        defaultValue={campaign?.title}
-                        onBlur={(e) => handleUpdateMetadata({ title: e.target.value })}
-                      />
+            <TabsContent value="creative">
+              <div className="grid grid-cols-3 gap-6">
+                {/* Placeholder creative cards */}
+                {[1, 2, 3].map(i => (
+                  <Card key={i} className="overflow-hidden border-border/50 bg-card/50 group">
+                    <div className="aspect-video bg-black relative">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Film className="h-8 w-8 text-muted-foreground/30" />
+                      </div>
+                      {/* Heatmap Overlay Mockup */}
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 opacity-50" />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-white/60 uppercase tracking-widest">Description / Concept</label>
-                      <textarea
-                        rows={4}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-primary transition-colors resize-none"
-                        defaultValue={campaign?.description}
-                        onBlur={(e) => handleUpdateMetadata({ description: e.target.value })}
-                      />
+                    <div className="p-4">
+                      <div className="flex justify-between mb-2">
+                        <span className="font-bold">Variant {String.fromCharCode(64 + i)}</span>
+                        <Badge variant="outline" className="text-green-400 border-green-400/30">Strong Win</Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        <div>Attention: <span className="text-foreground">High</span></div>
+                        <div>Completion: <span className="text-foreground">94%</span></div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                    <CardDescription>Irreversible actions for this campaign.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">Deleting this campaign will remove all associated scenes, strategies, and performance data from the AdGen network.</p>
-                    <Button variant="destructive" className="w-full gap-2" onClick={handleDelete}>
-                      <Trash2 className="h-4 w-4" /> Delete Campaign Permanently
-                    </Button>
-                  </CardContent>
-                </Card>
+                  </Card>
+                ))}
               </div>
             </TabsContent>
+
           </Tabs>
 
         </div>
