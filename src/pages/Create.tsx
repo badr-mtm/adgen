@@ -99,23 +99,48 @@ const Create = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
+      // Get or create a default brand for this user
+      let brandId: string;
+      const { data: existingBrand } = await supabase
+        .from('brands')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .limit(1)
+        .single();
+
+      if (existingBrand) {
+        brandId = existingBrand.id;
+      } else {
+        const { data: newBrand, error: brandError } = await supabase
+          .from('brands')
+          .insert({
+            name: 'My Brand',
+            user_id: session.user.id
+          })
+          .select()
+          .single();
+        if (brandError) throw brandError;
+        brandId = newBrand.id;
+      }
+
       // Create the campaign record first to get a permanent ID
       const { data, error } = await supabase
         .from('campaigns')
-        .insert({
+        .insert([{
           title: `Project ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
           description: concept,
           ad_type: 'TV',
           goal: selectedGoal,
           status: 'concept',
           user_id: session.user.id,
-          target_audience: audience,
+          brand_id: brandId,
+          target_audience: audience as any,
           storyboard: {
             duration: selectedDuration,
             concept: concept,
             assets: uploadedFiles.map(f => f.file.name)
-          }
-        })
+          } as any
+        }])
         .select()
         .single();
 

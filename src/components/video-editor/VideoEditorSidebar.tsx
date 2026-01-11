@@ -328,8 +328,6 @@ const VideoEditorSidebar = ({
               </div>
             </div>
           )}
-        </ScrollArea>
-
         {/* Growth Tab - Performance Insights */}
         {
           activeTab === "growth" && (
@@ -792,7 +790,8 @@ const VideoEditorSidebar = ({
             </div>
           )
         }
-      </ScrollArea>
+        </ScrollArea>
+      </div>
     </div>
   );
 };
