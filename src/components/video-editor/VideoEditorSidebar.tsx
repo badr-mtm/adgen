@@ -794,8 +794,7 @@ const VideoEditorSidebar = ({
         }
       </ScrollArea>
     </div>
-  </div >
-);
+  );
 };
 
 export default VideoEditorSidebar;
