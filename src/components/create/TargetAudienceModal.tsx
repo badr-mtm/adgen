@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { LOCATION_DATA } from "@/lib/locations";
 
 // Fix for default Leaflet markers
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -64,21 +65,6 @@ const INTERESTS = [
   "Tech Enthusiasts", "Fashion Forward", "Fitness Buffs", "Foodies",
   "Business Pros", "Gamers", "Parents", "Travelers", "Luxury Shoppers", "Sports Fans"
 ];
-
-// Predefined locations with coordinates for "FlyTo"
-const LOCATION_DATA: Record<string, { lat: number; lng: number; zoom: number; type: string }> = {
-  "United States": { lat: 37.0902, lng: -95.7129, zoom: 4, type: "Country" },
-  "United Kingdom": { lat: 55.3781, lng: -3.4360, zoom: 6, type: "Country" },
-  "Canada": { lat: 56.1304, lng: -106.3468, zoom: 4, type: "Country" },
-  "Europe": { lat: 54.5260, lng: 15.2551, zoom: 4, type: "Region" },
-  "California, US": { lat: 36.7783, lng: -119.4179, zoom: 6, type: "State" },
-  "New York, US": { lat: 40.7128, lng: -74.0060, zoom: 7, type: "State" },
-  "Texas, US": { lat: 31.9686, lng: -99.9018, zoom: 6, type: "State" },
-  "London, UK": { lat: 51.5074, lng: -0.1278, zoom: 10, type: "City" },
-  "Manchester, UK": { lat: 53.4808, lng: -2.2426, zoom: 11, type: "City" },
-  "Paris, FR": { lat: 48.8566, lng: 2.3522, zoom: 11, type: "City" },
-  "Berlin, DE": { lat: 52.5200, lng: 13.4050, zoom: 11, type: "City" },
-};
 
 // Map Controller to handle "FlyTo" animations
 function MapController({ selectedLoc }: { selectedLoc: string | null }) {

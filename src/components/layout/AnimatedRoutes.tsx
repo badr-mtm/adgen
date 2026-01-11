@@ -18,6 +18,7 @@ import Auth from "@/pages/Auth";
 import BrandSetup from "@/pages/BrandSetup";
 import Storyboard from "@/pages/Storyboard";
 import ScriptSelection from "@/pages/ScriptSelection";
+import Creatives from "@/pages/Creatives";
 import Strategy from "@/pages/Strategy";
 import NotFound from "@/pages/NotFound";
 
@@ -74,6 +75,14 @@ export function AnimatedRoutes() {
           element={
             <PageTransitionWrapper>
               <Assets />
+            </PageTransitionWrapper>
+          }
+        />
+        <Route
+          path="/creatives"
+          element={
+            <PageTransitionWrapper>
+              <Creatives />
             </PageTransitionWrapper>
           }
         />

@@ -36,20 +36,59 @@ const RECENT_CAMPAIGNS = [
   { id: 3, title: "Q3 Retargeting", network: "Samsung TV", status: "paused", viewers: "850K", thumbnail: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800&q=80" },
 ];
 
+// Leaflet
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { LOCATION_DATA } from "@/lib/locations";
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
+  const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const initializeDashboard = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
+
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+
+      // Fetch active campaigns for telemetry
+      const { data: campaigns } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('status', 'active');
+
+      if (campaigns) setActiveCampaigns(campaigns);
       setLoading(false);
-      if (!session) navigate("/auth");
-    });
+    };
+
+    initializeDashboard();
   }, [navigate]);
 
-  if (loading) return null;
+  if (loading) return (
+    <DashboardLayout>
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    </DashboardLayout>
+  );
+
+  // Calculate coordinates for active campaigns
+  const campaignLocations = activeCampaigns.flatMap(c => {
+    const audience = c.target_audience as any;
+    const locations = audience?.locations || [];
+    return locations.map((locName: string) => ({
+      ...LOCATION_DATA[locName],
+      name: locName,
+      campaignTitle: c.title
+    })).filter((l: any) => l.lat !== undefined);
+  });
 
   return (
     <DashboardLayout>
@@ -85,53 +124,93 @@ const Dashboard = () => {
 
         {/* Global Reach Hero */}
         <ScrollReveal direction="up" duration={0.5} delay={0.1}>
-          <div className="relative w-full h-[300px] lg:h-[400px] rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-b from-black/40 to-black/80 backdrop-blur-xl group">
-            {/* Abstract Map Background */}
-            <div className="absolute inset-0 opacity-30 bg-[url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg')] bg-cover bg-center bg-no-repeat grayscale contrast-150 invert-[.9]" />
+          <div className="relative w-full h-[400px] lg:h-[500px] rounded-3xl overflow-hidden border border-white/5 bg-black/40 backdrop-blur-xl group">
 
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+            {/* Live Map Foundation */}
+            <div className="absolute inset-0 z-0">
+              <MapContainer
+                center={[20, 0]}
+                zoom={2}
+                style={{ height: "100%", width: "100%", background: '#0a0a0a' }}
+                zoomControl={false}
+                attributionControl={false}
+              >
+                <TileLayer
+                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                />
 
-            {/* Pulsing Beacons */}
-            <div className="absolute top-1/3 left-1/4">
-              <div className="relative">
-                <div className="absolute -inset-4 bg-primary/30 rounded-full animate-ping" />
-                <div className="h-3 w-3 bg-primary rounded-full shadow-[0_0_15px_hsl(var(--primary))]" />
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-black/80 text-[10px] font-bold px-2 py-0.5 rounded border border-white/10 whitespace-nowrap">
-                  North America (Active)
-                </div>
-              </div>
+                {campaignLocations.map((loc: any, idx: number) => (
+                  <CircleMarker
+                    key={`${loc.name}-${idx}`}
+                    center={[loc.lat, loc.lng]}
+                    radius={15}
+                    pathOptions={{
+                      fillColor: 'hsl(var(--primary))',
+                      fillOpacity: 0.4,
+                      color: 'hsl(var(--primary))',
+                      weight: 1,
+                      className: 'animate-pulse'
+                    }}
+                  >
+                    <Popup className="text-black">
+                      <div className="p-1">
+                        <p className="font-bold text-xs uppercase tracking-widest text-primary mb-1">Live Delivery</p>
+                        <p className="font-bold text-sm">{loc.campaignTitle}</p>
+                        <p className="text-xs text-muted-foreground">{loc.name}</p>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                ))}
+
+                {/* Always show a few global beacons for depth if no active campaigns */}
+                {campaignLocations.length === 0 && (
+                  <>
+                    <CircleMarker center={[40.7128, -74.0060]} radius={8} pathOptions={{ fillColor: '#3b82f6', fillOpacity: 0.2, color: '#3b82f6', weight: 1 }} />
+                    <CircleMarker center={[51.5074, -0.1278]} radius={8} pathOptions={{ fillColor: '#6366f1', fillOpacity: 0.2, color: '#6366f1', weight: 1 }} />
+                    <CircleMarker center={[35.6762, 139.6503]} radius={8} pathOptions={{ fillColor: '#8b5cf6', fillOpacity: 0.2, color: '#8b5cf6', weight: 1 }} />
+                  </>
+                )}
+              </MapContainer>
             </div>
 
-            <div className="absolute top-1/4 right-1/3">
-              <div className="relative">
-                <div className="absolute -inset-4 bg-indigo-500/30 rounded-full animate-ping delay-700" />
-                <div className="h-3 w-3 bg-indigo-500 rounded-full shadow-[0_0_15px_#6366f1]" />
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-black/80 text-[10px] font-bold px-2 py-0.5 rounded border border-white/10 whitespace-nowrap">
-                  Europe (High Volume)
-                </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/80 to-transparent z-10 pointer-events-none" />
+
+            {/* Live Data HUD */}
+            <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white">Live Broadcast Telemetry</span>
               </div>
+              {activeCampaigns.length > 0 && (
+                <div className="px-3 py-1 text-[10px] font-medium text-white/40 uppercase tracking-tighter">
+                  Streaming to {activeCampaigns.length} Active Nodes
+                </div>
+              )}
             </div>
 
             {/* Hero Metrics Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col md:flex-row justify-between items-end gap-6">
-              <div>
-                <h3 className="text-primary font-bold uppercase tracking-widest text-sm mb-1">Global Broadcast Reach</h3>
-                <div className="text-5xl font-black tabular-nums tracking-tighter">
-                  42.8<span className="text-2xl text-muted-foreground font-normal ml-2">Million Households</span>
+            <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col md:flex-row justify-between items-end gap-6 z-20">
+              <div className="space-y-1">
+                <h3 className="text-primary font-bold uppercase tracking-widest text-xs mb-1 opacity-80 flex items-center gap-2">
+                  <Globe className="h-4 w-4" /> Global Audience Impact
+                </h3>
+                <div className="text-5xl lg:text-6xl font-black tabular-nums tracking-tighter text-white drop-shadow-2xl">
+                  {activeCampaigns.length > 0 ? (activeCampaigns.length * 4.2).toFixed(1) : "0.0"}<span className="text-2xl text-white/40 font-normal ml-3">Million HH Reach</span>
                 </div>
               </div>
-              <div className="flex gap-8 text-right">
+              <div className="flex gap-8 text-right bg-black/40 backdrop-blur-md p-6 rounded-2xl border border-white/5">
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase font-bold tracking-wider mb-1">Active Networks</p>
-                  <p className="text-2xl font-bold">14</p>
+                  <p className="text-white/40 text-[10px] uppercase font-bold tracking-wider mb-1">Nodes</p>
+                  <p className="text-2xl font-black text-white">{activeCampaigns.length}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase font-bold tracking-wider mb-1">Avg. CPM</p>
-                  <p className="text-2xl font-bold">$18.42</p>
+                  <p className="text-white/40 text-[10px] uppercase font-bold tracking-wider mb-1">Network Load</p>
+                  <p className="text-2xl font-black text-primary">High</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs uppercase font-bold tracking-wider mb-1">Live Spots</p>
-                  <p className="text-2xl font-bold text-primary">850+</p>
+                  <p className="text-white/40 text-[10px] uppercase font-bold tracking-wider mb-1">Latency</p>
+                  <p className="text-2xl font-black text-white">12ms</p>
                 </div>
               </div>
             </div>
