@@ -123,9 +123,9 @@ const VideoTimeline = ({
   return (
     <div className="bg-background border-t border-border flex flex-col transition-colors duration-300">
       {/* Main Timeline - scrollable */}
-      <div className="px-4 py-2 flex-1 overflow-auto bg-background transition-colors duration-300">
+      <div className="px-3 py-1.5 flex-1 overflow-auto bg-background transition-colors duration-300">
         {/* Controls Row */}
-        <div className="flex items-center gap-4 mb-2">
+        <div className="flex items-center gap-3 mb-1.5">
           {/* Playback Controls */}
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={onSkipBack}>
@@ -174,7 +174,7 @@ const VideoTimeline = ({
         </div>
 
         {/* Timeline Ruler */}
-        <div ref={timelineRef} className="relative h-6 bg-card rounded-lg border border-border cursor-pointer mb-2 overflow-hidden transition-colors duration-300" onClick={handleTimelineClick}>
+        <div ref={timelineRef} className="relative h-5 bg-card rounded-md border border-border cursor-pointer mb-1.5 overflow-hidden transition-colors duration-300" onClick={handleTimelineClick}>
           {/* Time markers */}
           <div className="absolute inset-0 flex items-center pt-6 opacity-20">
             {Array.from({
@@ -194,7 +194,7 @@ const VideoTimeline = ({
         </div>
 
         {/* Scene Thumbnails Track */}
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide py-1" style={{ transform: `scaleX(${zoom})`, transformOrigin: 'left' }}>
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide py-0.5" style={{ transform: `scaleX(${zoom})`, transformOrigin: 'left' }}>
           {scenes.map((scene, index) => {
             const widthPercent = totalDuration > 0 ? (scene.endTime - scene.startTime) / totalDuration * 100 : 0;
             const isActive = currentSceneIndex === index;
@@ -202,7 +202,7 @@ const VideoTimeline = ({
               <div
                 key={scene.id}
                 onClick={() => onSceneSelect(index)}
-                className={`relative h-12 flex-shrink-0 rounded-md overflow-hidden cursor-pointer transition-all border-2 ${isActive
+                className={`relative h-10 flex-shrink-0 rounded-md overflow-hidden cursor-pointer transition-all border-2 ${isActive
                   ? "border-primary scale-102 z-10 shadow-[0_0_15px_hsl(var(--primary)/0.15)]"
                   : "border-transparent opacity-60 hover:opacity-100"
                   }`}
@@ -226,20 +226,20 @@ const VideoTimeline = ({
         </div>
 
         {/* Track Lanes */}
-        <div className="space-y-1.5 mt-2">
+        <div className="space-y-1 mt-1.5">
           {tracks.map(track => {
             const Icon = track.icon;
             return (
-              <div key={track.key} className="flex items-center gap-3 cursor-pointer group" onClick={() => handleTrackClick(track.key)}>
-                <div className="flex items-center gap-2 w-28 truncate transition-colors">
-                  <div className={`p-1 rounded-md ${track.enabled ? "bg-accent/10 text-primary" : "bg-muted/50 text-muted-foreground/30"}`}>
-                    <Icon className="h-3.5 w-3.5" />
+              <div key={track.key} className="flex items-center gap-2 cursor-pointer group" onClick={() => handleTrackClick(track.key)}>
+                <div className="flex items-center gap-1.5 w-24 truncate transition-colors">
+                  <div className={`p-0.5 rounded ${track.enabled ? "bg-accent/10 text-primary" : "bg-muted/50 text-muted-foreground/30"}`}>
+                    <Icon className="h-3 w-3" />
                   </div>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider ${track.enabled ? "text-muted-foreground group-hover:text-foreground" : "text-muted-foreground/30"}`}>
+                  <span className={`text-[9px] font-bold uppercase tracking-wider ${track.enabled ? "text-muted-foreground group-hover:text-foreground" : "text-muted-foreground/30"}`}>
                     {track.label}
                   </span>
                 </div>
-                <div className={`h-6 flex-1 rounded-lg flex items-center px-3 transition-all relative border ${track.enabled
+                <div className={`h-5 flex-1 rounded-md flex items-center px-2 transition-all relative border ${track.enabled
                   ? `${track.color} border-white/10 shadow-md shadow-black/5`
                   : "bg-muted/30 border-border opacity-40 group-hover:opacity-60"
                   }`}>
@@ -260,21 +260,21 @@ const VideoTimeline = ({
       </div>
 
       {/* Footer Bar - always visible */}
-      <div className="px-4 py-2 border-t border-border flex items-center justify-between flex-shrink-0 bg-card transition-colors duration-300">
+      <div className="px-3 py-1.5 border-t border-border flex items-center justify-between flex-shrink-0 bg-card transition-colors duration-300">
         <div className="flex items-center gap-2">
-          <div className="w-[28px] h-[28px] rounded-lg bg-background flex items-center justify-center border border-border ring-1 ring-accent/5">
-            <span className="text-sm font-black text-foreground">{brandName.charAt(0)}</span>
+          <div className="w-6 h-6 rounded-md bg-background flex items-center justify-center border border-border ring-1 ring-accent/5">
+            <span className="text-xs font-black text-foreground">{brandName.charAt(0)}</span>
           </div>
           <div>
-            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-0">Brand</p>
-            <p className="text-[11px] font-black text-foreground">{brandName}</p>
+            <p className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Brand</p>
+            <p className="text-[10px] font-black text-foreground leading-tight">{brandName}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button variant="ghost" size="sm" onClick={onDownload} className="text-muted-foreground hover:text-foreground gap-2 font-bold px-3 h-9 text-xs">
-              <Download className="h-3.5 w-3.5" />
+            <Button variant="ghost" size="sm" onClick={onDownload} className="text-muted-foreground hover:text-foreground gap-1.5 font-bold px-2 h-7 text-[10px]">
+              <Download className="h-3 w-3" />
               Download
             </Button>
           </motion.div>
@@ -282,9 +282,9 @@ const VideoTimeline = ({
             <Button
               size="sm"
               onClick={onAddToStrategy}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider px-6 h-10 rounded-xl shadow-[0_0_20px_hsl(var(--primary)/0.1)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)] transition-all duration-300 text-xs"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider px-4 h-8 rounded-lg shadow-[0_0_20px_hsl(var(--primary)/0.1)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)] transition-all duration-300 text-[10px]"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3 w-3 mr-1.5" />
               Go to Strategy
             </Button>
           </motion.div>
