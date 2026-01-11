@@ -289,9 +289,19 @@ export default function VideoEditor() {
   };
 
   const handleSaveScene = async (updatedScene: any) => {
-    saveToHistory(scenes, overlaySettings); // Save history BEFORE updating
+    saveToHistory(scenes, overlaySettings);
     const updatedScenes = [...scenes];
-    updatedScenes[currentSceneIndex] = updatedScene;
+    updatedScenes[currentSceneIndex] = {
+      ...updatedScenes[currentSceneIndex],
+      ...updatedScene,
+      // Ensure all fields from the SceneEditor are preserved
+      visualDescription: updatedScene.visualDescription,
+      suggestedVisuals: updatedScene.suggestedVisuals,
+      voiceover: updatedScene.voiceover,
+      duration: updatedScene.duration,
+      videoUrl: updatedScene.videoUrl,
+      visualUrl: updatedScene.visualUrl
+    };
     setScenes(updatedScenes);
 
     // Save to Supabase
@@ -333,8 +343,16 @@ export default function VideoEditor() {
       if (data.visualUrl) {
         saveToHistory(scenes, overlaySettings);
         const updatedScenes = [...scenes];
-        updatedScenes[currentSceneIndex] = { ...updatedScenes[currentSceneIndex], visualUrl: data.visualUrl };
+        updatedScenes[currentSceneIndex] = { ...updatedScenes[currentSceneIndex], visualUrl: data.visualUrl, type: "generated" };
         setScenes(updatedScenes);
+
+        // Seek to the regenerated scene
+        let startTime = 0;
+        for (let i = 0; i < currentSceneIndex; i++) {
+          startTime += parseInt(scenes[i].duration) || 0;
+        }
+        setCurrentTime(startTime);
+
         toast({ title: "Visual regenerated", description: "The new visual has been applied to this scene." });
       }
     } catch (err: any) {
@@ -346,13 +364,12 @@ export default function VideoEditor() {
 
   const handleGenerateVideo = async (model: string, customPrompt?: string) => {
     setIsRegenerating(true);
+    const FAL_KEY = import.meta.env.VITE_FAL_KEY;
+
     try {
       if (model === "pexels") {
         toast({ title: "Connecting to Global Archive...", description: "Fetching high-quality cinematic clips." });
-
-        // Short delay for cinematic feel
         await new Promise(r => setTimeout(r, 1200));
-
         const query = customPrompt || scenes[currentSceneIndex].visualDescription || "cinematic advertisement";
         const videoUrl = await searchPexelsVideos(query);
 
@@ -362,14 +379,66 @@ export default function VideoEditor() {
           updatedScenes[currentSceneIndex] = {
             ...updatedScenes[currentSceneIndex],
             videoUrl,
-            type: "video" // Change type to video
+            type: "video"
           };
           setScenes(updatedScenes);
+
+          let startTime = 0;
+          for (let i = 0; i < currentSceneIndex; i++) {
+            startTime += parseInt(scenes[i].duration) || 0;
+          }
+          setCurrentTime(startTime);
+          setIsPlaying(true);
+
           toast({ title: "Cinematic Clip Applied", description: "Standardized broadcast footage loaded." });
         } else {
           throw new Error("Could not find a matching cinematic clip.");
         }
         return;
+      }
+
+      // If we have a local FAL_KEY, we can try direct generation for faster feedback
+      if (FAL_KEY && (model === "luma" || model === "kling")) {
+        toast({ title: "Direct Production Booting...", description: "Leveraging provided API key for instant rendering." });
+
+        const scene = scenes[currentSceneIndex];
+        const prompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals || ''}. High quality cinematic motion.`;
+        const endpoint = model === "kling" ? "fal-ai/kling-video/v1/standard/text-to-video" : "fal-ai/luma-dream-machine";
+
+        const response = await fetch(`https://fal.run/${endpoint}`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Key ${FAL_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt,
+            ...(scene.visualUrl && { image_url: scene.visualUrl })
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const videoUrl = result.video?.url || result.url;
+
+          if (videoUrl) {
+            saveToHistory(scenes, overlaySettings);
+            const updatedScenes = [...scenes];
+            updatedScenes[currentSceneIndex] = { ...updatedScenes[currentSceneIndex], videoUrl, type: "video" };
+            setScenes(updatedScenes);
+
+            let startTime = 0;
+            for (let i = 0; i < currentSceneIndex; i++) {
+              startTime += parseInt(scenes[i].duration) || 0;
+            }
+            setCurrentTime(startTime);
+            setIsPlaying(true);
+
+            toast({ title: "Video Production Complete", description: "High-fidelity cinematic clip generated." });
+            return;
+          }
+        }
+        // If direct fails, fall back to edge function
       }
 
       toast({ title: "Generating video clip...", description: "This may take a minute or two. Please wait." });
@@ -387,8 +456,17 @@ export default function VideoEditor() {
       if (data.videoUrl) {
         saveToHistory(scenes, overlaySettings);
         const updatedScenes = [...scenes];
-        updatedScenes[currentSceneIndex] = { ...updatedScenes[currentSceneIndex], videoUrl: data.videoUrl };
+        updatedScenes[currentSceneIndex] = { ...updatedScenes[currentSceneIndex], videoUrl: data.videoUrl, type: "video" };
         setScenes(updatedScenes);
+
+        // SEEK TO START OF THIS SCENE SO IT LOADS IN "PLAY POSITION"
+        let startTime = 0;
+        for (let i = 0; i < currentSceneIndex; i++) {
+          startTime += parseInt(scenes[i].duration) || 0;
+        }
+        setCurrentTime(startTime);
+        setIsPlaying(true); // Proactively start playback to show the new clip
+
         toast({ title: "Video generated", description: "The cinematic clip has been added to this scene." });
       }
     } catch (err: any) {

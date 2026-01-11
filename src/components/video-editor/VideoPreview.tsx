@@ -182,19 +182,34 @@ const VideoPreview = ({
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-black" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.8)_80%)]" />
 
-            {/* Ambient TV Light Bloom - Pulsing based on active playback */}
+            {/* Liquid Ambient TV Light - Reactive to Scene Content */}
             <motion.div
-              animate={{
-                scale: isPlaying ? [1, 1.05, 1] : 1,
-                opacity: isPlaying ? [0.3, 0.4, 0.3] : 0.3,
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-primary/20 blur-[150px]"
-            />
+              key={`ambient-${currentSceneIndex}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
+              className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
+            >
+              {currentScene?.videoUrl ? (
+                <video
+                  src={currentScene.videoUrl}
+                  className="w-full h-full object-cover blur-[120px] scale-150 opacity-40 brightness-150 saturate-200"
+                  muted
+                  loop
+                  autoPlay
+                  playsInline
+                />
+              ) : currentScene?.visualUrl ? (
+                <img
+                  src={currentScene.visualUrl}
+                  alt="Ambient Glow"
+                  className="w-full h-full object-cover blur-[120px] scale-150 opacity-40 brightness-150 saturate-200"
+                />
+              ) : (
+                <div className="w-full h-full bg-blue-900/10 blur-[150px]" />
+              )}
+            </motion.div>
           </div>
         )}
 

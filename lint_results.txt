@@ -1,0 +1,265 @@
+
+> vite_react_shadcn_ts@0.0.0 lint
+> eslint .
+
+
+C:\Users\A3M\Desktop\AdGen\src\components\Navigation.tsx
+  46:54  error  Irregular whitespace not allowed  no-irregular-whitespace
+
+C:\Users\A3M\Desktop\AdGen\src\components\campaign\PublishDialog.tsx
+   72:13  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  372:9   error  Unexpected lexical declaration in case block  no-case-declarations
+  373:9   error  Unexpected lexical declaration in case block  no-case-declarations
+
+C:\Users\A3M\Desktop\AdGen\src\components\campaign\StrategyEditModal.tsx
+   68:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\create\TargetAudienceModal.tsx
+  40:5  error  'DefaultIcon' is never reassigned. Use 'const' instead  prefer-const
+
+C:\Users\A3M\Desktop\AdGen\src\components\dashboard\EmailVerificationBanner.tsx
+  39:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\dashboard\ProductUrlDialog.tsx
+  84:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\editor\CustomizationPanel.tsx
+  10:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\editor\ImageEditorControls.tsx
+  45:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\editor\ImageEditorSidebar.tsx
+  36:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\strategy\StrategyAudience.tsx
+  25:5  error  'DefaultIcon' is never reassigned. Use 'const' instead  prefer-const
+
+C:\Users\A3M\Desktop\AdGen\src\components\strategy\StrategySchedule.tsx
+   90:83   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:42   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:100  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:50   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\theme\ThemeProvider.tsx
+  66:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\A3M\Desktop\AdGen\src\components\ui\badge.tsx
+  29:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\A3M\Desktop\AdGen\src\components\ui\button.tsx
+  48:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\A3M\Desktop\AdGen\src\components\ui\command.tsx
+  24:11  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\A3M\Desktop\AdGen\src\components\ui\form.tsx
+  129:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\A3M\Desktop\AdGen\src\components\ui\navigation-menu.tsx
+  111:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\A3M\Desktop\AdGen\src\components\ui\sidebar.tsx
+  636:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\A3M\Desktop\AdGen\src\components\ui\sonner.tsx
+  27:19  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\A3M\Desktop\AdGen\src\components\ui\textarea.tsx
+  5:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\A3M\Desktop\AdGen\src\components\ui\toggle.tsx
+  37:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\A3M\Desktop\AdGen\src\components\video-editor\AIAssistantPanel.tsx
+   30:15  error    Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+   32:36  error    Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+   65:33  error    Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+  167:21  error    Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+  235:21  error    Unexpected any. Specify a different type                                                                              @typescript-eslint/no-explicit-any
+  253:6   warning  React Hook useEffect has a missing dependency: 'handleQuickAction'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\A3M\Desktop\AdGen\src\components\video-editor\PerformanceInsights.tsx
+  165:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\video-editor\SceneEditor.tsx
+  309:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\video-editor\VideoEditorSidebar.tsx
+   66:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  402:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\components\video-editor\VideoPreview.tsx
+  129:6  warning  React Hook useEffect has missing dependencies: 'currentTime' and 'scenes'. Either include them or remove the dependency array                      react-hooks/exhaustive-deps
+  137:6  warning  React Hook useEffect has missing dependencies: 'currentSceneIndex', 'isPlaying', and 'scenes'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\A3M\Desktop\AdGen\src\pages\AdOperations.tsx
+   63:15  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  181:32  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  257:9   error  Unexpected lexical declaration in case block  no-case-declarations
+  268:9   error  Unexpected lexical declaration in case block  no-case-declarations
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Assets.tsx
+  222:6  warning  React Hook useCallback has a missing dependency: 'uploadFiles'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Auth.tsx
+   75:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  140:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  160:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  179:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\BrandSetup.tsx
+   23:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\CampaignDetails.tsx
+   56:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   82:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  304:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\CampaignSchedules.tsx
+   46:16  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   64:6   warning  React Hook useEffect has a missing dependency: 'fetchCampaigns'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   88:38  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+   97:21  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  211:21  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Campaigns.tsx
+  43:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Create.tsx
+  137:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  157:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Dashboard.tsx
+   42:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  288:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  311:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Editor.tsx
+   26:44  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   77:53  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   97:6   warning  React Hook useEffect has a missing dependency: 'generateImageAd'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  122:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  164:58  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  201:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  240:61  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  250:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  311:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Home.tsx
+   18:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   19:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  110:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Reports.tsx
+  156:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\ScriptSelection.tsx
+  70:52  error    Unexpected any. Specify a different type                                                                                                                     @typescript-eslint/no-explicit-any
+  88:6   warning  React Hook useEffect has missing dependencies: 'fetchCampaign', 'generateScripts', and 'location.state'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Settings.tsx
+  35:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Storyboard.tsx
+   45:14  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+   46:24  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+   59:44  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  125:23  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  138:6   warning  React Hook useEffect has a missing dependency: 'generateStoryboard'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  159:21  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  226:21  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  257:21  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  291:21  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  322:21  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  346:52  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  355:21  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  375:52  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  384:21  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  532:93  error    Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\Strategy.tsx
+   45:8   warning  React Hook useEffect has a missing dependency: 'loadCampaignData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   67:41  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   75:25  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  101:50  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  117:25  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\pages\VideoEditor.tsx
+   26:42  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   27:40  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   38:42  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   41:37  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   82:9   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+   83:49  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   85:70  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  112:53  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  116:87  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  121:21  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  133:6   warning  React Hook useEffect has a missing dependency: 'location.state'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+  141:55  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  291:48  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  325:19  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  358:19  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  472:19  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  561:53  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\types\videoEditor.ts
+  22:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\src\utils\pexels.ts
+  6:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\supabase\functions\generate-ad-variants\index.ts
+  162:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\supabase\functions\generate-ideas\index.ts
+  164:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\supabase\functions\generate-scene-visual\index.ts
+   58:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   59:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\supabase\functions\generate-video-scene\index.ts
+   47:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   48:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\supabase\functions\image-ai-actions\index.ts
+   12:27  error  Unexpected any. Specify a different type                    @typescript-eslint/no-explicit-any
+   47:9   error  'shouldEditImage' is never reassigned. Use 'const' instead  prefer-const
+   72:9   error  Unexpected lexical declaration in case block                no-case-declarations
+   73:9   error  Unexpected lexical declaration in case block                no-case-declarations
+   74:9   error  Unexpected lexical declaration in case block                no-case-declarations
+   78:9   error  Unexpected lexical declaration in case block                no-case-declarations
+   79:9   error  Unexpected lexical declaration in case block                no-case-declarations
+   83:9   error  Unexpected lexical declaration in case block                no-case-declarations
+   84:9   error  Unexpected lexical declaration in case block                no-case-declarations
+   85:9   error  Unexpected lexical declaration in case block                no-case-declarations
+   86:9   error  Unexpected lexical declaration in case block                no-case-declarations
+   87:9   error  Unexpected lexical declaration in case block                no-case-declarations
+  164:64  error  Unexpected any. Specify a different type                    @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\supabase\functions\update-scene\index.ts
+  57:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\A3M\Desktop\AdGen\tailwind.config.ts
+  139:13  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+✖ 153 problems (135 errors, 18 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+
