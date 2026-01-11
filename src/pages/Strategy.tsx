@@ -64,11 +64,12 @@ export default function Strategy() {
                     goal: data.goal || "awareness",
                     targetAudience: typeof data.target_audience === 'string' ? data.target_audience : JSON.stringify(data.target_audience)
                 },
-                ...(data.strategy as any || {})
+                ...((data.storyboard as any)?.strategy || {})
             });
 
-            if (data.strategy && (data.strategy as any).schedule?.startDate) {
-                setDate(new Date((data.strategy as any).schedule.startDate));
+            const storyboardData = data.storyboard as { strategy?: { schedule?: { startDate?: string } } } | null;
+            if (storyboardData?.strategy?.schedule?.startDate) {
+                setDate(new Date(storyboardData.strategy.schedule.startDate));
             }
 
         } catch (error: any) {

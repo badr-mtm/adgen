@@ -112,9 +112,9 @@ export default function VideoEditor() {
           if (storyboard?.scenes) {
             setScenes(storyboard.scenes);
           }
-          const strategy = campaign.strategy as any;
-          if (strategy?.videoSettings) {
-            setOverlaySettings(prev => ({ ...prev, ...strategy.videoSettings }));
+          const storyboardWithStrategy = storyboard as { strategy?: { videoSettings?: any } } | null;
+          if (storyboardWithStrategy?.strategy?.videoSettings) {
+            setOverlaySettings(prev => ({ ...prev, ...storyboardWithStrategy.strategy!.videoSettings }));
           }
         }
       } catch (err: any) {
