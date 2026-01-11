@@ -472,7 +472,7 @@ export default function VideoEditor() {
     const duration = parseInt(s.duration) || 0;
     return {
       id: idx,
-      thumbnailUrl: s.visualUrl,
+      thumbnailUrl: s.visualUrl || s.imageUrl || s.thumbnail || s.url,
       duration: s.duration,
       startTime: startTime,
       endTime: startTime + duration
@@ -519,9 +519,9 @@ export default function VideoEditor() {
           <VideoEditorSidebar
             scenes={scenes.map((s, idx) => ({
               id: idx,
-              label: `Scene ${s.sceneNumber}`,
+              label: `Scene ${s.sceneNumber || s.number || idx + 1}`,
               duration: s.duration,
-              thumbnailUrl: s.visualUrl,
+              thumbnailUrl: s.visualUrl || s.imageUrl || s.thumbnail || s.url,
               isActive: currentSceneIndex === idx
             }))}
             activeTab={activeTab}
@@ -562,7 +562,7 @@ export default function VideoEditor() {
             <VideoPreview
               scenes={scenes.map((s, idx) => ({
                 id: idx,
-                visualUrl: s.visualUrl,
+                visualUrl: s.visualUrl || s.imageUrl || s.thumbnail || s.url,
                 videoUrl: s.videoUrl,
                 duration: s.duration,
                 voiceover: s.voiceover
