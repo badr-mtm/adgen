@@ -16,6 +16,7 @@ import {
   Mic
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -53,11 +54,53 @@ const AIAssistantPanel = ({
   onOpenChange,
   externalMessage
 }: AIAssistantPanelProps) => {
+  const { toast } = useToast();
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
   const setIsOpen = (val: boolean) => {
     if (onOpenChange) onOpenChange(val);
     setInternalOpen(val);
+  };
+
+  const handleAIError = (error: any) => {
+    // Check for FunctionsHttpError with status codes
+    const status = error?.context?.status || error?.status;
+    const errorBody = error?.context?.body || error?.message || "";
+    
+    if (status === 401 || errorBody.includes("401") || errorBody.includes("Unauthorized")) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Your session has expired. Please refresh the page and log in again.",
+      });
+      return "Your session has expired. Please refresh the page and log in again to continue.";
+    }
+    
+    if (status === 429 || errorBody.includes("429") || errorBody.includes("Rate limit")) {
+      toast({
+        variant: "destructive",
+        title: "Too Many Requests",
+        description: "You've hit the rate limit. Please wait a moment before trying again.",
+      });
+      return "You're sending requests too quickly. Please wait a few seconds and try again.";
+    }
+    
+    if (status === 402 || errorBody.includes("402") || errorBody.includes("Payment")) {
+      toast({
+        variant: "destructive",
+        title: "Usage Limit Reached",
+        description: "Your AI credits have run out. Go to Settings → Workspace → Usage to add more.",
+      });
+      return "Your AI usage credits have been exhausted. Please add more credits in Settings → Workspace → Usage to continue using AI features.";
+    }
+    
+    // Generic error
+    toast({
+      variant: "destructive",
+      title: "AI Error",
+      description: "Something went wrong. Please try again.",
+    });
+    return "I encountered an error. Please try again or rephrase your request.";
   };
 
   const [messages, setMessages] = useState<Message[]>([
@@ -123,10 +166,11 @@ const AIAssistantPanel = ({
       }
     } catch (error: any) {
       console.error("AI Assistant error:", error);
+      const errorMessage = handleAIError(error);
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I encountered an error. Please try again or rephrase your request.",
+        content: errorMessage,
         timestamp: new Date()
       }]);
     } finally {
@@ -190,10 +234,11 @@ const AIAssistantPanel = ({
       }
     } catch (error: any) {
       console.error("Quick action error:", error);
+      const errorMessage = handleAIError(error);
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I couldn't complete that action. Please try again.",
+        content: errorMessage,
         timestamp: new Date()
       }]);
     } finally {
