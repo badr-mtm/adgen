@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Download, Plus, SkipBack, SkipForward, Repeat, ZoomIn, ZoomOut, PanelBottom, QrCode, Music, Mic, ArrowRight } from "lucide-react";
+import { Play, Pause, Download, Plus, SkipBack, SkipForward, Repeat, ZoomIn, ZoomOut, PanelBottom, QrCode, Music, Mic } from "lucide-react";
 import { motion } from "framer-motion";
 import type { VideoOverlaySettings } from "@/types/videoEditor";
 interface TimelineScene {
@@ -282,10 +282,10 @@ const VideoTimeline = ({
             <Button
               size="sm"
               onClick={onAddToStrategy}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider px-4 h-8 rounded-lg shadow-[0_0_20px_hsl(var(--primary)/0.1)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)] transition-all duration-300 text-[10px] gap-2"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase tracking-wider px-4 h-8 rounded-lg shadow-[0_0_20px_hsl(var(--primary)/0.1)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)] transition-all duration-300 text-[10px]"
             >
-              Finalize Strategy
-              <ArrowRight className="h-3 w-3" />
+              <Plus className="h-3 w-3 mr-1.5" />
+              Go to Strategy
             </Button>
           </motion.div>
         </div>
