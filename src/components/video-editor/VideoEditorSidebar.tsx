@@ -37,7 +37,10 @@ import {
   Layout,
   Activity,
   UserCheck,
-  Heart
+  Heart,
+  ChevronUp,
+  ChevronDown,
+  Trash2
 } from "lucide-react";
 import { PerformanceInsights } from "./PerformanceInsights";
 import type { VideoOverlaySettings, BannerSettings, EndScreenSettings, QRCodeSettings, MusicSettings, VoiceSettings } from "@/types/videoEditor";
@@ -54,13 +57,16 @@ interface VideoEditorSidebarProps {
   scenes: SceneSlide[];
   activeTab: string;
   onTabChange: (tab: string) => void;
-  onSceneSelect: (sceneId: number) => void;
-  onSceneChange: (sceneId: number) => void;
+  onSceneSelect: (index: number) => void;
+  onSceneChange: (index: number) => void;
   overlaySettings: VideoOverlaySettings;
   onOverlaySettingsChange: (settings: VideoOverlaySettings) => void;
   isPreviewingEndScreen?: boolean;
   onToggleEndScreenPreview?: () => void;
   onAIAction?: (action: string, context?: any) => void;
+  onReorderScene?: (fromIndex: number, toIndex: number) => void;
+  onDeleteScene?: (index: number) => void;
+  onAddScene?: () => void;
 }
 
 const sidebarTabs = [
@@ -94,6 +100,9 @@ const VideoEditorSidebar = ({
   isPreviewingEndScreen = false,
   onToggleEndScreenPreview,
   onAIAction,
+  onReorderScene,
+  onDeleteScene,
+  onAddScene,
 }: VideoEditorSidebarProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -183,14 +192,14 @@ const VideoEditorSidebar = ({
           {/* Slideshow Tab */}
           {activeTab === "slideshow" && (
             <div className="p-3 space-y-2">
-              {scenes.map((scene) => (
+              {scenes.map((scene, index) => (
                 <div
-                  key={scene.id}
+                  key={`${scene.id}-${index}`}
                   className={`group relative flex flex-col gap-1 p-2 rounded-lg transition-all border ${scene.isActive
                     ? "bg-white/10 border-blue-500/30 shadow-lg"
                     : "bg-white/5 border-transparent hover:bg-white/10 hover:border-white/10"
                     }`}
-                  onClick={() => onSceneSelect(scene.id)}
+                  onClick={() => onSceneSelect(index)}
                 >
                   <div className="flex gap-3">
                     <div className="relative w-24 h-14 rounded-md overflow-hidden bg-black/40 flex-shrink-0 shadow-inner border border-white/5">
@@ -211,7 +220,7 @@ const VideoEditorSidebar = ({
                         className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSceneChange(scene.id);
+                          onSceneChange(index);
                         }}
                       >
                         <div className="bg-white/10 p-1.5 rounded-full border border-white/20 hover:scale-110 transition-transform">
@@ -228,9 +237,39 @@ const VideoEditorSidebar = ({
                     <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
                       <div className="flex items-center justify-between mb-0.5">
                         <p className={`text-xs font-semibold truncate ${scene.isActive ? 'text-blue-200' : 'text-white'}`}>{scene.label}</p>
-                        <Button variant="ghost" size="icon" className="h-5 w-5 text-white/30 hover:text-white">
-                          <MoreVertical className="h-3 w-3" />
-                        </Button>
+
+                        {/* Reorder & Delete Controls */}
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-white/30 hover:text-white"
+                            onClick={(e) => { e.stopPropagation(); onReorderScene?.(index, index - 1); }}
+                            title="Move Up"
+                            disabled={index === 0}
+                          >
+                            <ChevronUp className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-white/30 hover:text-white"
+                            onClick={(e) => { e.stopPropagation(); onReorderScene?.(index, index + 1); }}
+                            title="Move Down"
+                            disabled={index === scenes.length - 1}
+                          >
+                            <ChevronDown className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-red-500/50 hover:text-red-500 hover:bg-red-500/10"
+                            onClick={(e) => { e.stopPropagation(); onDeleteScene?.(index); }}
+                            title="Delete Scene"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
 
                       {scene.isActive && (
@@ -248,9 +287,7 @@ const VideoEditorSidebar = ({
                 variant="outline"
                 size="sm"
                 className="w-full mt-4 h-10 rounded-xl bg-white/5 border-dashed border-white/20 hover:bg-white/10 hover:border-white/40 hover:text-white text-white/60"
-                onClick={() => {
-                  // Logic to add a new scene
-                }}
+                onClick={onAddScene}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Scene
@@ -291,14 +328,18 @@ const VideoEditorSidebar = ({
               </div>
             </div>
           )}
+        </ScrollArea>
 
-          {/* Growth Tab - Performance Insights */}
-          {activeTab === "growth" && (
+        {/* Growth Tab - Performance Insights */}
+        {
+          activeTab === "growth" && (
             <PerformanceInsights />
-          )}
+          )
+        }
 
-          {/* Bottom Banner Tab */}
-          {activeTab === "bottom-banner" && (
+        {/* Bottom Banner Tab */}
+        {
+          activeTab === "bottom-banner" && (
             <div className="p-4 space-y-5">
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
                 <Label htmlFor="banner-enabled" className="text-sm font-medium text-white">
@@ -391,10 +432,12 @@ const VideoEditorSidebar = ({
                 </div>
               )}
             </div>
-          )}
+          )
+        }
 
-          {/* End Screen Tab */}
-          {activeTab === "end-screen" && (
+        {/* End Screen Tab */}
+        {
+          activeTab === "end-screen" && (
             <div className="p-4 space-y-5">
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
                 <Label htmlFor="endscreen-enabled" className="text-sm font-medium text-white">
@@ -496,10 +539,12 @@ const VideoEditorSidebar = ({
                 </div>
               )}
             </div>
-          )}
+          )
+        }
 
-          {/* QR Code Tab */}
-          {activeTab === "qr-code" && (
+        {/* QR Code Tab */}
+        {
+          activeTab === "qr-code" && (
             <div className="p-4 space-y-5">
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
                 <Label htmlFor="qr-enabled" className="text-sm font-medium text-white">
@@ -567,10 +612,12 @@ const VideoEditorSidebar = ({
                 </div>
               )}
             </div>
-          )}
+          )
+        }
 
-          {/* Music Tab */}
-          {activeTab === "music" && (
+        {/* Music Tab */}
+        {
+          activeTab === "music" && (
             <div className="p-4 space-y-4">
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1 bg-white/5 border-white/10 hover:bg-white/10 text-white">
@@ -662,10 +709,12 @@ const VideoEditorSidebar = ({
                 </div>
               )}
             </div>
-          )}
+          )
+        }
 
-          {/* Voice & Script Tab */}
-          {activeTab === "voice-script" && (
+        {/* Voice & Script Tab */}
+        {
+          activeTab === "voice-script" && (
             <div className="p-4 space-y-5">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -741,11 +790,12 @@ const VideoEditorSidebar = ({
                 </Button>
               </div>
             </div>
-          )}
-        </ScrollArea>
-      </div>
+          )
+        }
+      </ScrollArea>
     </div>
-  );
+  </div >
+);
 };
 
 export default VideoEditorSidebar;

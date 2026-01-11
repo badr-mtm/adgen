@@ -13,6 +13,7 @@ import VideoTimeline from "@/components/video-editor/VideoTimeline";
 import AIAssistantPanel from "@/components/video-editor/AIAssistantPanel";
 import SceneEditor from "@/components/video-editor/SceneEditor";
 import VideoEditorHeader from "@/components/video-editor/VideoEditorHeader";
+import { searchPexelsVideos } from "@/utils/pexels";
 
 export default function VideoEditor() {
   const { id } = useParams();
@@ -207,6 +208,86 @@ export default function VideoEditor() {
   }, [currentTime, scenes, overlaySettings.endScreen.enabled]);
 
   // Handlers
+  const handleReorderScenes = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= scenes.length) return;
+
+    saveToHistory(scenes, overlaySettings);
+    const newScenes = [...scenes];
+    const [movedScene] = newScenes.splice(fromIndex, 1);
+    newScenes.splice(toIndex, 0, movedScene);
+
+    // Update scene numbers to match new order
+    const reorderedScenes = newScenes.map((s, idx) => ({
+      ...s,
+      sceneNumber: idx + 1
+    }));
+
+    setScenes(reorderedScenes);
+    setCurrentSceneIndex(toIndex);
+
+    // Save to Supabase
+    const timer = setTimeout(async () => {
+      try {
+        const updatedStoryboard = {
+          ...project.storyboard,
+          scenes: reorderedScenes
+        };
+
+        await supabase
+          .from('campaigns')
+          .update({
+            storyboard: updatedStoryboard,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id);
+
+        toast({ title: "Timeline updated", description: "Scene order saved successfully." });
+      } catch (err) {
+        console.error("Reorder save failed:", err);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  };
+
+  const handleAddScene = () => {
+    saveToHistory(scenes, overlaySettings);
+    const newScene = {
+      id: Math.random().toString(36).substr(2, 9),
+      sceneNumber: scenes.length + 1,
+      name: `Scene ${scenes.length + 1}`,
+      duration: "4s",
+      visualDescription: "New scene description...",
+      suggestedVisuals: "Enter visual suggestions...",
+      voiceover: "Enter voiceover script...",
+      type: "generated"
+    };
+
+    const updatedScenes = [...scenes, newScene];
+    setScenes(updatedScenes);
+    setCurrentSceneIndex(updatedScenes.length - 1);
+    toast({ title: "Scene added", description: "A new blank scene has been appended to the timeline." });
+  };
+
+  const handleDeleteScene = (index: number) => {
+    if (scenes.length <= 1) {
+      toast({ title: "Cannot delete", description: "You must have at least one scene.", variant: "destructive" });
+      return;
+    }
+
+    saveToHistory(scenes, overlaySettings);
+    const updatedScenes = scenes.filter((_, i) => i !== index).map((s, idx) => ({
+      ...s,
+      sceneNumber: idx + 1
+    }));
+
+    setScenes(updatedScenes);
+    if (currentSceneIndex >= updatedScenes.length) {
+      setCurrentSceneIndex(updatedScenes.length - 1);
+    }
+    toast({ title: "Scene removed", description: "The timeline has been updated." });
+  };
+
   const handleSaveScene = async (updatedScene: any) => {
     saveToHistory(scenes, overlaySettings); // Save history BEFORE updating
     const updatedScenes = [...scenes];
@@ -266,6 +347,31 @@ export default function VideoEditor() {
   const handleGenerateVideo = async (model: string, customPrompt?: string) => {
     setIsRegenerating(true);
     try {
+      if (model === "pexels") {
+        toast({ title: "Connecting to Global Archive...", description: "Fetching high-quality cinematic clips." });
+
+        // Short delay for cinematic feel
+        await new Promise(r => setTimeout(r, 1200));
+
+        const query = customPrompt || scenes[currentSceneIndex].visualDescription || "cinematic advertisement";
+        const videoUrl = await searchPexelsVideos(query);
+
+        if (videoUrl) {
+          saveToHistory(scenes, overlaySettings);
+          const updatedScenes = [...scenes];
+          updatedScenes[currentSceneIndex] = {
+            ...updatedScenes[currentSceneIndex],
+            videoUrl,
+            type: "video" // Change type to video
+          };
+          setScenes(updatedScenes);
+          toast({ title: "Cinematic Clip Applied", description: "Standardized broadcast footage loaded." });
+        } else {
+          throw new Error("Could not find a matching cinematic clip.");
+        }
+        return;
+      }
+
       toast({ title: "Generating video clip...", description: "This may take a minute or two. Please wait." });
       const { data, error } = await supabase.functions.invoke('generate-video-scene', {
         body: {
@@ -286,7 +392,7 @@ export default function VideoEditor() {
         toast({ title: "Video generated", description: "The cinematic clip has been added to this scene." });
       }
     } catch (err: any) {
-      toast({ title: "Video generation failed", description: err.message, variant: "destructive" });
+      toast({ title: "Production failed", description: err.message, variant: "destructive" });
     } finally {
       setIsRegenerating(false);
     }
@@ -445,6 +551,9 @@ export default function VideoEditor() {
               setShowEndScreen(!showEndScreen);
             }}
             onAIAction={handleAIAction}
+            onReorderScene={handleReorderScenes}
+            onAddScene={handleAddScene}
+            onDeleteScene={handleDeleteScene}
           />
 
           {/* Main Editor Area */}

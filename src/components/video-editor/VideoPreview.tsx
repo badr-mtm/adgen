@@ -106,17 +106,35 @@ const VideoPreview = ({
     }
   }, [currentScene?.visualUrl, currentScene?.videoUrl, displayedImage, displayedVideo]);
 
-  // Handle Video Playback
+  // Handle Video Playback & Sync
   useEffect(() => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.play().catch(console.error);
-        videoRef.current.currentTime = sceneProgress * (parseInt(currentScene?.duration) || 0);
-      } else {
-        videoRef.current.pause();
+    if (!videoRef.current) return;
+
+    if (isPlaying) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Playback interrupted or protected:", error);
+        });
       }
+
+      // Force sync if drifted too much
+      const sceneOffset = currentTime - (scenes.slice(0, currentSceneIndex).reduce((acc, s) => acc + (parseInt(s.duration) || 0), 0));
+      if (Math.abs(videoRef.current.currentTime - sceneOffset) > 0.3) {
+        videoRef.current.currentTime = sceneOffset;
+      }
+    } else {
+      videoRef.current.pause();
     }
-  }, [isPlaying, displayedVideo]);
+  }, [isPlaying, displayedVideo, currentSceneIndex]);
+
+  // Handle Global Time Seek
+  useEffect(() => {
+    if (videoRef.current && !isPlaying) {
+      const sceneOffset = currentTime - (scenes.slice(0, currentSceneIndex).reduce((acc, s) => acc + (parseInt(s.duration) || 0), 0));
+      videoRef.current.currentTime = sceneOffset;
+    }
+  }, [currentTime]);
 
   // Handle Music Sync
   useEffect(() => {
@@ -163,8 +181,20 @@ const VideoPreview = ({
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-black" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.8)_80%)]" />
-            {/* Ambient TV Light Bloom */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-primary/20 blur-[150px] transition-all duration-1000 animate-pulse" />
+
+            {/* Ambient TV Light Bloom - Pulsing based on active playback */}
+            <motion.div
+              animate={{
+                scale: isPlaying ? [1, 1.05, 1] : 1,
+                opacity: isPlaying ? [0.3, 0.4, 0.3] : 0.3,
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-primary/20 blur-[150px]"
+            />
           </div>
         )}
 
@@ -175,6 +205,7 @@ const VideoPreview = ({
           animate={{
             scale: viewMode === "cinema" ? 1.1 : 1,
             rotateX: viewMode === "cinema" ? 2 : 0,
+            y: viewMode === "cinema" ? -20 : 0
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={cn(
@@ -190,33 +221,42 @@ const VideoPreview = ({
             aspectRatio: "16/9"
           }}
         >
-          {/* Background Media with Transition */}
-          <div
-            className={`absolute inset-0 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
-          >
-            {displayedVideo ? (
-              <video
-                ref={videoRef}
-                src={displayedVideo}
-                className="absolute inset-0 w-full h-full object-cover"
-                muted={isMuted}
-                loop
-                playsInline
-              />
-            ) : displayedImage ? (
-              <img
-                src={displayedImage}
-                alt={`Scene ${currentSceneIndex + 1}`}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-900 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-3">
-                  <Film className="h-10 w-10 text-neutral-800" />
-                  <p className="text-neutral-700 text-sm font-bold uppercase tracking-widest">Awaiting Visual</p>
-                </div>
-              </div>
-            )}
+          {/* Background Media with AnimatePresence for Transitions */}
+          <div className="absolute inset-0 bg-black">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={displayedVideo || displayedImage || currentSceneIndex}
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                className="absolute inset-0 w-full h-full"
+              >
+                {displayedVideo ? (
+                  <video
+                    ref={videoRef}
+                    src={displayedVideo}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    muted={isMuted}
+                    loop
+                    playsInline
+                  />
+                ) : displayedImage ? (
+                  <img
+                    src={displayedImage}
+                    alt={`Scene ${currentSceneIndex + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-900 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <Film className="h-10 w-10 text-neutral-800" />
+                      <p className="text-neutral-700 text-sm font-bold uppercase tracking-widest">Awaiting Visual</p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Hidden Audio Elements */}
@@ -231,12 +271,12 @@ const VideoPreview = ({
 
           {/* TOP HUD */}
           <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30">
-            <div className="px-4 py-1.5 bg-black/60 backdrop-blur-xl rounded-full border border-white/10 flex items-center gap-3">
+            <div className="px-4 py-1.5 bg-black/60 backdrop-blur-xl rounded-full border border-white/10 flex items-center gap-3 transition-transform hover:scale-105">
               <span className="text-[10px] font-black text-white uppercase tracking-widest whitespace-nowrap">Scene {currentSceneIndex + 1} / {scenes.length}</span>
               <div className="h-3 w-px bg-white/20" />
               <div className="flex items-center gap-1.5">
-                <Film className="h-3 w-3 text-primary" />
-                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Video</span>
+                <div className={cn("w-1.5 h-1.5 rounded-full", isPlaying ? "bg-red-500 animate-pulse" : "bg-white/40")} />
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest">LIVE PREVIEW</span>
               </div>
             </div>
           </div>

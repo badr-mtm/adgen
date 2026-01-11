@@ -162,8 +162,8 @@ const SceneEditor = ({
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`flex-1 flex items-center justify-center gap-2 py-4 text-xs font-bold tracking-wider transition-colors border-b-2 ${activeTab === tab.id
-                        ? "border-blue-500 text-blue-400 bg-blue-500/5"
-                        : "border-transparent text-white/40 hover:text-white hover:bg-white/5"
+                      ? "border-blue-500 text-blue-400 bg-blue-500/5"
+                      : "border-transparent text-white/40 hover:text-white hover:bg-white/5"
                       }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -208,6 +208,19 @@ const SceneEditor = ({
                           {selectedModel === "kling" && <div className="w-2 h-2 bg-purple-500 rounded-full box-shadow-[0_0_8px_rgba(168,85,247,1)]" />}
                         </div>
                         <p className="text-[10px] text-white/50">Photorealistic texture focus.</p>
+                      </div>
+                      <div
+                        onClick={() => setSelectedModel("pexels")}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all col-span-2 ${selectedModel === "pexels" ? "bg-emerald-500/20 border-emerald-500/50 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)]" : "bg-white/5 border-white/10 hover:border-white/20"}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-white">Free Production (Pexels)</span>
+                            <Badge variant="outline" className="text-[8px] h-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">RECOMMENDED FOR TEST</Badge>
+                          </div>
+                          {selectedModel === "pexels" && <div className="w-2 h-2 bg-emerald-500 rounded-full box-shadow-[0_0_8px_rgba(16,185,129,1)]" />}
+                        </div>
+                        <p className="text-[10px] text-white/50">Instant cinematic clips from stock library. No API key required for testing.</p>
                       </div>
                     </div>
                   </div>
