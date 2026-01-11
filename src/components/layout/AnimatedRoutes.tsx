@@ -9,6 +9,7 @@ import CampaignSchedules from "@/pages/CampaignSchedules";
 import Assets from "@/pages/Assets";
 import Reports from "@/pages/Reports";
 import Integrations from "@/pages/Integrations";
+import Creatives from "@/pages/Creatives";
 import Billing from "@/pages/Billing";
 import AISuggestions from "@/pages/AISuggestions";
 import Settings from "@/pages/Settings";
@@ -74,6 +75,14 @@ export function AnimatedRoutes() {
           element={
             <PageTransitionWrapper>
               <Assets />
+            </PageTransitionWrapper>
+          }
+        />
+        <Route
+          path="/creatives"
+          element={
+            <PageTransitionWrapper>
+              <Creatives />
             </PageTransitionWrapper>
           }
         />

@@ -12,6 +12,7 @@ import {
   LogOut,
   CalendarDays,
   Tv,
+  Sparkles
 } from "lucide-react";
 import adgenLogo from "@/assets/adgen-logo.jpeg";
 import {
@@ -36,6 +37,7 @@ const mainNavItems = [
   { title: "Campaigns", url: "/ad-operations", icon: FolderOpen },
   { title: "Broadcast Schedule", url: "/campaign-schedules", icon: CalendarDays },
   { title: "Assets", url: "/assets", icon: Image },
+  { title: "Creatives", url: "/creatives", icon: Sparkles },
   { title: "Performance", url: "/reports", icon: BarChart3 },
 ];
 
@@ -61,8 +63,8 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-r border-sidebar-border">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
-        <div 
-          className="flex items-center gap-2 cursor-pointer" 
+        <div
+          className="flex items-center gap-2 cursor-pointer"
           onClick={() => navigate("/dashboard")}
         >
           <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
