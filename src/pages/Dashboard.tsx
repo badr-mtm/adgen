@@ -71,7 +71,7 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" size="lg" className="h-12 border-white/10 hover:bg-white/5" onClick={() => navigate("/strategy")}>
+              <Button variant="outline" size="lg" className="h-12 border-white/10 hover:bg-white/5" onClick={() => navigate("/campaigns")}>
                 <Activity className="h-4 w-4 mr-2" />
                 Strategy Studio
               </Button>

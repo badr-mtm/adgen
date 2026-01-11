@@ -35,7 +35,8 @@ import {
   Film,
   Globe,
   MonitorPlay,
-  Share2
+  Share2,
+  Zap
 } from "lucide-react";
 import {
   AreaChart,
@@ -77,8 +78,9 @@ const CampaignDetails = () => {
       }
 
       setCampaign(data);
-      if (data.storyboard?.strategy) {
-        setStrategy(data.storyboard.strategy);
+      const storyboard = data.storyboard as any;
+      if (storyboard?.strategy) {
+        setStrategy(storyboard.strategy);
       }
       setLoading(false);
     };
@@ -235,11 +237,22 @@ const CampaignDetails = () => {
             {/* STRATEGY TAB */}
             <TabsContent value="strategy" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               {strategy ? (
-                <StrategyPanel strategy={strategy} onEdit={() => setStrategyModalOpen(true)} />
+                <div className="space-y-6">
+                  <div className="flex justify-end">
+                    <Button variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5" onClick={() => navigate(`/strategy/${id}`)}>
+                      <Zap className="h-4 w-4 text-primary" />
+                      Full Strategy Command Center
+                    </Button>
+                  </div>
+                  <StrategyPanel strategy={strategy} onEdit={() => setStrategyModalOpen(true)} />
+                </div>
               ) : (
                 <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
                   <p className="text-muted-foreground mb-4">No strategy configured for this campaign.</p>
-                  <Button onClick={() => setStrategyModalOpen(true)}>Initialize Strategy Engine</Button>
+                  <Button onClick={() => navigate(`/strategy/${id}`)}>
+                    <Target className="h-4 w-4 mr-2" />
+                    Initialize Strategy Engine
+                  </Button>
                 </div>
               )}
             </TabsContent>

@@ -172,7 +172,7 @@ export default function Strategy() {
                         <Button
                             onClick={async () => {
                                 await handleSave(false);
-                                navigate('/script-selection', { state: { id, strategy } });
+                                navigate(`/script-selection/${id}`, { state: { id, strategy } });
                             }}
                             disabled={saving}
                             className="bg-white text-black hover:bg-gray-200 font-semibold"

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -63,10 +63,11 @@ const AI_PERSONAS = [
 ];
 
 export default function ScriptSelection() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const campaignData = location.state || {}; // Mock data if empty for dev
+  const [campaignData, setCampaignData] = useState<any>(location.state || {});
 
   const [loading, setLoading] = useState(true);
   const [scripts, setScripts] = useState<Script[]>([]);
@@ -79,8 +80,29 @@ export default function ScriptSelection() {
   const [view, setView] = useState<"script-lab" | "storyboard-studio">("script-lab");
 
   useEffect(() => {
-    generateScripts();
-  }, []);
+    if (id && !location.state) {
+      fetchCampaign();
+    } else {
+      generateScripts();
+    }
+  }, [id]);
+
+  const fetchCampaign = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      setCampaignData(data);
+      generateScripts();
+    } catch (err) {
+      console.error("Error fetching campaign:", err);
+      generateScripts(); // Fallback to mock
+    }
+  };
 
   const generateScripts = async () => {
     setLoading(true);
@@ -158,7 +180,7 @@ export default function ScriptSelection() {
   };
 
   const handleContinue = async () => {
-    const campaignId = campaignData.id;
+    const campaignId = id || campaignData.id;
 
     // Show cinematic transition feedback
     toast({
@@ -245,7 +267,7 @@ export default function ScriptSelection() {
                 Creative Intelligence Hub
               </h1>
               <p className="text-xs text-white/40 font-mono uppercase tracking-widest">
-                SESSION ID: {campaignData.id?.slice(0, 8) || "GEN-ALPHA-01"}
+                SESSION ID: {id?.slice(0, 8) || campaignData.id?.slice(0, 8) || "GEN-ALPHA-01"}
               </p>
             </div>
           </div>

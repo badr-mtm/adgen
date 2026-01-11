@@ -158,7 +158,7 @@ export function AnimatedRoutes() {
           }
         />
         <Route
-          path="/script-selection"
+          path="/script-selection/:id"
           element={
             <PageTransitionWrapper>
               <ScriptSelection />

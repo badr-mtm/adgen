@@ -91,17 +91,53 @@ const Create = () => {
     }, 800);
   };
 
-  const handleAudienceContinue = (audience: AudienceData) => {
+  const handleAudienceContinue = async (audience: AudienceData) => {
     setModalStep("closed");
-    navigate("/script-selection", {
-      state: {
-        concept,
-        duration: selectedDuration,
-        goal: selectedGoal,
-        audience,
-        referenceFiles: uploadedFiles.map(f => f.file.name)
-      }
-    });
+    setLoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("No session found");
+
+      // Create the campaign record first to get a permanent ID
+      const { data, error } = await supabase
+        .from('campaigns')
+        .insert({
+          title: `Project ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+          description: concept,
+          ad_type: 'TV',
+          goal: selectedGoal,
+          status: 'concept',
+          user_id: session.user.id,
+          target_audience: audience,
+          storyboard: {
+            duration: selectedDuration,
+            concept: concept,
+            assets: uploadedFiles.map(f => f.file.name)
+          }
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Campaign Initialized",
+        description: "Moving to Strategy Command Center...",
+      });
+
+      // Flow: Create -> Strategy
+      navigate(`/strategy/${data.id}`);
+
+    } catch (err: any) {
+      console.error("Failed to create campaign:", err);
+      toast({
+        title: "Initialization Failed",
+        description: err.message,
+        variant: "destructive"
+      });
+      setLoading(false);
+    }
   };
 
   if (loading) return <DashboardLayout><CreatePageSkeleton /></DashboardLayout>;
@@ -211,8 +247,8 @@ const Create = () => {
                       key={dur}
                       onClick={() => setSelectedDuration(dur)}
                       className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${selectedDuration === dur
-                          ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
-                          : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10"
+                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
+                        : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10"
                         }`}
                     >
                       {dur}
