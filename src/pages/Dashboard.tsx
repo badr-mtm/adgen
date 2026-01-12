@@ -5,8 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 import {
   Plus,
   Tv,
@@ -22,19 +23,9 @@ import {
   Signal
 } from "lucide-react";
 
-// --- Mock Data ---
-const ACTIVE_REGIONS = [
-  { id: 1, name: "North America", active: true, campaigns: 12 },
-  { id: 2, name: "Europe", active: true, campaigns: 8 },
-  { id: 3, name: "Asia Pacific", active: false, campaigns: 0 },
-  { id: 4, name: "LATAM", active: true, campaigns: 3 },
-];
-
-const RECENT_CAMPAIGNS = [
-  { id: 1, title: "Summer Launch", network: "Hulu", status: "live", viewers: "2.4M", thumbnail: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=800&q=80" },
-  { id: 2, title: "Brand Awareness", network: "Roku", status: "scheduled", viewers: "-", thumbnail: "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800&q=80" },
-  { id: 3, title: "Q3 Retargeting", network: "Samsung TV", status: "paused", viewers: "850K", thumbnail: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800&q=80" },
-];
+// Network mapping for display
+const NETWORKS = ["Hulu", "Roku", "Samsung TV", "Apple TV+", "Amazon Fire"];
+const getNetworkForCampaign = (index: number) => NETWORKS[index % NETWORKS.length];
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -48,6 +39,22 @@ const Dashboard = () => {
       if (!session) navigate("/auth");
     });
   }, [navigate]);
+
+  // Fetch real campaigns from database
+  const { data: campaigns = [] } = useQuery({
+    queryKey: ['dashboard-campaigns'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!session,
+  });
 
   if (loading) return null;
 
@@ -176,57 +183,69 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Active Campaigns List */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                On-Air Status
-              </h2>
-              <Button variant="link" className="text-muted-foreground" onClick={() => navigate("/campaigns")}>View All</Button>
-            </div>
-            <div className="space-y-3">
-              {RECENT_CAMPAIGNS.map((campaign, i) => (
-                <motion.div
-                  key={campaign.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + (i * 0.1) }}
-                  className="group bg-card/50 hover:bg-card border border-border/50 hover:border-primary/30 rounded-xl p-3 flex items-center gap-4 transition-all"
-                >
-                  <div className="relative h-16 w-28 rounded-lg overflow-hidden bg-muted">
-                    <img src={campaign.thumbnail} alt={campaign.title} className="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-1 right-1">
-                      <img src="/placeholder.svg" className="h-4 w-4 opacity-50" /> {/* Network Logo Placeholder */}
-                    </div>
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">{campaign.title}</h3>
-                      <Badge variant="outline" className={`
-                                ${campaign.status === 'live' ? 'text-green-400 border-green-400/30' : ''}
-                                ${campaign.status === 'scheduled' ? 'text-yellow-400 border-yellow-400/30' : ''}
-                                ${campaign.status === 'paused' ? 'text-muted-foreground border-border' : ''}
-                                uppercase text-[10px] h-5
-                             `}>
-                        {campaign.status === 'live' && <span className="mr-1.5 relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span></span>}
-                        {campaign.status}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {campaign.network}</span>
-                      <span className="flex items-center gap-1"><Tv className="h-3 w-3" /> {campaign.viewers} Viewers</span>
-                    </div>
-                  </div>
-
-                  <div className="px-4">
-                    <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowUpRight className="h-5 w-5" />
+          <div className="lg:col-span-2">
+            <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-4 backdrop-blur-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  On-Air Status
+                </h2>
+                <Button variant="link" className="text-muted-foreground" onClick={() => navigate("/campaigns")}>View All</Button>
+              </div>
+              <div className="space-y-3">
+                {campaigns.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Tv className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">No campaigns yet</p>
+                    <Button variant="link" className="mt-2" onClick={() => navigate("/create")}>
+                      Create your first campaign
                     </Button>
                   </div>
-                </motion.div>
-              ))}
+                ) : (
+                  campaigns.map((campaign, i) => (
+                    <motion.div
+                      key={campaign.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + (i * 0.1) }}
+                      className="group bg-background/50 hover:bg-background border border-border/50 hover:border-primary/30 rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer"
+                      onClick={() => navigate(`/campaigns/${campaign.id}`)}
+                    >
+                      <div className="relative h-16 w-28 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                        <Tv className="h-6 w-6 text-muted-foreground" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">{campaign.title}</h3>
+                          <Badge variant="outline" className={`
+                            ${campaign.status === 'live' ? 'text-green-400 border-green-400/30' : ''}
+                            ${campaign.status === 'scheduled' ? 'text-yellow-400 border-yellow-400/30' : ''}
+                            ${campaign.status === 'concept' ? 'text-blue-400 border-blue-400/30' : ''}
+                            ${campaign.status === 'paused' || campaign.status === 'draft' ? 'text-muted-foreground border-border' : ''}
+                            uppercase text-[10px] h-5
+                          `}>
+                            {campaign.status === 'live' && <span className="mr-1.5 relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span></span>}
+                            {campaign.status || 'draft'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {getNetworkForCampaign(i)}</span>
+                          <span className="flex items-center gap-1 capitalize"><Activity className="h-3 w-3" /> {campaign.ad_type}</span>
+                          <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> {campaign.goal}</span>
+                        </div>
+                      </div>
+
+                      <div className="px-4">
+                        <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ArrowUpRight className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
