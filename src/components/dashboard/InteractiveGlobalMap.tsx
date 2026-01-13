@@ -52,7 +52,7 @@ export function InteractiveGlobalMap({
   return (
     <div className="relative w-full h-[300px] lg:h-[400px] rounded-3xl overflow-hidden border border-border/50 bg-gradient-to-b from-card/60 to-card backdrop-blur-xl group">
       {/* Abstract Map Background */}
-      <div className="absolute inset-0 opacity-20 dark:opacity-30 bg-[url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg')] bg-cover bg-center bg-no-repeat grayscale contrast-150 dark:invert-[.9]" />
+      <div className="absolute inset-0 opacity-30 dark:opacity-20 bg-[url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg')] bg-cover bg-center bg-no-repeat grayscale contrast-125 dark:invert-[.85]" />
 
       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 

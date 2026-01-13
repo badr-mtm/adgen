@@ -194,7 +194,7 @@ const Create = () => {
               Campaign Strategy Engine
             </motion.div>
 
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/50">
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50">
               What's your vision?
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
@@ -209,9 +209,9 @@ const Create = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            className="group relative bg-card/30 backdrop-blur-xl border border-white/10 rounded-3xl p-2 shadow-2xl shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all duration-500"
+            className="group relative bg-card/30 backdrop-blur-xl border border-border/50 rounded-3xl p-2 shadow-2xl shadow-primary/5 hover:shadow-primary/10 transition-all duration-500"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
             <div className="relative bg-background/40 rounded-2xl p-4 transition-colors group-hover:bg-background/50">
               <Textarea
@@ -249,7 +249,7 @@ const Create = () => {
 
                 <button
                   onClick={() => document.getElementById('file-upload')?.click()}
-                  className="w-16 h-16 rounded-lg border border-dashed border-white/20 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all"
+                  className="w-16 h-16 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all"
                 >
                   <Upload className="h-4 w-4" />
                   <span className="text-[9px] uppercase font-bold">Add Asset</span>
@@ -265,15 +265,15 @@ const Create = () => {
               </div>
 
               {/* Bottom Controls Bar */}
-              <div className="flex items-center justify-between pt-4 border-t border-white/5 px-2">
+              <div className="flex items-center justify-between pt-4 border-t border-border/50 px-2">
                 <div className="flex items-center gap-3">
                   {["15s", "30s", "60s"].map((dur) => (
                     <button
                       key={dur}
                       onClick={() => setSelectedDuration(dur)}
                       className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${selectedDuration === dur
-                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
-                        : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10"
+                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25"
+                        : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
                         }`}
                     >
                       {dur}
@@ -284,7 +284,7 @@ const Create = () => {
                 <Button
                   size="lg"
                   onClick={handleStartCreate}
-                  className="h-12 px-8 rounded-xl bg-white text-black hover:bg-white/90 font-bold transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:scale-105"
+                  className="h-12 px-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold transition-all shadow-[0_0_20px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.4)] hover:scale-105"
                 >
                   Launch Campaign <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -303,19 +303,19 @@ const Create = () => {
               <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm uppercase tracking-wide font-medium">
                 <Tv className="h-4 w-4" /> Reach
               </div>
-              <div className="text-2xl font-bold text-white">120M+ <span className="text-sm font-normal text-muted-foreground">Households</span></div>
+              <div className="text-2xl font-bold text-foreground">120M+ <span className="text-sm font-normal text-muted-foreground">Households</span></div>
             </div>
-            <div className="text-center space-y-1 border-l border-white/10">
+            <div className="text-center space-y-1 border-l border-border">
               <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm uppercase tracking-wide font-medium">
                 <Globe className="h-4 w-4" /> Networks
               </div>
-              <div className="text-2xl font-bold text-white">85+ <span className="text-sm font-normal text-muted-foreground">Premium Channels</span></div>
+              <div className="text-2xl font-bold text-foreground">85+ <span className="text-sm font-normal text-muted-foreground">Premium Channels</span></div>
             </div>
-            <div className="text-center space-y-1 border-l border-white/10">
+            <div className="text-center space-y-1 border-l border-border">
               <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm uppercase tracking-wide font-medium">
                 <Zap className="h-4 w-4" /> Speed
               </div>
-              <div className="text-2xl font-bold text-white">24h <span className="text-sm font-normal text-muted-foreground">To Air</span></div>
+              <div className="text-2xl font-bold text-foreground">24h <span className="text-sm font-normal text-muted-foreground">To Air</span></div>
             </div>
           </motion.div>
 
