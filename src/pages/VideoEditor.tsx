@@ -492,7 +492,7 @@ export default function VideoEditor() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-black text-white relative overflow-hidden">
+      <div className="h-screen flex items-center justify-center bg-background text-foreground relative overflow-hidden">
         {/* Cinematic Loading Background */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black opacity-80" />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
