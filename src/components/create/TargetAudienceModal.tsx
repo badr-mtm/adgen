@@ -29,10 +29,11 @@ import {
 import { cn } from "@/lib/utils";
 
 // Leaflet
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON as LeafletGeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { LOCATION_DATA } from "@/lib/locations";
+import usStatesData from "@/lib/us-states.json";
 
 // Fix for default Leaflet markers
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -162,8 +163,60 @@ export function TargetAudienceModal({
 
               <MapController selectedLoc={activeLocation} />
 
-              {/* Markers for selected locations */}
+              <LeafletGeoJSON
+                data={usStatesData as any}
+                style={(feature) => {
+                  const isSelected = data.locations.includes(feature?.properties?.name);
+                  return {
+                    fillColor: isSelected ? '#8b5cf6' : 'transparent', // Violet-500
+                    weight: isSelected ? 2 : 1,
+                    opacity: 1,
+                    color: isSelected ? '#8b5cf6' : 'rgba(255, 255, 255, 0.2)',
+                    dashArray: isSelected ? '' : '3',
+                    fillOpacity: isSelected ? 0.6 : 0.1
+                  };
+                }}
+                onEachFeature={(feature, layer) => {
+                  layer.on({
+                    mouseover: (e) => {
+                      const layer = e.target;
+                      if (!data.locations.includes(feature.properties.name)) {
+                        layer.setStyle({
+                          weight: 2,
+                          color: '#a78bfa', // Violet-400
+                          fillOpacity: 0.3,
+                          fillColor: '#8b5cf6'
+                        });
+                      }
+                    },
+                    mouseout: (e) => {
+                      const layer = e.target;
+                      if (!data.locations.includes(feature.properties.name)) {
+                        layer.setStyle({
+                          weight: 1,
+                          color: 'rgba(255, 255, 255, 0.2)',
+                          dashArray: '3',
+                          fillOpacity: 0.1,
+                          fillColor: 'transparent'
+                        });
+                      }
+                    },
+                    click: () => {
+                      const stateName = feature.properties.name;
+                      if (data.locations.includes(stateName)) {
+                        removeLocation(stateName);
+                      } else {
+                        addLocation(stateName);
+                      }
+                    }
+                  });
+                }}
+              />
+
+              {/* Markers for selected locations (Keep markers for cities/specifics if needed, or remove if states cover it) */}
               {data.locations.map(loc => {
+                // Only show marker if NOT a state we have geometry for, OR if we want double confirmation
+                // Let's keep markers as a pinpoint center for now
                 const info = LOCATION_DATA[loc];
                 if (!info) return null;
                 return (

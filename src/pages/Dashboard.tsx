@@ -37,9 +37,10 @@ const REGION_MAPPING: Record<string, string[]> = {
 };
 
 // Leaflet
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON as LeafletGeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LOCATION_DATA } from "@/lib/locations";
+import usStatesData from "@/lib/us-states.json";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -98,6 +99,15 @@ const Dashboard = () => {
         campaignTitle: c.title
       })).filter((l: any) => l.lat !== undefined);
     });
+  }, [activeCampaigns]);
+
+  // Derive active regions (names) from campaigns for GeoJSON highlighting
+  const activeRegions = useMemo(() => {
+    const locations = activeCampaigns.flatMap(c => {
+      const audience = c.target_audience as any;
+      return audience?.locations || [];
+    });
+    return new Set(locations); // Set for fast lookup
   }, [activeCampaigns]);
 
   // Calculate real KPI stats from campaigns
@@ -235,6 +245,21 @@ const Dashboard = () => {
                     <CircleMarker center={[35.6762, 139.6503]} radius={8} pathOptions={{ fillColor: '#8b5cf6', fillOpacity: 0.2, color: '#8b5cf6', weight: 1 }} />
                   </>
                 )}
+
+                <LeafletGeoJSON
+                  data={usStatesData as any}
+                  style={(feature) => {
+                    const isActive = activeRegions.has(feature?.properties?.name);
+                    return {
+                      fillColor: isActive ? '#10b981' : 'transparent', // emerald-500 for active
+                      weight: isActive ? 1 : 0.5,
+                      opacity: 1,
+                      color: isActive ? '#34d399' : 'rgba(255, 255, 255, 0.1)',
+                      dashArray: isActive ? '' : '3',
+                      fillOpacity: isActive ? 0.3 : 0
+                    };
+                  }}
+                />
               </MapContainer>
             </div>
 
