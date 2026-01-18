@@ -24,7 +24,9 @@ import {
     List as ListIcon,
     Trash2,
     Share2,
-    Eye
+    Eye,
+    Sparkles,
+    Tv
 } from "lucide-react";
 import {
     Dialog,
