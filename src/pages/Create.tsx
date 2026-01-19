@@ -8,21 +8,17 @@ import { TargetAudienceModal, AudienceData } from "@/components/create/TargetAud
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Play,
   ArrowRight,
   Sparkles,
   Tv,
   Globe,
-  Target,
   Zap,
   Upload,
   X,
   FileVideo,
-  Image as ImageIcon
 } from "lucide-react";
 import { CreatePageSkeleton } from "@/components/skeletons/CreatePageSkeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 
 const Create = () => {
   const navigate = useNavigate();
@@ -30,10 +26,11 @@ const Create = () => {
   const [loading, setLoading] = useState(true);
   const [modalStep, setModalStep] = useState<"closed" | "goal" | "audience">("closed");
 
-  // Flow state
+  // Flow state - collect all inputs before proceeding
   const [concept, setConcept] = useState("");
   const [selectedDuration, setSelectedDuration] = useState("30s");
   const [selectedGoal, setSelectedGoal] = useState("");
+  const [audienceData, setAudienceData] = useState<AudienceData | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{
     file: File;
     preview: string;
@@ -42,7 +39,6 @@ const Create = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    // Quick auth check
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/auth"); return; }
@@ -92,6 +88,7 @@ const Create = () => {
   };
 
   const handleAudienceContinue = async (audience: AudienceData) => {
+    setAudienceData(audience);
     setModalStep("closed");
     setLoading(true);
 
@@ -99,7 +96,7 @@ const Create = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
-      // Get or create a default brand for this user
+      // Get or create a default brand
       let brandId: string;
       const { data: existingBrand } = await supabase
         .from('brands')
@@ -123,11 +120,11 @@ const Create = () => {
         brandId = newBrand.id;
       }
 
-      // Create the campaign record first to get a permanent ID
+      // Create the campaign record with all collected data
       const { data, error } = await supabase
         .from('campaigns')
         .insert([{
-          title: `Project ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+          title: `Campaign ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
           description: concept,
           ad_type: 'TV',
           goal: selectedGoal,
@@ -147,12 +144,22 @@ const Create = () => {
       if (error) throw error;
 
       toast({
-        title: "Campaign Initialized",
-        description: "Moving to Strategy Command Center...",
+        title: "Campaign Created",
+        description: "Generating AI scripts based on your inputs...",
       });
 
-      // Flow: Create -> Strategy
-      navigate(`/strategy/${data.id}`);
+      // Navigate to script selection with all the data needed for generation
+      navigate(`/script-selection/${data.id}`, {
+        state: {
+          adDescription: concept,
+          duration: selectedDuration,
+          goal: selectedGoal,
+          targetAudience: audience,
+          references: uploadedFiles.map(f => f.file.name),
+          brandId: brandId,
+          campaignId: data.id
+        }
+      });
 
     } catch (err: any) {
       console.error("Failed to create campaign:", err);
@@ -191,20 +198,20 @@ const Create = () => {
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4"
             >
               <Sparkles className="h-3 w-3" />
-              Campaign Strategy Engine
+              AI TV Ad Creator
             </motion.div>
 
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50">
-              What's your vision?
+              Describe Your Ad
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
-              Describe your product or service. Our AI will architect a
-              <span className="text-foreground font-medium"> national TV campaign </span>
+              Tell us about your product or service. We'll generate
+              <span className="text-foreground font-medium"> 3 unique scripts with storyboards </span>
               tailored to your goals.
             </p>
           </div>
 
-          {/* Input Area "Launchpad" */}
+          {/* Input Area */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -217,7 +224,7 @@ const Create = () => {
               <Textarea
                 value={concept}
                 onChange={(e) => setConcept(e.target.value)}
-                placeholder="e.g. A luxury electric car that redefines travel, targeting tech-savvy professionals..."
+                placeholder="e.g. A new energy drink for athletes. Show intense workout moments, the refreshing taste, and the boost it provides. Target: fitness enthusiasts 18-35..."
                 className="min-h-[160px] text-lg md:text-xl bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/50 resize-none leading-relaxed p-4"
               />
 
@@ -232,7 +239,7 @@ const Create = () => {
                       exit={{ opacity: 0, scale: 0.8 }}
                       className="relative flex-shrink-0 group/file"
                     >
-                      <div className="w-16 h-16 rounded-lg overflow-hidden border border-white/10 relative">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden border border-border relative">
                         {file.type === 'video' ? (
                           <video src={file.preview} className="w-full h-full object-cover opacity-80" />
                         ) : (
@@ -252,7 +259,7 @@ const Create = () => {
                   className="w-16 h-16 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all"
                 >
                   <Upload className="h-4 w-4" />
-                  <span className="text-[9px] uppercase font-bold">Add Asset</span>
+                  <span className="text-[9px] uppercase font-bold">Reference</span>
                 </button>
                 <input
                   id="file-upload"
@@ -286,13 +293,13 @@ const Create = () => {
                   onClick={handleStartCreate}
                   className="h-12 px-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold transition-all shadow-[0_0_20px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.4)] hover:scale-105"
                 >
-                  Launch Campaign <ArrowRight className="ml-2 h-4 w-4" />
+                  Continue <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
           </motion.div>
 
-          {/* Quick Stats / Social Proof */}
+          {/* Quick Stats */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -322,7 +329,7 @@ const Create = () => {
         </motion.div>
       </div>
 
-      {/* Modals are still used but will be styled to match */}
+      {/* Modals for goal and audience selection */}
       <CampaignGoalModal
         open={modalStep === "goal"}
         onOpenChange={(open) => !open && setModalStep("closed")}
