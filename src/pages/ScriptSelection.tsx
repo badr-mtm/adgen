@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,83 +10,116 @@ import {
   ArrowRight,
   Check,
   Edit3,
-  Play,
-  Volume2,
   Sparkles,
   Loader2,
   RefreshCw,
-  Mic,
-  Clapperboard,
-  Wand2,
-  BrainCircuit,
-  Film
+  Film,
+  Play,
+  Heart,
+  Lightbulb,
+  Target,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface Script {
   id: string;
   title: string;
+  approach: string;
   hook: string;
-  body: string;
+  fullScript: string;
   cta: string;
   tone: string;
-  duration: string;
-  voiceover?: string;
-  persona?: string; // New: AI Persona ID
+  musicMood?: string;
+  scenes: {
+    sceneNumber: number;
+    duration: string;
+    visualDescription: string;
+    cameraMovement?: string;
+    voiceover: string;
+    onScreenText?: string;
+  }[];
 }
 
-interface Scene {
+interface VideoVariant {
   id: string;
-  number: number;
-  description: string;
-  duration: string;
-  visualPrompt: string;
-  imageUrl?: string;
+  styleName: string;
+  styleDescription: string;
+  colorPalette?: string;
+  cameraStyle?: string;
+  editingPace?: string;
+  musicStyle?: string;
+  thumbnailPrompt: string;
+  scenes: {
+    sceneNumber: number;
+    duration: string;
+    visualPrompt: string;
+    transitionType?: string;
+    voiceover: string;
+  }[];
 }
 
-const VOICE_OPTIONS = [
-  { id: "professional_male", name: "Professional Male", accent: "US English", style: "Trustworthy & Deep" },
-  { id: "professional_female", name: "Professional Female", accent: "US English", style: "Clear & Polished" },
-  { id: "friendly_male", name: "Friendly Male", accent: "US English", style: "Warm & Relatable" },
-  { id: "friendly_female", name: "Friendly Female", accent: "US English", style: "Energetic & Bright" },
-  { id: "dramatic_male", name: "Cinematic Voice", accent: "British English", style: "Epic & Movie Trailer" },
-];
+const APPROACH_ICONS: Record<string, any> = {
+  emotional: Heart,
+  problem_solution: Lightbulb,
+  aspirational: Target,
+};
 
-const AI_PERSONAS = [
-  { id: "visionary", name: "The Visionary", icon: BrainCircuit, description: "Big picture, inspirational, and future-forward." },
-  { id: "storyteller", name: "The Storyteller", icon: Clapperboard, description: "Narrative-driven, emotional, and character-focused." },
-  { id: "analyst", name: "The Strategist", icon: Check, description: "Direct, benefit-focused, and conversion-optimized." },
-];
+const APPROACH_COLORS: Record<string, string> = {
+  emotional: "text-rose-400 bg-rose-500/10 border-rose-500/30",
+  problem_solution: "text-amber-400 bg-amber-500/10 border-amber-500/30",
+  aspirational: "text-blue-400 bg-blue-500/10 border-blue-500/30",
+};
 
 export default function ScriptSelection() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const [campaignData, setCampaignData] = useState<any>(location.state || {});
+  
+  // Get data from navigation state
+  const navState = location.state as {
+    adDescription?: string;
+    duration?: string;
+    goal?: string;
+    targetAudience?: any;
+    references?: string[];
+    brandId?: string;
+    campaignId?: string;
+  } | null;
 
   const [loading, setLoading] = useState(true);
   const [scripts, setScripts] = useState<Script[]>([]);
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
   const [editingScript, setEditingScript] = useState(false);
   const [editedScript, setEditedScript] = useState<Script | null>(null);
-  const [selectedVoice, setSelectedVoice] = useState(VOICE_OPTIONS[0].id);
-  const [generatingScenes, setGeneratingScenes] = useState(false);
-  const [scenes, setScenes] = useState<Scene[]>([]);
-  const [view, setView] = useState<"script-lab" | "storyboard-studio">("script-lab");
+  const [expandedScenes, setExpandedScenes] = useState(true);
+
+  // Video variants state
+  const [view, setView] = useState<"scripts" | "variants">("scripts");
+  const [generatingVariants, setGeneratingVariants] = useState(false);
+  const [videoVariants, setVideoVariants] = useState<VideoVariant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<VideoVariant | null>(null);
 
   useEffect(() => {
-    if (id && !location.state) {
-      fetchCampaign();
-    } else {
+    if (navState?.adDescription) {
       generateScripts();
+    } else if (id) {
+      fetchCampaignAndGenerate();
+    } else {
+      toast({
+        title: "Missing Data",
+        description: "Please start from the Create page.",
+        variant: "destructive"
+      });
+      navigate("/create");
     }
-  }, [id]);
+  }, [id, navState]);
 
-  const fetchCampaign = async () => {
+  const fetchCampaignAndGenerate = async () => {
     try {
       const { data, error } = await supabase
         .from('campaigns')
@@ -96,59 +128,64 @@ export default function ScriptSelection() {
         .single();
 
       if (error) throw error;
-      setCampaignData(data);
-      generateScripts();
+      
+      generateScripts({
+        adDescription: data.description,
+        duration: (data.storyboard as any)?.duration || '30s',
+        goal: data.goal,
+        targetAudience: data.target_audience,
+        brandId: data.brand_id
+      });
     } catch (err) {
       console.error("Error fetching campaign:", err);
-      generateScripts(); // Fallback to mock
+      toast({
+        title: "Error",
+        description: "Failed to load campaign data",
+        variant: "destructive"
+      });
     }
   };
 
-  const generateScripts = async () => {
+  const generateScripts = async (overrideData?: any) => {
     setLoading(true);
-    // Simulate API latency for "processing" feel
-    setTimeout(() => {
-      const mockScripts: Script[] = [
-        {
-          id: "1",
-          title: "The Emotional Arc",
-          hook: "What if the perfect moment wasn't about time, but about feeling?",
-          body: "We often rush through life, missing the details. But with AdGen Premium, every second is crafted for impact. It's not just advertising; it's a connection. Rediscover what it means to truly reach your audience.",
-          cta: "Experience the difference today.",
-          tone: "Inspirational",
-          duration: "30s",
-          persona: "storyteller"
-        },
-        {
-          id: "2",
-          title: "The Power Move",
-          hook: "Stop competing. Start dominating.",
-          body: "The market is crowded. Noise is everywhere. You need a signal that cuts through. Our platform delivers precision targeting and creative excellence that your competitors can't match. Be the leader.",
-          cta: "Claim your market share.",
-          tone: "Assertive",
-          duration: "30s",
-          persona: "visionary"
-        },
-        {
-          id: "3",
-          title: "The Smart Choice",
-          hook: "30% of your budget is being wasted. Here's why.",
-          body: "Inefficiency is the silent killer of growth. We analyzed the data, and the solution is clear. Optimize your spend, maximize your ROAS, and stop guessing. Science meets art.",
-          cta: "Start optimizing now.",
-          tone: "Analytical",
-          duration: "30s",
-          persona: "analyst"
+    
+    const data = overrideData || navState;
+    
+    try {
+      const { data: result, error } = await supabase.functions.invoke('generate-scripts', {
+        body: {
+          adDescription: data?.adDescription,
+          duration: data?.duration || '30s',
+          goal: data?.goal || 'awareness',
+          targetAudience: data?.targetAudience,
+          references: data?.references,
+          brandId: data?.brandId
         }
-      ];
-      setScripts(mockScripts);
-      setSelectedScript(mockScripts[0]);
-      setEditedScript(mockScripts[0]);
-      setLoading(false);
-      toast({
-        title: "AI Concepts Generated",
-        description: "The Writers Room has produced 3 unique scripts.",
       });
-    }, 2000);
+
+      if (error) throw error;
+
+      if (result?.scripts && result.scripts.length > 0) {
+        setScripts(result.scripts);
+        setSelectedScript(result.scripts[0]);
+        setEditedScript(result.scripts[0]);
+        toast({
+          title: "Scripts Generated",
+          description: "3 unique scripts created based on your inputs.",
+        });
+      } else {
+        throw new Error("No scripts generated");
+      }
+    } catch (err: any) {
+      console.error("Error generating scripts:", err);
+      toast({
+        title: "Generation Failed",
+        description: err.message || "Failed to generate scripts. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectScript = (script: Script) => {
@@ -157,376 +194,444 @@ export default function ScriptSelection() {
     setEditingScript(false);
   };
 
-  const generateScenes = async () => {
+  const generateVideoVariants = async () => {
     if (!selectedScript) return;
-    setGeneratingScenes(true);
+    
+    setGeneratingVariants(true);
+    setView("variants");
 
-    // Simulate generation
-    setTimeout(() => {
-      const mockScenes: Scene[] = [
-        { id: "1", number: 1, duration: "5s", description: "Opening shot: close up on eye opening, pupil dilating", visualPrompt: "Cinematic macro shot of human eye, golden hour lighting", imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800" },
-        { id: "2", number: 2, duration: "10s", description: "Montage of fast-paced city life, blurring into light streaks", visualPrompt: "Time-lapse of city traffic at night, cyberpunk colors", imageUrl: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800" },
-        { id: "3", number: 3, duration: "10s", description: "Product hero shot, floating in zero gravity", visualPrompt: "3D render of abstract geometric product, clean studio background", imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800" },
-        { id: "4", number: 4, duration: "5s", description: "Closing logo animation on black background", visualPrompt: "Minimalist white logo on black, smooth fade out", imageUrl: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800" },
-      ];
-      setScenes(mockScenes);
-      setGeneratingScenes(false);
-      setView("storyboard-studio");
-      toast({
-        title: "Storyboard Visualized",
-        description: "Scenes have been rendered from your script.",
+    try {
+      const { data: result, error } = await supabase.functions.invoke('generate-video-variants', {
+        body: {
+          script: editedScript || selectedScript,
+          campaignId: id || navState?.campaignId,
+          duration: navState?.duration || '30s',
+          adDescription: navState?.adDescription
+        }
       });
-    }, 2500);
+
+      if (error) throw error;
+
+      if (result?.variants && result.variants.length > 0) {
+        setVideoVariants(result.variants);
+        setSelectedVariant(result.variants[0]);
+        toast({
+          title: "Video Variants Created",
+          description: "3 visual styles generated for your script.",
+        });
+      } else {
+        throw new Error("No variants generated");
+      }
+    } catch (err: any) {
+      console.error("Error generating variants:", err);
+      toast({
+        title: "Generation Failed",
+        description: err.message || "Failed to generate video variants.",
+        variant: "destructive"
+      });
+      setView("scripts");
+    } finally {
+      setGeneratingVariants(false);
+    }
   };
 
-  const handleContinue = async () => {
-    const campaignId = id || campaignData.id;
+  const handleContinueToEditor = async () => {
+    const campaignId = id || navState?.campaignId;
+    
+    if (!campaignId || !selectedVariant) {
+      toast({
+        title: "Selection Required",
+        description: "Please select a video variant to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    // Show cinematic transition feedback
     toast({
-      title: "Initializing Production Studio",
-      description: "Syncing creative assets and configuring timeline...",
+      title: "Initializing Editor",
+      description: "Preparing your video for editing...",
       duration: 3000
     });
 
-    if (campaignId) {
-      try {
-        // Persist generated assets to Supabase
-        const { error } = await supabase
-          .from('campaigns')
-          .update({
-            storyboard: {
-              scenes: scenes.map(s => ({
-                id: s.id,
-                name: `Scene ${s.number}`,
-                duration: s.duration,
-                thumbnail: s.imageUrl,
-                description: s.description,
-                type: "generated",
-                url: s.imageUrl
-              })),
-              generatedAt: new Date().toISOString()
-            }
-          })
-          .eq('id', campaignId);
+    try {
+      // Save selected variant to campaign
+      const storyboardData = {
+        selectedScript: editedScript || selectedScript,
+        selectedVariant: selectedVariant,
+        scenes: selectedVariant.scenes.map((s, idx) => ({
+          id: `scene-${idx + 1}`,
+          sceneNumber: s.sceneNumber,
+          duration: s.duration,
+          visualDescription: s.visualPrompt,
+          voiceover: s.voiceover,
+          type: "generated"
+        })),
+        generatedAt: new Date().toISOString()
+      };
 
-        if (error) throw error;
+      await supabase
+        .from('campaigns')
+        .update({
+          storyboard: storyboardData as any,
+          status: 'in_production'
+        })
+        .eq('id', campaignId);
 
-        // Navigate with state for immediate render (optimistic UI)
-        navigate(`/video-editor/${campaignId}`, {
-          state: {
-            preloadedScenes: scenes,
-            script: selectedScript
-          }
-        });
-
-      } catch (err) {
-        console.error("Failed to save assets:", err);
-        // Fallback navigation
-        navigate(`/video-editor/${campaignId}`);
-      }
-    } else {
-      // Demo/Dev mode handling
-      console.warn("No campaign ID - Entering Demo Mode");
-      navigate(`/video-editor/demo`, {
+      navigate(`/video-editor/${campaignId}`, {
         state: {
-          preloadedScenes: scenes,
-          script: selectedScript
+          preloadedScenes: selectedVariant.scenes.map((s, idx) => ({
+            id: `scene-${idx + 1}`,
+            name: `Scene ${s.sceneNumber}`,
+            duration: s.duration,
+            description: s.visualPrompt,
+            voiceover: s.voiceover,
+            type: "generated"
+          })),
+          script: editedScript || selectedScript,
+          variant: selectedVariant
         }
       });
+    } catch (err) {
+      console.error("Failed to save:", err);
+      navigate(`/video-editor/${campaignId}`);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center space-y-6">
         <div className="relative">
-          <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full animate-pulse" />
-          <Loader2 className="h-12 w-12 text-blue-500 animate-spin relative z-10" />
+          <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
+          <Loader2 className="h-12 w-12 text-primary animate-spin relative z-10" />
         </div>
         <div className="text-center space-y-2">
-          <h2 className="text-xl font-medium text-white">AI Writers Room is thinking...</h2>
-          <p className="text-white/40 text-sm">Analyzing market trends and crafting hooks</p>
+          <h2 className="text-xl font-medium text-foreground">AI is crafting your scripts...</h2>
+          <p className="text-muted-foreground text-sm">Analyzing your inputs and creating 3 unique approaches</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-blue-500/30">
-      {/* Cinematic Header */}
-      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white/60 hover:text-white">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
               <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-blue-400" />
-                Creative Intelligence Hub
+                <Sparkles className="h-4 w-4 text-primary" />
+                {view === "scripts" ? "Choose Your Script" : "Select Video Style"}
               </h1>
-              <p className="text-xs text-white/40 font-mono uppercase tracking-widest">
-                SESSION ID: {id?.slice(0, 8) || campaignData.id?.slice(0, 8) || "GEN-ALPHA-01"}
+              <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest">
+                {navState?.duration || "30s"} • {navState?.goal || "awareness"}
               </p>
             </div>
           </div>
 
-          <div className="flex bg-white/5 rounded-full p-1 border border-white/10">
+          <div className="flex bg-muted rounded-full p-1 border border-border">
             <button
-              onClick={() => setView("script-lab")}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${view === "script-lab" ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50" : "text-white/40 hover:text-white"}`}
+              onClick={() => setView("scripts")}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${view === "scripts" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
             >
-              Script Lab
+              Scripts
             </button>
             <button
-              onClick={() => { if (scenes.length > 0) setView("storyboard-studio") }}
-              disabled={scenes.length === 0}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${view === "storyboard-studio" ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50" : "text-white/40 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"}`}
+              onClick={() => { if (videoVariants.length > 0) setView("variants") }}
+              disabled={videoVariants.length === 0}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${view === "variants" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground disabled:opacity-30"}`}
             >
-              Storyboard Studio
+              Video Styles
             </button>
           </div>
 
-          <Button size="sm" variant="ghost" className="text-white/40 hover:text-white">
-            <RefreshCw className="h-4 w-4 mr-2" /> Reset Session
+          <Button size="sm" variant="ghost" onClick={() => generateScripts()} className="text-muted-foreground hover:text-foreground">
+            <RefreshCw className="h-4 w-4 mr-2" /> Regenerate
           </Button>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto p-6 py-8">
         <AnimatePresence mode="wait">
-          {view === "script-lab" ? (
+          {view === "scripts" ? (
             <motion.div
-              key="lab"
+              key="scripts"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               className="grid grid-cols-1 lg:grid-cols-12 gap-8"
             >
-              {/* Left: AI Personas / Script Options */}
+              {/* Left: Script Options */}
               <div className="lg:col-span-4 space-y-6">
                 <div>
-                  <h2 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-                    <BrainCircuit className="h-5 w-5 text-purple-400" />
-                    Generated Concepts
+                  <h2 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                    <Film className="h-5 w-5 text-primary" />
+                    Generated Scripts
                   </h2>
                   <div className="space-y-3">
                     {scripts.map((script) => {
-                      const PersonaIcon = AI_PERSONAS.find(p => p.id === script.persona)?.icon || Sparkles;
+                      const ApproachIcon = APPROACH_ICONS[script.approach] || Sparkles;
+                      const approachColor = APPROACH_COLORS[script.approach] || "text-primary bg-primary/10 border-primary/30";
                       const selected = selectedScript?.id === script.id;
+                      
                       return (
                         <div
                           key={script.id}
                           onClick={() => handleSelectScript(script)}
-                          className={`group relative p-4 rounded-xl border transition-all cursor-pointer overflow-hidden ${selected ? "bg-white/10 border-blue-500/50 ring-1 ring-blue-500/50" : "bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10"}`}
+                          className={`group relative p-4 rounded-xl border transition-all cursor-pointer overflow-hidden ${
+                            selected 
+                              ? "bg-card border-primary ring-1 ring-primary" 
+                              : "bg-card/50 border-border hover:border-primary/50 hover:bg-card"
+                          }`}
                         >
                           <div className="flex justify-between items-start mb-2">
-                            <Badge variant="outline" className={`bg-transparent ${selected ? "text-blue-300 border-blue-500/30" : "text-white/40 border-white/10"}`}>
-                              {script.tone}
+                            <Badge variant="outline" className={approachColor}>
+                              <ApproachIcon className="h-3 w-3 mr-1" />
+                              {script.approach.replace('_', ' ')}
                             </Badge>
-                            {selected && <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />}
+                            {selected && <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />}
                           </div>
-                          <h3 className={`font-bold text-lg mb-1 ${selected ? "text-white" : "text-white/80"}`}>{script.title}</h3>
-                          <p className="text-sm text-white/50 line-clamp-2">{script.hook}</p>
-
-                          {/* Persona Watermark */}
-                          <PersonaIcon className="absolute -bottom-4 -right-4 h-24 w-24 text-white/5 group-hover:text-white/10 transition-colors rotate-12" />
+                          <h3 className={`font-bold text-lg mb-1 ${selected ? "text-foreground" : "text-foreground/80"}`}>
+                            {script.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{script.hook}</p>
+                          <div className="flex items-center gap-2 mt-3">
+                            <Badge variant="secondary" className="text-xs">{script.tone}</Badge>
+                            <Badge variant="secondary" className="text-xs">{script.scenes?.length || 0} scenes</Badge>
+                          </div>
                         </div>
-                      )
+                      );
                     })}
                   </div>
-                </div>
-
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-white/10 relative overflow-hidden">
-                  <div className="relative z-10">
-                    <h3 className="text-sm font-bold text-white mb-2">Pro Tip</h3>
-                    <p className="text-xs text-white/60">
-                      "The Visionary" persona typically performs 15% better for brand awareness campaigns, while "The Strategist" excels at conversion.
-                    </p>
-                  </div>
-                  <Sparkles className="absolute top-2 right-2 h-32 w-32 text-purple-500/10 blur-2xl" />
                 </div>
               </div>
 
               {/* Right: Script Editor */}
               <div className="lg:col-span-8">
-                <div className="h-full bg-[#111] rounded-2xl border border-white/10 flex flex-col overflow-hidden shadow-2xl">
+                <div className="h-full bg-card rounded-2xl border border-border flex flex-col overflow-hidden shadow-xl">
                   {/* Editor Toolbar */}
-                  <div className="bg-white/5 border-b border-white/5 p-4 flex justify-between items-center">
+                  <div className="bg-muted/50 border-b border-border p-4 flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full bg-red-500/20 border border-red-500/50" />
-                      <span className="h-3 w-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
-                      <span className="h-3 w-3 rounded-full bg-green-500/20 border border-green-500/50" />
-                      <span className="ml-4 text-xs font-mono text-white/40">EDITOR_MODE: {editingScript ? "WRITE" : "READ_ONLY"}</span>
+                      <span className="h-3 w-3 rounded-full bg-red-500/50" />
+                      <span className="h-3 w-3 rounded-full bg-yellow-500/50" />
+                      <span className="h-3 w-3 rounded-full bg-green-500/50" />
+                      <span className="ml-4 text-xs font-mono text-muted-foreground">
+                        {editingScript ? "EDITING" : "PREVIEW"}
+                      </span>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setEditingScript(!editingScript)}
-                      className={editingScript ? "text-blue-400 bg-blue-400/10" : "text-white/60 hover:text-white"}
+                      className={editingScript ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
                     >
                       <Edit3 className="h-4 w-4 mr-2" />
-                      {editingScript ? "Done Editing" : "Edit Script"}
+                      {editingScript ? "Done" : "Edit"}
                     </Button>
                   </div>
 
                   {/* Editor Content */}
                   <ScrollArea className="flex-1 p-8">
-                    <div className="max-w-2xl mx-auto space-y-8 font-mono">
+                    <div className="max-w-2xl mx-auto space-y-8">
+                      {/* Hook */}
                       <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-blue-500 font-bold">The Hook (0:00-0:05)</label>
+                        <label className="text-[10px] uppercase tracking-widest text-primary font-bold">Hook</label>
                         {editingScript ? (
                           <Textarea
                             value={editedScript?.hook}
                             onChange={e => setEditedScript(prev => prev ? { ...prev, hook: e.target.value } : null)}
-                            className="bg-white/5 border-white/10 text-lg text-white font-medium min-h-[80px] focus:ring-blue-500/50"
+                            className="bg-muted/50 border-border text-lg text-foreground font-medium min-h-[80px]"
                           />
                         ) : (
-                          <p className="text-xl text-white font-medium leading-relaxed">{selectedScript?.hook}</p>
+                          <p className="text-xl text-foreground font-medium leading-relaxed">{selectedScript?.hook}</p>
                         )}
                       </div>
 
+                      {/* Full Script */}
                       <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-purple-500 font-bold">The Narrative (0:05-0:25)</label>
+                        <label className="text-[10px] uppercase tracking-widest text-purple-500 font-bold">Full Script</label>
                         {editingScript ? (
                           <Textarea
-                            value={editedScript?.body}
-                            onChange={e => setEditedScript(prev => prev ? { ...prev, body: e.target.value } : null)}
-                            className="bg-white/5 border-white/10 text-lg text-white/80 leading-relaxed min-h-[150px] focus:ring-purple-500/50"
+                            value={editedScript?.fullScript}
+                            onChange={e => setEditedScript(prev => prev ? { ...prev, fullScript: e.target.value } : null)}
+                            className="bg-muted/50 border-border text-lg text-foreground/80 leading-relaxed min-h-[150px]"
                           />
                         ) : (
-                          <p className="text-lg text-white/80 leading-relaxed">{selectedScript?.body}</p>
+                          <p className="text-lg text-foreground/80 leading-relaxed">{selectedScript?.fullScript}</p>
                         )}
                       </div>
 
+                      {/* CTA */}
                       <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-green-500 font-bold">Call to Action (0:25-0:30)</label>
+                        <label className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Call to Action</label>
                         {editingScript ? (
                           <Textarea
                             value={editedScript?.cta}
                             onChange={e => setEditedScript(prev => prev ? { ...prev, cta: e.target.value } : null)}
-                            className="bg-white/5 border-white/10 text-lg text-white font-bold min-h-[60px] focus:ring-green-500/50"
+                            className="bg-muted/50 border-border text-lg text-foreground font-semibold min-h-[60px]"
                           />
                         ) : (
-                          <p className="text-xl text-white font-bold">{selectedScript?.cta}</p>
+                          <p className="text-lg text-foreground font-semibold">{selectedScript?.cta}</p>
                         )}
+                      </div>
+
+                      {/* Scenes */}
+                      <div className="space-y-3">
+                        <button 
+                          onClick={() => setExpandedScenes(!expandedScenes)}
+                          className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground font-bold hover:text-foreground transition-colors"
+                        >
+                          Storyboard ({selectedScript?.scenes?.length || 0} scenes)
+                          {expandedScenes ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </button>
+                        
+                        <AnimatePresence>
+                          {expandedScenes && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="space-y-3 overflow-hidden"
+                            >
+                              {(editedScript?.scenes || selectedScript?.scenes || []).map((scene, idx) => (
+                                <Card key={idx} className="p-4 bg-muted/30 border-border">
+                                  <div className="flex items-start gap-4">
+                                    <div className="w-16 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                                      <Play className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-sm font-medium text-primary">Scene {scene.sceneNumber}</span>
+                                        <Badge variant="outline" className="text-xs">{scene.duration}</Badge>
+                                      </div>
+                                      <p className="text-sm text-foreground mb-1">{scene.visualDescription}</p>
+                                      <p className="text-xs text-muted-foreground italic">"{scene.voiceover}"</p>
+                                    </div>
+                                  </div>
+                                </Card>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     </div>
                   </ScrollArea>
 
-                  {/* Voice Selector Footer */}
-                  <div className="bg-white/5 border-t border-white/5 p-4 px-8">
-                    <div className="flex items-center gap-6">
-                      <div className="flex items-center gap-2 text-sm text-white/60">
-                        <Mic className="h-4 w-4" />
-                        <span>Voice:</span>
-                      </div>
-                      <div className="flex-1 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                        {VOICE_OPTIONS.map(voice => (
-                          <button
-                            key={voice.id}
-                            onClick={() => setSelectedVoice(voice.id)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm whitespace-nowrap transition-all ${selectedVoice === voice.id ? "bg-white text-black border-white" : "bg-black/20 border-white/10 text-white/60 hover:border-white/30"}`}
-                          >
-                            <Volume2 className="h-3 w-3" />
-                            {voice.name}
-                          </button>
-                        ))}
-                      </div>
-                      <Button
-                        onClick={generateScenes}
-                        disabled={generatingScenes}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 shadow-[0_0_20px_rgba(37,99,235,0.3)]"
-                      >
-                        {generatingScenes ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Visualizing...
-                          </>
-                        ) : (
-                          <>
-                            <Wand2 className="h-4 w-4 mr-2" />
-                            Generate Storyboard
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                  {/* Footer */}
+                  <div className="p-6 border-t border-border bg-muted/30 flex justify-end">
+                    <Button
+                      size="lg"
+                      onClick={generateVideoVariants}
+                      disabled={!selectedScript}
+                      className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                    >
+                      Generate Video Variants
+                      <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
                   </div>
                 </div>
               </div>
             </motion.div>
           ) : (
             <motion.div
-              key="storyboard"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
+              key="variants"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               className="space-y-8"
             >
-              {/* Storyboard View */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {scenes.map((scene, idx) => (
-                  <div key={scene.id} className="group relative aspect-[9/16] md:aspect-video rounded-2xl overflow-hidden bg-gray-900 border border-white/10 ring-1 ring-white/5 hover:ring-blue-500/50 transition-all shadow-2xl">
-                    {/* Scene Number */}
-                    <div className="absolute top-4 left-4 z-20">
-                      <span className="text-[10px] font-mono font-bold bg-black/50 backdrop-blur border border-white/10 px-2 py-1 rounded text-white/80">
-                        SCENE {String(idx + 1).padStart(2, '0')}
-                      </span>
-                    </div>
-
-                    {/* Duration */}
-                    <div className="absolute top-4 right-4 z-20">
-                      <span className="text-[10px] font-mono bg-black/50 backdrop-blur border border-white/10 px-2 py-1 rounded text-white/80 flex items-center gap-1">
-                        <Film className="h-3 w-3" /> {scene.duration}
-                      </span>
-                    </div>
-
-                    {/* Image with Hover Effect */}
-                    <div className="absolute inset-0 bg-gray-800">
-                      {scene.imageUrl ? (
-                        <img src={scene.imageUrl} alt="Storyboard frame" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white/20">
-                          <Loader2 className="h-8 w-8 animate-spin" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                    </div>
-
-                    {/* Caption */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-                      <p className="text-sm font-medium text-white line-clamp-2 leading-relaxed">
-                        {scene.description}
-                      </p>
-                      <p className="text-xs text-white/40 mt-2 font-mono truncate">
-                        PROMPT: {scene.visualPrompt}
-                      </p>
-                    </div>
+              {generatingVariants ? (
+                <div className="py-20 text-center space-y-4">
+                  <div className="relative mx-auto w-20 h-20">
+                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
+                    <Loader2 className="h-20 w-20 text-primary animate-spin relative z-10" />
                   </div>
-                ))}
-              </div>
-
-              {/* Production Control Bar */}
-              <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/90 to-transparent z-40 flex justify-center pointer-events-none">
-                <div className="pointer-events-auto bg-black/80 backdrop-blur-xl border border-white/10 p-2 pr-6 rounded-full flex items-center gap-6 shadow-2xl">
-                  <div className="flex -space-x-3 px-2">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="h-8 w-8 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center text-[10px] text-white/60">
-                        TM
-                      </div>
-                    ))}
+                  <div>
+                    <p className="text-foreground font-medium">Generating Video Variants...</p>
+                    <p className="text-sm text-muted-foreground">Creating 3 unique visual styles for your script</p>
                   </div>
-                  <div className="h-8 w-px bg-white/10" />
-                  <div className="text-sm">
-                    <span className="text-white/40 mr-2">Est. Cost:</span>
-                    <span className="text-white font-mono">$2,400</span>
-                  </div>
-                  <Button onClick={handleContinue} className="bg-white text-black hover:bg-gray-200 rounded-full px-8 font-bold">
-                    Start Production <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold text-foreground mb-2">Choose Your Visual Style</h2>
+                    <p className="text-muted-foreground">Select the video treatment that best matches your brand</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {videoVariants.map((variant) => {
+                      const selected = selectedVariant?.id === variant.id;
+                      return (
+                        <Card
+                          key={variant.id}
+                          onClick={() => setSelectedVariant(variant)}
+                          className={`p-6 cursor-pointer transition-all ${
+                            selected 
+                              ? "ring-2 ring-primary bg-card" 
+                              : "bg-card/50 hover:bg-card border-border"
+                          }`}
+                        >
+                          {/* Thumbnail Placeholder */}
+                          <div className="aspect-video rounded-lg bg-muted mb-4 flex items-center justify-center relative overflow-hidden">
+                            <Film className="h-10 w-10 text-muted-foreground" />
+                            {selected && (
+                              <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                                <Check className="h-4 w-4 text-primary-foreground" />
+                              </div>
+                            )}
+                          </div>
+
+                          <h3 className="font-bold text-lg text-foreground mb-1">{variant.styleName}</h3>
+                          <p className="text-sm text-muted-foreground mb-3">{variant.styleDescription}</p>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            {variant.editingPace && (
+                              <Badge variant="outline" className="text-xs">{variant.editingPace} pace</Badge>
+                            )}
+                            {variant.colorPalette && (
+                              <Badge variant="outline" className="text-xs">{variant.colorPalette}</Badge>
+                            )}
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+
+                  {/* Selected Variant Preview */}
+                  {selectedVariant && (
+                    <Card className="p-6 bg-card border-border mt-8">
+                      <h3 className="font-bold text-lg text-foreground mb-4">Scene Breakdown</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {selectedVariant.scenes.map((scene, idx) => (
+                          <div key={idx} className="p-4 rounded-lg bg-muted/50 border border-border">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-primary">Scene {scene.sceneNumber}</span>
+                              <Badge variant="secondary" className="text-xs">{scene.duration}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-3">{scene.visualPrompt}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+
+                  {/* Continue Button */}
+                  <div className="flex justify-center pt-6">
+                    <Button
+                      size="lg"
+                      onClick={handleContinueToEditor}
+                      disabled={!selectedVariant}
+                      className="h-14 px-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
+                    >
+                      Continue to Editor
+                      <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
+                  </div>
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
