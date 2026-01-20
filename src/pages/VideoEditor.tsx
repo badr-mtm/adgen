@@ -69,29 +69,45 @@ export default function VideoEditor() {
   const playbackIntervalRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
 
+  // Normalize scene data to consistent format
+  const normalizeScene = (s: any, idx: number) => ({
+    id: s.id || `scene-${idx + 1}`,
+    sceneNumber: s.sceneNumber || idx + 1,
+    name: s.name || `Scene ${s.sceneNumber || idx + 1}`,
+    duration: typeof s.duration === 'string' ? s.duration : `${s.duration || 4}s`,
+    visualDescription: s.visualDescription || s.description || s.visualPrompt || '',
+    suggestedVisuals: s.suggestedVisuals || s.visualPrompt || '',
+    voiceover: s.voiceover || '',
+    visualUrl: s.visualUrl || s.imageUrl || s.thumbnail || s.url || '',
+    videoUrl: s.videoUrl || '',
+    type: s.type || 'generated'
+  });
+
   // Load project data
   useEffect(() => {
     async function loadProject() {
       if (!id) return;
       try {
-        // Simulate "System Initialization" delay for cinematic effect
         // Cinematic initialization delay
         await new Promise(resolve => setTimeout(resolve, 1500));
 
-        // Optimistic Load from Transition State
-        // @ts-ignore - location state is untyped but safe here
+        // Optimistic Load from Transition State (new flow passes variant data)
         const locationState = location.state as any;
-        if (locationState?.preloadedScenes) {
-          const mappedScenes = locationState.preloadedScenes.map((s: any) => ({
-            id: s.id,
-            name: s.name || `Scene ${s.number || '?'}`,
-            duration: s.duration,
-            thumbnail: s.imageUrl || s.thumbnail,
-            description: s.description,
-            type: "generated",
-            url: s.imageUrl || s.url
-          }));
+        
+        if (locationState?.preloadedScenes && locationState.preloadedScenes.length > 0) {
+          const mappedScenes = locationState.preloadedScenes.map((s: any, idx: number) => 
+            normalizeScene(s, idx)
+          );
           setScenes(mappedScenes);
+          
+          // Store script and variant info if passed
+          if (locationState.script || locationState.variant) {
+            setProject((prev: any) => ({
+              ...prev,
+              selectedScript: locationState.script,
+              selectedVariant: locationState.variant
+            }));
+          }
         }
 
         if (id === 'demo') {
@@ -99,6 +115,7 @@ export default function VideoEditor() {
           return;
         }
 
+        // Fetch campaign from database
         const { data: campaign, error } = await supabase
           .from('campaigns')
           .select('*')
@@ -110,12 +127,18 @@ export default function VideoEditor() {
         if (campaign) {
           setProject(campaign);
           const storyboard = campaign.storyboard as any;
-          if (storyboard?.scenes) {
-            setScenes(storyboard.scenes);
+          
+          // Load scenes from storyboard - normalize to consistent format
+          if (storyboard?.scenes && storyboard.scenes.length > 0) {
+            const normalizedScenes = storyboard.scenes.map((s: any, idx: number) => 
+              normalizeScene(s, idx)
+            );
+            setScenes(normalizedScenes);
           }
-          const storyboardWithStrategy = storyboard as { strategy?: { videoSettings?: any } } | null;
-          if (storyboardWithStrategy?.strategy?.videoSettings) {
-            setOverlaySettings(prev => ({ ...prev, ...storyboardWithStrategy.strategy!.videoSettings }));
+          
+          // Load video settings if present
+          if (storyboard?.strategy?.videoSettings) {
+            setOverlaySettings(prev => ({ ...prev, ...storyboard.strategy.videoSettings }));
           }
         }
       } catch (err: any) {
@@ -252,16 +275,14 @@ export default function VideoEditor() {
 
   const handleAddScene = () => {
     saveToHistory(scenes, overlaySettings);
-    const newScene = {
+    const newScene = normalizeScene({
       id: Math.random().toString(36).substr(2, 9),
       sceneNumber: scenes.length + 1,
-      name: `Scene ${scenes.length + 1}`,
       duration: "4s",
       visualDescription: "New scene description...",
       suggestedVisuals: "Enter visual suggestions...",
-      voiceover: "Enter voiceover script...",
-      type: "generated"
-    };
+      voiceover: "Enter voiceover script..."
+    }, scenes.length);
 
     const updatedScenes = [...scenes, newScene];
     setScenes(updatedScenes);
@@ -576,11 +597,11 @@ export default function VideoEditor() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-black text-white overflow-hidden font-sans selection:bg-blue-500/30">
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden font-sans selection:bg-primary/30">
       {/* Background Gradients */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/10 blur-[150px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/10 blur-[150px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[150px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-accent/5 blur-[150px]" />
       </div>
 
       <div className="relative z-10 flex flex-col h-full">

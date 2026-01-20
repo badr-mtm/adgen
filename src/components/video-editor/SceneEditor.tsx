@@ -29,16 +29,19 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 interface Scene {
+  id?: string;
   sceneNumber: number;
+  name?: string;
   duration: string;
   visualDescription: string;
-  suggestedVisuals: string;
+  suggestedVisuals?: string;
   voiceover: string;
   visualUrl?: string;
   videoUrl?: string;
   imageUrl?: string;
   thumbnail?: string;
   url?: string;
+  type?: string;
 }
 
 interface SceneEditorProps {
@@ -165,22 +168,22 @@ const SceneEditor = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl h-[85vh] p-0 bg-black/90 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col gap-0 duration-300">
+      <DialogContent className="max-w-5xl h-[85vh] p-0 bg-background backdrop-blur-xl border border-border shadow-2xl overflow-hidden flex flex-col gap-0 duration-300">
 
         {/* Header - Director's Monitor Style */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/50">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <DialogTitle className="text-lg font-mono tracking-wide text-white font-normal uppercase">
-              Scene {scene.sceneNumber} <span className="text-white/40 mx-2">|</span> Metadata Editor
+            <DialogTitle className="text-lg font-mono tracking-wide text-foreground font-normal uppercase">
+              Scene {scene.sceneNumber} <span className="text-muted-foreground mx-2">|</span> Metadata Editor
             </DialogTitle>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20 px-3 py-1 font-mono text-xs">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 px-3 py-1 font-mono text-xs">
               EDIT MODE
             </Badge>
             <DialogClose asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-white/50 hover:text-white rounded-full hover:bg-white/10 ml-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted ml-2">
                 <X className="w-4 h-4" />
               </Button>
             </DialogClose>
@@ -189,9 +192,9 @@ const SceneEditor = ({
 
         <div className="flex flex-1 overflow-hidden">
           {/* Left Column - Preview Monitor */}
-          <div className="w-[60%] border-r border-white/10 p-6 flex flex-col bg-black/40">
+          <div className="w-[60%] border-r border-border p-6 flex flex-col bg-muted/30">
             <div className="flex items-center justify-between mb-4">
-              <Label className="text-xs font-bold text-white/40 uppercase tracking-widest flex items-center gap-2">
+              <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                 <Maximize2 className="w-3 h-3" />
                 Visual Reference
               </Label>
@@ -200,8 +203,8 @@ const SceneEditor = ({
                   variant="secondary" 
                   className={`text-[10px] cursor-pointer transition-all ${
                     viewMode === 'static' 
-                      ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
-                      : 'bg-white/5 text-white/60 hover:bg-white/10'
+                      ? 'bg-primary/20 text-primary border border-primary/30' 
+                      : 'bg-muted text-muted-foreground hover:bg-accent'
                   }`}
                   onClick={() => setViewMode('static')}
                 >
@@ -212,8 +215,8 @@ const SceneEditor = ({
                   variant="secondary" 
                   className={`text-[10px] cursor-pointer transition-all ${
                     viewMode === 'motion' 
-                      ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
-                      : 'bg-white/5 text-white/60 hover:bg-white/10'
+                      ? 'bg-accent/50 text-accent-foreground border border-accent' 
+                      : 'bg-muted text-muted-foreground hover:bg-accent'
                   }`}
                   onClick={() => setViewMode('motion')}
                 >
@@ -223,12 +226,12 @@ const SceneEditor = ({
               </div>
             </div>
 
-            <div className="flex-1 rounded-xl overflow-hidden border border-white/10 bg-black shadow-2xl relative group">
+            <div className="flex-1 rounded-xl overflow-hidden border border-border bg-card shadow-2xl relative group">
               {/* Visual Asset - Toggle between static and motion */}
               {viewMode === 'motion' && scene.videoUrl ? (
                 <video
                   src={scene.videoUrl}
-                  className="w-full h-full object-contain bg-neutral-900"
+                  className="w-full h-full object-contain bg-muted"
                   controls
                   autoPlay
                   loop
@@ -238,10 +241,10 @@ const SceneEditor = ({
                 <img
                   src={getVisualUrl()}
                   alt={`Scene ${scene.sceneNumber}`}
-                  className="w-full h-full object-contain bg-neutral-900"
+                  className="w-full h-full object-contain bg-muted"
                 />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-white/20 gap-4">
+                <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-4">
                   <Film className="w-16 h-16 stroke-1 opacity-50" />
                   <p className="font-mono text-sm">NO SIGNAL</p>
                   <Button 
@@ -249,7 +252,6 @@ const SceneEditor = ({
                     size="sm"
                     onClick={handleRegenerateClick}
                     disabled={isRegenerating}
-                    className="text-white/60 border-white/20 hover:bg-white/10"
                   >
                     {isRegenerating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
                     Generate Preview
@@ -259,14 +261,14 @@ const SceneEditor = ({
 
               {/* Overlay: Show "No Video" hint when in motion mode but no video */}
               {viewMode === 'motion' && !scene.videoUrl && getVisualUrl() && (
-                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
-                  <Film className="w-12 h-12 text-white/30 mb-3" />
-                  <p className="text-white/50 text-sm mb-4">No motion video generated yet</p>
+                <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center">
+                  <Film className="w-12 h-12 text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground text-sm mb-4">No motion video generated yet</p>
                   <Button 
                     onClick={handleGenerateVideoClick}
                     disabled={isRegenerating}
                     size="sm"
-                    className="bg-purple-600 hover:bg-purple-500"
+                    className="bg-primary hover:bg-primary/90"
                   >
                     {isRegenerating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Wand2 className="w-4 h-4 mr-2" />}
                     Generate Video
@@ -279,8 +281,8 @@ const SceneEditor = ({
             </div>
 
             {/* Visual Description Quick Edit */}
-            <div className="mt-4 p-4 rounded-xl border border-white/10 bg-white/5">
-              <div className="flex items-center gap-2 mb-2 text-white/60">
+            <div className="mt-4 p-4 rounded-xl border border-border bg-card">
+              <div className="flex items-center gap-2 mb-2 text-muted-foreground">
                 <Camera className="w-4 h-4" />
                 <span className="text-xs font-medium uppercase">Prompt Data</span>
               </div>
@@ -288,15 +290,15 @@ const SceneEditor = ({
                 value={editedScene.visualDescription}
                 onChange={(e) => setEditedScene({ ...editedScene, visualDescription: e.target.value })}
                 placeholder="Describe the visual..."
-                className="bg-transparent border-none text-white/90 focus-visible:ring-0 p-0 text-sm min-h-[60px] resize-none placeholder:text-white/20"
+                className="bg-transparent border-none text-foreground focus-visible:ring-0 p-0 text-sm min-h-[60px] resize-none placeholder:text-muted-foreground"
               />
             </div>
           </div>
 
           {/* Right Column - Controls */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-[#0A0A0A]">
+          <div className="flex-1 flex flex-col overflow-hidden bg-card">
             {/* Tabs */}
-            <div className="flex border-b border-white/10">
+            <div className="flex border-b border-border">
               {[
                 { id: "visual", label: "GENERATION", icon: Sparkles },
                 { id: "text", label: "SCRIPT & AUDIO", icon: Mic },
@@ -308,8 +310,8 @@ const SceneEditor = ({
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`flex-1 flex items-center justify-center gap-2 py-4 text-xs font-bold tracking-wider transition-colors border-b-2 ${activeTab === tab.id
-                      ? "border-blue-500 text-blue-400 bg-blue-500/5"
-                      : "border-transparent text-white/40 hover:text-white hover:bg-white/5"
+                      ? "border-primary text-primary bg-primary/5"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -323,50 +325,50 @@ const SceneEditor = ({
               {activeTab === "visual" && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="space-y-3">
-                    <Label className="text-xs font-bold text-white/60 uppercase">Creative Direction</Label>
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">Creative Direction</Label>
                     <Textarea
                       value={customPrompt}
                       onChange={(e) => setCustomPrompt(e.target.value)}
                       placeholder="Enter specific details for the AI... (e.g., 'dramatic lighting, slow motion, sunset colors')"
-                      className="bg-black/40 border-white/10 text-white min-h-[100px] focus:border-blue-500/50"
+                      className="bg-muted/50 border-border text-foreground min-h-[100px] focus:border-primary/50"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-xs font-bold text-white/60 uppercase">Render Engine</Label>
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">Render Engine</Label>
                     <div className="grid grid-cols-2 gap-3">
                       <div
                         onClick={() => setSelectedModel("luma")}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "luma" ? "bg-blue-500/20 border-blue-500/50 shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]" : "bg-white/5 border-white/10 hover:border-white/20"}`}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "luma" ? "bg-primary/20 border-primary/50 shadow-lg" : "bg-muted/30 border-border hover:border-primary/30"}`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-bold text-white">Luma Dream</span>
-                          {selectedModel === "luma" && <div className="w-2 h-2 bg-blue-500 rounded-full" />}
+                          <span className="text-sm font-bold text-foreground">Luma Dream</span>
+                          {selectedModel === "luma" && <div className="w-2 h-2 bg-primary rounded-full" />}
                         </div>
-                        <p className="text-[10px] text-white/50">Cinematic motion, high coherence.</p>
+                        <p className="text-[10px] text-muted-foreground">Cinematic motion, high coherence.</p>
                       </div>
                       <div
                         onClick={() => setSelectedModel("kling")}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "kling" ? "bg-purple-500/20 border-purple-500/50 shadow-[0_0_20px_-5px_rgba(168,85,247,0.3)]" : "bg-white/5 border-white/10 hover:border-white/20"}`}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "kling" ? "bg-accent/30 border-accent shadow-lg" : "bg-muted/30 border-border hover:border-accent/30"}`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-bold text-white">Kling AI</span>
-                          {selectedModel === "kling" && <div className="w-2 h-2 bg-purple-500 rounded-full" />}
+                          <span className="text-sm font-bold text-foreground">Kling AI</span>
+                          {selectedModel === "kling" && <div className="w-2 h-2 bg-accent rounded-full" />}
                         </div>
-                        <p className="text-[10px] text-white/50">Photorealistic texture focus.</p>
+                        <p className="text-[10px] text-muted-foreground">Photorealistic texture focus.</p>
                       </div>
                       <div
                         onClick={() => setSelectedModel("pexels")}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all col-span-2 ${selectedModel === "pexels" ? "bg-emerald-500/20 border-emerald-500/50 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)]" : "bg-white/5 border-white/10 hover:border-white/20"}`}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all col-span-2 ${selectedModel === "pexels" ? "bg-green-500/20 border-green-500/50 shadow-lg" : "bg-muted/30 border-border hover:border-green-500/30"}`}
                       >
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-white">Free Production (Pexels)</span>
-                            <Badge variant="outline" className="text-[8px] h-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">RECOMMENDED FOR TEST</Badge>
+                            <span className="text-sm font-bold text-foreground">Free Production (Pexels)</span>
+                            <Badge variant="outline" className="text-[8px] h-4 bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">RECOMMENDED FOR TEST</Badge>
                           </div>
-                          {selectedModel === "pexels" && <div className="w-2 h-2 bg-emerald-500 rounded-full" />}
+                          {selectedModel === "pexels" && <div className="w-2 h-2 bg-green-500 rounded-full" />}
                         </div>
-                        <p className="text-[10px] text-white/50">Instant cinematic clips from stock library. No API key required for testing.</p>
+                        <p className="text-[10px] text-muted-foreground">Instant cinematic clips from stock library. No API key required for testing.</p>
                       </div>
                     </div>
                   </div>
@@ -375,7 +377,7 @@ const SceneEditor = ({
                     <Button
                       onClick={handleGenerateVideoClick}
                       disabled={isRegenerating}
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-semibold py-6 shadow-lg shadow-blue-900/20"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6 shadow-lg"
                     >
                       {isRegenerating ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Wand2 className="w-5 h-5 mr-2" />}
                       {isRegenerating ? "Rendering Scene..." : "Generate Cinematic Video"}
@@ -384,7 +386,6 @@ const SceneEditor = ({
                       onClick={handleRegenerateClick}
                       variant="outline"
                       disabled={isRegenerating}
-                      className="w-full border-white/10 bg-transparent text-white/60 hover:text-white hover:bg-white/5"
                     >
                       <RefreshCw className="w-4 h-4 mr-2" />
                       Regenerate Static Preview
@@ -396,22 +397,22 @@ const SceneEditor = ({
               {activeTab === "text" && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-white/60 uppercase">Voiceover Script</Label>
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">Voiceover Script</Label>
                     <Textarea
                       value={editedScene.voiceover}
                       onChange={(e) => setEditedScene({ ...editedScene, voiceover: e.target.value })}
                       placeholder="Enter text to be spoken..."
                       rows={6}
-                      className="bg-black/40 border-white/10 text-white font-serif text-lg leading-relaxed focus:border-blue-500/50"
+                      className="bg-muted/50 border-border text-foreground font-serif text-lg leading-relaxed focus:border-primary/50"
                     />
-                    <p className="text-xs text-right text-white/30">Word count: {editedScene.voiceover?.split(/\s+/).filter(Boolean).length || 0}</p>
+                    <p className="text-xs text-right text-muted-foreground">Word count: {editedScene.voiceover?.split(/\s+/).filter(Boolean).length || 0}</p>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-3">
-                    <div className="flex items-center gap-2 text-white/80">
-                      <Sparkles className="w-4 h-4 text-purple-400" />
+                  <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-3">
+                    <div className="flex items-center gap-2 text-foreground">
+                      <Sparkles className="w-4 h-4 text-primary" />
                       <span className="text-sm font-semibold">AI Style Enhancement</span>
-                      {isApplyingStyle && <Loader2 className="w-3 h-3 animate-spin text-purple-400" />}
+                      {isApplyingStyle && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {['Punchy', 'Emotional', 'Professional', 'Dramatic'].map(style => (
@@ -420,8 +421,8 @@ const SceneEditor = ({
                           variant="secondary" 
                           className={`cursor-pointer border transition-all ${
                             selectedStyle === style 
-                              ? 'bg-purple-500/30 text-purple-300 border-purple-500/50' 
-                              : 'bg-white/10 hover:bg-white/20 text-white/70 border-white/5'
+                              ? 'bg-primary/30 text-primary border-primary/50' 
+                              : 'bg-muted hover:bg-accent text-muted-foreground border-border'
                           }`}
                           onClick={() => handleApplyStyle(style)}
                         >
@@ -429,18 +430,18 @@ const SceneEditor = ({
                         </Badge>
                       ))}
                     </div>
-                    <p className="text-[10px] text-white/40">Click a style to enhance your voiceover script</p>
+                    <p className="text-[10px] text-muted-foreground">Click a style to enhance your voiceover script</p>
                   </div>
 
                   {/* Suggested Visuals Section */}
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold text-white/60 uppercase">Suggested Visuals</Label>
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">Suggested Visuals</Label>
                     <Textarea
                       value={editedScene.suggestedVisuals || ''}
                       onChange={(e) => setEditedScene({ ...editedScene, suggestedVisuals: e.target.value })}
                       placeholder="Describe what visuals should accompany this scene..."
                       rows={3}
-                      className="bg-black/40 border-white/10 text-white text-sm focus:border-blue-500/50"
+                      className="bg-muted/50 border-border text-foreground text-sm focus:border-primary/50"
                     />
                   </div>
                 </div>
@@ -450,28 +451,22 @@ const SceneEditor = ({
                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="flex flex-col items-center justify-center py-8">
                     <div className="relative w-48 h-48 flex items-center justify-center">
-                      <div className="absolute inset-0 rounded-full border-4 border-white/5" />
+                      <div className="absolute inset-0 rounded-full border-4 border-border" />
                       <svg className="absolute inset-0 w-full h-full -rotate-90">
                         <circle
                           cx="96" cy="96" r="92"
                           fill="none"
-                          stroke="url(#gradient)"
+                          stroke="hsl(var(--primary))"
                           strokeWidth="8"
                           strokeDasharray={578}
                           strokeDashoffset={578 - (578 * durationSeconds) / 15}
                           strokeLinecap="round"
                           className="transition-all duration-500 ease-out"
                         />
-                        <defs>
-                          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#3b82f6" />
-                            <stop offset="100%" stopColor="#8b5cf6" />
-                          </linearGradient>
-                        </defs>
                       </svg>
                       <div className="text-center">
-                        <span className="text-5xl font-bold text-white tracking-tighter">{durationSeconds}</span>
-                        <span className="text-sm font-medium text-white/40 block mt-1">SECONDS</span>
+                        <span className="text-5xl font-bold text-foreground tracking-tighter">{durationSeconds}</span>
+                        <span className="text-sm font-medium text-muted-foreground block mt-1">SECONDS</span>
                       </div>
                     </div>
                   </div>
@@ -483,9 +478,8 @@ const SceneEditor = ({
                       min={1}
                       max={15}
                       step={1}
-                      className="[&>.relative>.bg-primary]:bg-gradient-to-r [&>.relative>.bg-primary]:from-blue-500 [&>.relative>.bg-primary]:to-purple-500"
                     />
-                    <div className="flex justify-between text-[10px] text-white/30 uppercase font-bold tracking-widest">
+                    <div className="flex justify-between text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
                       <span>Snappy (1s)</span>
                       <span>Extended (15s)</span>
                     </div>
@@ -493,7 +487,7 @@ const SceneEditor = ({
 
                   {/* Quick Duration Presets */}
                   <div className="space-y-3">
-                    <Label className="text-xs font-bold text-white/60 uppercase">Quick Presets</Label>
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">Quick Presets</Label>
                     <div className="flex gap-2">
                       {[3, 5, 7, 10].map(sec => (
                         <Button
@@ -503,8 +497,8 @@ const SceneEditor = ({
                           onClick={() => setEditedScene({ ...editedScene, duration: `${sec}s` })}
                           className={`flex-1 ${
                             durationSeconds === sec 
-                              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' 
-                              : 'border-white/10 text-white/60 hover:bg-white/10'
+                              ? 'bg-primary/20 border-primary/50 text-primary' 
+                              : ''
                           }`}
                         >
                           {sec}s
@@ -517,11 +511,11 @@ const SceneEditor = ({
             </div>
 
             {/* Footer Controls */}
-            <div className="p-4 border-t border-white/10 bg-white/5 flex justify-end gap-3">
-              <Button variant="ghost" onClick={handleDiscard} className="text-white/60 hover:text-white hover:bg-white/10">
+            <div className="p-4 border-t border-border bg-muted/50 flex justify-end gap-3">
+              <Button variant="ghost" onClick={handleDiscard}>
                 Discard Changes
               </Button>
-              <Button onClick={handleSave} className="bg-white text-black hover:bg-white/90 font-semibold px-6">
+              <Button onClick={handleSave} className="font-semibold px-6">
                 <Save className="w-4 h-4 mr-2" />
                 Apply to Scene
               </Button>
