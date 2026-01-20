@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -13,129 +12,131 @@ import { Badge } from "@/components/ui/badge";
 import { StrategySchedule } from "@/components/strategy/StrategySchedule";
 import { StrategyAudience } from "@/components/strategy/StrategyAudience";
 import { StrategyPlacements } from "@/components/strategy/StrategyPlacements";
-
 const defaultStrategy: CampaignStrategy = {
-    id: "",
-    campaignId: "",
-    intent: { idea: "", goal: "awareness", targetAudience: "" },
-    budget: { amount: 5000, currency: "USD", interval: "lifetime" },
-    schedule: { startDate: new Date(), deliveryTime: "any" },
-    targeting: {
-        locations: ["United States"],
-        ageRange: [18, 65],
-        genders: ["all"],
-        interests: [],
-        deviceTypes: ["tv", "mobile", "desktop"]
-    },
-    placements: []
+  id: "",
+  campaignId: "",
+  intent: {
+    idea: "",
+    goal: "awareness",
+    targetAudience: ""
+  },
+  budget: {
+    amount: 5000,
+    currency: "USD",
+    interval: "lifetime"
+  },
+  schedule: {
+    startDate: new Date(),
+    deliveryTime: "any"
+  },
+  targeting: {
+    locations: ["United States"],
+    ageRange: [18, 65],
+    genders: ["all"],
+    interests: [],
+    deviceTypes: ["tv", "mobile", "desktop"]
+  },
+  placements: []
 };
-
 export default function Strategy() {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const { toast } = useToast();
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [strategy, setStrategy] = useState<CampaignStrategy>(defaultStrategy);
-    const [date, setDate] = useState<Date | undefined>(new Date());
+  const {
+    id
+  } = useParams();
+  const navigate = useNavigate();
+  const {
+    toast
+  } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [strategy, setStrategy] = useState<CampaignStrategy>(defaultStrategy);
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  useEffect(() => {
+    if (!id) return;
+    loadCampaignData();
+  }, [id]);
+  const loadCampaignData = async () => {
+    try {
+      const {
+        data,
+        error
+      } = await supabase.from('campaigns').select('*').eq('id', id).single();
+      if (error) throw error;
 
-    useEffect(() => {
-        if (!id) return;
-        loadCampaignData();
-    }, [id]);
-
-    const loadCampaignData = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('campaigns')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error) throw error;
-
-            // Merge existing data with default strategy
-            setStrategy({
-                ...defaultStrategy,
-                id: "temp-id",
-                campaignId: data.id,
-                intent: {
-                    idea: data.description || "",
-                    goal: data.goal || "awareness",
-                    targetAudience: typeof data.target_audience === 'string' ? data.target_audience : JSON.stringify(data.target_audience)
-                },
-                ...((data.storyboard as any)?.strategy || {})
-            });
-
-            const storyboardData = data.storyboard as { strategy?: { schedule?: { startDate?: string } } } | null;
-            if (storyboardData?.strategy?.schedule?.startDate) {
-                setDate(new Date(storyboardData.strategy.schedule.startDate));
-            }
-
-        } catch (error: any) {
-            console.error("Error loading campaign:", error);
-            toast({
-                title: "Error loading campaign",
-                description: error.message,
-                variant: "destructive"
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSave = async (publish = false) => {
-        setSaving(true);
-        try {
-            const updatedStrategy = {
-                ...strategy,
-                schedule: {
-                    ...strategy.schedule,
-                    startDate: date
-                }
-            };
-
-            const { error } = await supabase
-                .from('campaigns')
-                .update({
-                    strategy: updatedStrategy as any,
-                    status: publish ? 'scheduled' : 'draft',
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', id);
-
-            if (error) throw error;
-
-            toast({
-                title: publish ? "Campaign Published!" : "Strategy Saved",
-                description: publish ? "Your campaign is now live." : "Your strategy has been updated."
-            });
-
-            if (publish) {
-                navigate('/campaigns'); // Updated route
-            }
-        } catch (error: any) {
-            console.error("Error saving strategy:", error);
-            toast({
-                title: "Error saving strategy",
-                description: error.message,
-                variant: "destructive"
-            });
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="h-screen flex items-center justify-center bg-background text-foreground">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
+      // Merge existing data with default strategy
+      setStrategy({
+        ...defaultStrategy,
+        id: "temp-id",
+        campaignId: data.id,
+        intent: {
+          idea: data.description || "",
+          goal: data.goal || "awareness",
+          targetAudience: typeof data.target_audience === 'string' ? data.target_audience : JSON.stringify(data.target_audience)
+        },
+        ...((data.storyboard as any)?.strategy || {})
+      });
+      const storyboardData = data.storyboard as {
+        strategy?: {
+          schedule?: {
+            startDate?: string;
+          };
+        };
+      } | null;
+      if (storyboardData?.strategy?.schedule?.startDate) {
+        setDate(new Date(storyboardData.strategy.schedule.startDate));
+      }
+    } catch (error: any) {
+      console.error("Error loading campaign:", error);
+      toast({
+        title: "Error loading campaign",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-
-    return (
-        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
+  };
+  const handleSave = async (publish = false) => {
+    setSaving(true);
+    try {
+      const updatedStrategy = {
+        ...strategy,
+        schedule: {
+          ...strategy.schedule,
+          startDate: date
+        }
+      };
+      const {
+        error
+      } = await supabase.from('campaigns').update({
+        strategy: updatedStrategy as any,
+        status: publish ? 'scheduled' : 'draft',
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
+      if (error) throw error;
+      toast({
+        title: publish ? "Campaign Published!" : "Strategy Saved",
+        description: publish ? "Your campaign is now live." : "Your strategy has been updated."
+      });
+      if (publish) {
+        navigate('/campaigns'); // Updated route
+      }
+    } catch (error: any) {
+      console.error("Error saving strategy:", error);
+      toast({
+        title: "Error saving strategy",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+  if (loading) {
+    return <div className="h-screen flex items-center justify-center bg-background text-foreground">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>;
+  }
+  return <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
             {/* Cinematic Sticky Header */}
             <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -170,17 +171,7 @@ export default function Strategy() {
                             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
                             Save Draft
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                await handleSave(false);
-                                navigate(`/script-selection/${id}`, { state: { id, strategy } });
-                            }}
-                            disabled={saving}
-                            className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
-                        >
-                            Continue to Creative
-                            <Zap className="w-4 h-4 ml-2" />
-                        </Button>
+                        
                     </div>
                 </div>
             </div>
@@ -193,22 +184,11 @@ export default function Strategy() {
 
                         {/* Modules Container with fade-in */}
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            <StrategySchedule
-                                strategy={strategy}
-                                setStrategy={setStrategy}
-                                date={date}
-                                setDate={setDate}
-                            />
+                            <StrategySchedule strategy={strategy} setStrategy={setStrategy} date={date} setDate={setDate} />
 
-                            <StrategyAudience
-                                strategy={strategy}
-                                setStrategy={setStrategy}
-                            />
+                            <StrategyAudience strategy={strategy} setStrategy={setStrategy} />
 
-                            <StrategyPlacements
-                                strategy={strategy}
-                                setStrategy={setStrategy}
-                            />
+                            <StrategyPlacements strategy={strategy} setStrategy={setStrategy} />
                         </div>
 
                     </div>
@@ -287,6 +267,5 @@ export default function Strategy() {
 
                 </div>
             </div>
-        </div>
-    );
+        </div>;
 }
