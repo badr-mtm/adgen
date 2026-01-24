@@ -50,9 +50,24 @@ export function InteractiveGlobalMap({
   const selectedRegionData = REGIONS.find(r => r.id === selectedRegion);
 
   return (
-    <div className="relative w-full h-[300px] lg:h-[400px] rounded-3xl overflow-hidden border border-border/50 bg-gradient-to-b from-card/60 to-card backdrop-blur-xl group">
-      {/* Abstract Map Background */}
-      <div className="absolute inset-0 opacity-30 dark:opacity-20 bg-[url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg')] bg-cover bg-center bg-no-repeat grayscale contrast-125 dark:invert-[.85]" />
+    <div className="relative w-full h-[300px] lg:h-[400px] rounded-3xl overflow-hidden border border-border bg-card backdrop-blur-xl group">
+      {/* Abstract Map Background - Seamless Tiling Pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.08] dark:opacity-[0.15]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 500'%3E%3Cpath fill='none' stroke='currentColor' stroke-width='0.5' d='M0,250 Q250,200 500,250 T1000,250 M0,150 Q200,100 400,150 T800,150 T1000,150 M0,350 Q300,300 600,350 T1000,350'/%3E%3Ccircle cx='200' cy='180' r='3' fill='currentColor'/%3E%3Ccircle cx='500' cy='220' r='4' fill='currentColor'/%3E%3Ccircle cx='800' cy='200' r='3' fill='currentColor'/%3E%3Ccircle cx='150' cy='320' r='2' fill='currentColor'/%3E%3Ccircle cx='650' cy='350' r='3' fill='currentColor'/%3E%3C/svg%3E")`,
+          backgroundSize: '600px 300px',
+          backgroundRepeat: 'repeat',
+        }}
+      />
+      {/* Dot Grid Overlay */}
+      <div 
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06]"
+        style={{
+          backgroundImage: `radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)`,
+          backgroundSize: '24px 24px',
+        }}
+      />
 
       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 

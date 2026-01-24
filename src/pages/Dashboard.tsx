@@ -199,19 +199,23 @@ const Dashboard = () => {
 
         {/* Global Reach Hero - Interactive Map */}
         <ScrollReveal direction="up" duration={0.5} delay={0.1}>
-          <div className="relative w-full h-[400px] lg:h-[500px] rounded-3xl overflow-hidden border border-white/5 bg-black/40 backdrop-blur-xl group">
+          <div className="relative w-full h-[400px] lg:h-[500px] rounded-3xl overflow-hidden border border-border bg-card backdrop-blur-xl group">
 
-            {/* Live Map Foundation */}
+            {/* Live Map Foundation - Seamless Tiling */}
             <div className="absolute inset-0 z-0">
               <MapContainer
                 center={[20, 0]}
                 zoom={2}
-                style={{ height: "100%", width: "100%", background: '#0a0a0a' }}
+                minZoom={2}
+                maxZoom={6}
+                worldCopyJump={true}
+                style={{ height: "100%", width: "100%", background: 'hsl(var(--card))' }}
                 zoomControl={false}
                 attributionControl={false}
               >
                 <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
+                  noWrap={false}
                 />
 
                 {campaignLocations.map((loc: any, idx: number) => (
@@ -227,10 +231,10 @@ const Dashboard = () => {
                       className: 'animate-pulse'
                     }}
                   >
-                    <Popup className="text-black">
+                    <Popup>
                       <div className="p-1">
                         <p className="font-bold text-xs uppercase tracking-widest text-primary mb-1">Live Delivery</p>
-                        <p className="font-bold text-sm">{loc.campaignTitle}</p>
+                        <p className="font-bold text-sm text-foreground">{loc.campaignTitle}</p>
                         <p className="text-xs text-muted-foreground">{loc.name}</p>
                       </div>
                     </Popup>
@@ -240,9 +244,9 @@ const Dashboard = () => {
                 {/* Always show a few global beacons for depth if no active campaigns */}
                 {campaignLocations.length === 0 && (
                   <>
-                    <CircleMarker center={[40.7128, -74.0060]} radius={8} pathOptions={{ fillColor: '#3b82f6', fillOpacity: 0.2, color: '#3b82f6', weight: 1 }} />
-                    <CircleMarker center={[51.5074, -0.1278]} radius={8} pathOptions={{ fillColor: '#6366f1', fillOpacity: 0.2, color: '#6366f1', weight: 1 }} />
-                    <CircleMarker center={[35.6762, 139.6503]} radius={8} pathOptions={{ fillColor: '#8b5cf6', fillOpacity: 0.2, color: '#8b5cf6', weight: 1 }} />
+                    <CircleMarker center={[40.7128, -74.0060]} radius={8} pathOptions={{ fillColor: 'hsl(var(--primary))', fillOpacity: 0.2, color: 'hsl(var(--primary))', weight: 1 }} />
+                    <CircleMarker center={[51.5074, -0.1278]} radius={8} pathOptions={{ fillColor: 'hsl(var(--primary))', fillOpacity: 0.15, color: 'hsl(var(--primary))', weight: 1 }} />
+                    <CircleMarker center={[35.6762, 139.6503]} radius={8} pathOptions={{ fillColor: 'hsl(var(--primary))', fillOpacity: 0.15, color: 'hsl(var(--primary))', weight: 1 }} />
                   </>
                 )}
 
@@ -251,12 +255,12 @@ const Dashboard = () => {
                   style={(feature) => {
                     const isActive = activeRegions.has(feature?.properties?.name);
                     return {
-                      fillColor: isActive ? '#10b981' : 'transparent', // emerald-500 for active
+                      fillColor: isActive ? 'hsl(var(--primary))' : 'transparent',
                       weight: isActive ? 1 : 0.5,
                       opacity: 1,
-                      color: isActive ? '#34d399' : 'rgba(255, 255, 255, 0.1)',
+                      color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--border))',
                       dashArray: isActive ? '' : '3',
-                      fillOpacity: isActive ? 0.3 : 0
+                      fillOpacity: isActive ? 0.25 : 0
                     };
                   }}
                 />
@@ -264,16 +268,16 @@ const Dashboard = () => {
             </div>
 
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
-            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/80 to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/60 to-transparent z-10 pointer-events-none" />
 
             {/* Live Data HUD */}
             <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-md border border-border">
                 <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white">Live Broadcast Telemetry</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">Live Broadcast Telemetry</span>
               </div>
               {activeCampaigns.length > 0 && (
-                <div className="px-3 py-1 text-[10px] font-medium text-white/40 uppercase tracking-tighter">
+                <div className="px-3 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-tighter">
                   Streaming to {activeCampaigns.length} Active Nodes
                 </div>
               )}
@@ -290,22 +294,22 @@ const Dashboard = () => {
                 <h3 className="text-primary font-bold uppercase tracking-widest text-xs mb-1 opacity-80 flex items-center gap-2">
                   <Globe className="h-4 w-4" /> Global Audience Impact
                 </h3>
-                <div className="text-5xl lg:text-6xl font-black tabular-nums tracking-tighter text-white drop-shadow-2xl">
-                  {kpiStats.totalHouseholds}<span className="text-2xl text-white/40 font-normal ml-3">Million HH Reach</span>
+                <div className="text-5xl lg:text-6xl font-black tabular-nums tracking-tighter text-foreground drop-shadow-lg">
+                  {kpiStats.totalHouseholds}<span className="text-2xl text-muted-foreground font-normal ml-3">Million HH Reach</span>
                 </div>
               </div>
-              <div className="flex gap-8 text-right bg-black/40 backdrop-blur-md p-6 rounded-2xl border border-white/5">
+              <div className="flex gap-8 text-right bg-card/80 backdrop-blur-md p-6 rounded-2xl border border-border">
                 <div>
-                  <p className="text-white/40 text-[10px] uppercase font-bold tracking-wider mb-1">Nodes</p>
-                  <p className="text-2xl font-black text-white">{activeCampaigns.length}</p>
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Nodes</p>
+                  <p className="text-2xl font-black text-foreground">{activeCampaigns.length}</p>
                 </div>
                 <div>
-                  <p className="text-white/40 text-[10px] uppercase font-bold tracking-wider mb-1">Network Load</p>
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Network Load</p>
                   <p className="text-2xl font-black text-primary">High</p>
                 </div>
                 <div>
-                  <p className="text-white/40 text-[10px] uppercase font-bold tracking-wider mb-1">Latency</p>
-                  <p className="text-2xl font-black text-white">12ms</p>
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Latency</p>
+                  <p className="text-2xl font-black text-foreground">12ms</p>
                 </div>
               </div>
             </div>
