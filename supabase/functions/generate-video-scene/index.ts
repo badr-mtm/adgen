@@ -30,7 +30,7 @@ serve(async (req) => {
         const { data: { user }, error: userError } = await supabaseAuth.auth.getUser(token);
         if (userError || !user) throw new Error('Unauthorized');
 
-        const { campaignId, sceneNumber, model = "luma", customPrompt } = await req.json();
+        const { campaignId, sceneNumber, model = "wan-fast", customPrompt, duration = "5", aspectRatio = "16:9" } = await req.json();
         console.log(`Generating video for scene ${sceneNumber} using model ${model}`);
 
         const { data: campaign, error: campaignError } = await supabase
@@ -48,28 +48,94 @@ serve(async (req) => {
         const scene = storyboard.scenes.find((s: any) => s.sceneNumber === sceneNumber);
         if (!scene) throw new Error('Scene not found');
 
-        const FAL_KEY = Deno.env.get('FAL_KEY') || "b0988bc88e22414d92aaec70794b5918";
+        const FAL_KEY = Deno.env.get('FAL_KEY');
         if (!FAL_KEY) throw new Error('FAL_KEY not configured');
 
         const prompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality cinematic motion.`;
 
-        // Map model to fal endpoint
-        const modelEndpoint = model === "kling" ? "fal-ai/kling-video/v1/standard/text-to-video" : "fal-ai/luma-dream-machine";
+        // Map model to fal endpoint and build request body
+        let modelEndpoint: string;
+        let requestBody: Record<string, any>;
+
+        switch (model) {
+            case "wan-fast":
+                // Wan 2.2 Fast - optimized for speed
+                modelEndpoint = "fal-ai/wan/v2.2-5b/text-to-video/fast-wan";
+                requestBody = {
+                    prompt,
+                    num_frames: 81,
+                    frames_per_second: 24,
+                    resolution: "720p",
+                    aspect_ratio: aspectRatio,
+                    enable_safety_checker: true,
+                    enable_prompt_expansion: true,
+                    guidance_scale: 3.5,
+                    interpolator_model: "film",
+                    num_interpolated_frames: 0,
+                    video_quality: "high",
+                    video_write_mode: "balanced"
+                };
+                break;
+            case "wan-pro":
+                // Wan 2.2 A14B - highest quality
+                modelEndpoint = "fal-ai/wan/v2.2-a14b/text-to-video";
+                requestBody = {
+                    prompt,
+                    num_frames: 81,
+                    frames_per_second: 16,
+                    resolution: "720p",
+                    aspect_ratio: aspectRatio,
+                    num_inference_steps: 27,
+                    enable_safety_checker: true,
+                    enable_prompt_expansion: true,
+                    guidance_scale: 3.5,
+                    guidance_scale_2: 4,
+                    shift: 5,
+                    interpolator_model: "film",
+                    num_interpolated_frames: 1,
+                    video_quality: "high",
+                    video_write_mode: "balanced"
+                };
+                break;
+            case "wan-25":
+                // Wan 2.5 Preview - newest model
+                modelEndpoint = "fal-ai/wan-25-preview/text-to-video";
+                requestBody = {
+                    prompt,
+                    aspect_ratio: aspectRatio,
+                    resolution: "1080p",
+                    duration: duration,
+                    negative_prompt: "low resolution, error, worst quality, low quality, defects, blurry",
+                    enable_prompt_expansion: true,
+                    enable_safety_checker: true
+                };
+                break;
+            case "kling":
+                modelEndpoint = "fal-ai/kling-video/v1/standard/text-to-video";
+                requestBody = {
+                    prompt,
+                    ...(scene.visualUrl && { image_url: scene.visualUrl })
+                };
+                break;
+            case "luma":
+            default:
+                modelEndpoint = "fal-ai/luma-dream-machine";
+                requestBody = {
+                    prompt,
+                    ...(scene.visualUrl && { image_url: scene.visualUrl })
+                };
+                break;
+        }
 
         console.log(`Calling Fal.ai: ${modelEndpoint}`);
 
-        // Initial request to kick off generation
         const response = await fetch(`https://fal.run/${modelEndpoint}`, {
             method: "POST",
             headers: {
                 "Authorization": `Key ${FAL_KEY}`,
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                prompt,
-                // Optional: image_url for image-to-video if we have a visualUrl
-                ...(scene.visualUrl && { image_url: scene.visualUrl })
-            }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
