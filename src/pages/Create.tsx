@@ -178,9 +178,9 @@ const Create = () => {
     <DashboardLayout>
       <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center p-6">
 
-        {/* Cinematic Background */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background z-0" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none mix-blend-overlay" />
+        {/* Cinematic Background - theme aware */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background z-0" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 dark:opacity-20 z-0 pointer-events-none mix-blend-overlay" />
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
