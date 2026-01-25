@@ -66,7 +66,7 @@ const SceneEditor = ({
   const { toast } = useToast();
   const [editedScene, setEditedScene] = useState<Scene>(scene);
   const [customPrompt, setCustomPrompt] = useState("");
-  const [selectedModel, setSelectedModel] = useState("pexels"); // Default to pexels for testing
+  const [selectedModel, setSelectedModel] = useState("wan-fast"); // Default to Wan Fast
   const [activeTab, setActiveTab] = useState<"visual" | "text" | "timing">("visual");
   const [viewMode, setViewMode] = useState<"static" | "motion">("static");
   const [isApplyingStyle, setIsApplyingStyle] = useState(false);
@@ -137,6 +137,15 @@ const SceneEditor = ({
   };
 
   const handleGenerateVideoClick = () => {
+    const modelNames: Record<string, string> = {
+      "wan-fast": "Wan Fast",
+      "wan-pro": "Wan Pro",
+      "wan-25": "Wan 2.5",
+      "luma": "Luma Dream",
+      "kling": "Kling AI",
+      "pexels": "Pexels Stock"
+    };
+    
     if (selectedModel === "pexels") {
       toast({
         title: "Fetching Stock Footage",
@@ -144,7 +153,7 @@ const SceneEditor = ({
       });
     } else {
       toast({
-        title: `${selectedModel === 'luma' ? 'Luma Dream' : 'Kling AI'} Rendering`,
+        title: `${modelNames[selectedModel] || selectedModel} Rendering`,
         description: "AI video generation started. This may take 1-2 minutes."
       });
     }
@@ -337,38 +346,85 @@ const SceneEditor = ({
                   <div className="space-y-3">
                     <Label className="text-xs font-bold text-muted-foreground uppercase">Render Engine</Label>
                     <div className="grid grid-cols-2 gap-3">
+                      {/* Wan Fast - Primary recommended */}
                       <div
-                        onClick={() => setSelectedModel("luma")}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "luma" ? "bg-primary/20 border-primary/50 shadow-lg" : "bg-muted/30 border-border hover:border-primary/30"}`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-bold text-foreground">Luma Dream</span>
-                          {selectedModel === "luma" && <div className="w-2 h-2 bg-primary rounded-full" />}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">Cinematic motion, high coherence.</p>
-                      </div>
-                      <div
-                        onClick={() => setSelectedModel("kling")}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "kling" ? "bg-accent/30 border-accent shadow-lg" : "bg-muted/30 border-border hover:border-accent/30"}`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-bold text-foreground">Kling AI</span>
-                          {selectedModel === "kling" && <div className="w-2 h-2 bg-accent rounded-full" />}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">Photorealistic texture focus.</p>
-                      </div>
-                      <div
-                        onClick={() => setSelectedModel("pexels")}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all col-span-2 ${selectedModel === "pexels" ? "bg-green-500/20 border-green-500/50 shadow-lg" : "bg-muted/30 border-border hover:border-green-500/30"}`}
+                        onClick={() => setSelectedModel("wan-fast")}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "wan-fast" ? "bg-primary/20 border-primary/50 shadow-lg ring-2 ring-primary/30" : "bg-muted/30 border-border hover:border-primary/30"}`}
                       >
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-foreground">Free Production (Pexels)</span>
-                            <Badge variant="outline" className="text-[8px] h-4 bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">RECOMMENDED FOR TEST</Badge>
+                            <span className="text-sm font-bold text-foreground">Wan Fast</span>
+                            <Badge variant="outline" className="text-[8px] h-4 bg-primary/20 text-primary border-primary/30">RECOMMENDED</Badge>
+                          </div>
+                          {selectedModel === "wan-fast" && <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Fast, high-quality. Best balance of speed & quality.</p>
+                      </div>
+                      
+                      {/* Wan Pro - Highest quality */}
+                      <div
+                        onClick={() => setSelectedModel("wan-pro")}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "wan-pro" ? "bg-accent/30 border-accent shadow-lg" : "bg-muted/30 border-border hover:border-accent/30"}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-bold text-foreground">Wan Pro</span>
+                          {selectedModel === "wan-pro" && <div className="w-2 h-2 bg-accent rounded-full" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Multi-step reasoning. Higher detail & coherence.</p>
+                      </div>
+                      
+                      {/* Wan 2.5 - Latest model */}
+                      <div
+                        onClick={() => setSelectedModel("wan-25")}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "wan-25" ? "bg-indigo-500/20 border-indigo-500/50 shadow-lg" : "bg-muted/30 border-border hover:border-indigo-500/30"}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-foreground">Wan 2.5</span>
+                            <Badge variant="outline" className="text-[8px] h-4 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border-indigo-500/30">NEW</Badge>
+                          </div>
+                          {selectedModel === "wan-25" && <div className="w-2 h-2 bg-indigo-500 rounded-full" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Latest model. 1080p output, 5s clips.</p>
+                      </div>
+                      
+                      {/* Luma Dream */}
+                      <div
+                        onClick={() => setSelectedModel("luma")}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "luma" ? "bg-amber-500/20 border-amber-500/50 shadow-lg" : "bg-muted/30 border-border hover:border-amber-500/30"}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-bold text-foreground">Luma Dream</span>
+                          {selectedModel === "luma" && <div className="w-2 h-2 bg-amber-500 rounded-full" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Cinematic motion, high coherence.</p>
+                      </div>
+                      
+                      {/* Kling AI */}
+                      <div
+                        onClick={() => setSelectedModel("kling")}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "kling" ? "bg-rose-500/20 border-rose-500/50 shadow-lg" : "bg-muted/30 border-border hover:border-rose-500/30"}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-bold text-foreground">Kling AI</span>
+                          {selectedModel === "kling" && <div className="w-2 h-2 bg-rose-500 rounded-full" />}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Photorealistic texture focus.</p>
+                      </div>
+                      
+                      {/* Pexels Stock */}
+                      <div
+                        onClick={() => setSelectedModel("pexels")}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${selectedModel === "pexels" ? "bg-green-500/20 border-green-500/50 shadow-lg" : "bg-muted/30 border-border hover:border-green-500/30"}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-foreground">Pexels Stock</span>
+                            <Badge variant="outline" className="text-[8px] h-4 bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">FREE</Badge>
                           </div>
                           {selectedModel === "pexels" && <div className="w-2 h-2 bg-green-500 rounded-full" />}
                         </div>
-                        <p className="text-[10px] text-muted-foreground">Instant cinematic clips from stock library. No API key required for testing.</p>
+                        <p className="text-[10px] text-muted-foreground">Instant stock clips. No API cost.</p>
                       </div>
                     </div>
                   </div>
