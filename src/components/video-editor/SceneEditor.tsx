@@ -46,7 +46,7 @@ interface Scene {
   type?: string;
 }
 
-type AspectRatioOption = "16:9" | "9:16" | "1:1";
+type AspectRatioOption = "16:9" | "4:3" | "21:9";
 
 interface SceneEditorProps {
   scene: Scene;
@@ -352,26 +352,48 @@ const SceneEditor = ({
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {activeTab === "visual" && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                  {/* Aspect Ratio Selection */}
+                  {/* TV Aspect Ratio Selection */}
                   <div className="space-y-3">
-                    <Label className="text-xs font-bold text-muted-foreground uppercase">Aspect Ratio</Label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">Broadcast Format</Label>
+                    <div className="grid grid-cols-3 gap-3">
                       {[
-                        { value: "16:9" as AspectRatioOption, label: "16:9", desc: "Landscape / TV", icon: "▬" },
-                        { value: "9:16" as AspectRatioOption, label: "9:16", desc: "Vertical / Mobile", icon: "▮" },
-                        { value: "1:1" as AspectRatioOption, label: "1:1", desc: "Square / Social", icon: "■" },
+                        { value: "16:9" as AspectRatioOption, label: "16:9", desc: "HDTV Standard", width: 64, height: 36 },
+                        { value: "4:3" as AspectRatioOption, label: "4:3", desc: "Legacy TV", width: 48, height: 36 },
+                        { value: "21:9" as AspectRatioOption, label: "21:9", desc: "Cinematic", width: 72, height: 31 },
                       ].map((ratio) => (
                         <button
                           key={ratio.value}
                           onClick={() => setSelectedAspectRatio(ratio.value)}
                           className={`p-3 rounded-lg border text-center transition-all ${
                             selectedAspectRatio === ratio.value
-                              ? "border-primary bg-primary/20 text-primary shadow-lg"
-                              : "border-border bg-muted/30 text-muted-foreground hover:border-primary/50"
+                              ? "border-primary bg-primary/20 shadow-lg ring-2 ring-primary/30"
+                              : "border-border bg-muted/30 hover:border-primary/50"
                           }`}
                         >
-                          <div className="text-lg mb-1">{ratio.icon}</div>
-                          <span className="text-sm font-bold block">{ratio.label}</span>
+                          {/* Visual TV Screen Preview */}
+                          <div className="flex items-center justify-center mb-2">
+                            <div 
+                              className={`border-2 rounded-sm flex items-center justify-center ${
+                                selectedAspectRatio === ratio.value 
+                                  ? "border-primary bg-primary/10" 
+                                  : "border-muted-foreground/50 bg-muted/50"
+                              }`}
+                              style={{ 
+                                width: `${ratio.width}px`, 
+                                height: `${ratio.height}px`,
+                                minHeight: '28px'
+                              }}
+                            >
+                              <Film className={`w-3 h-3 ${
+                                selectedAspectRatio === ratio.value 
+                                  ? "text-primary" 
+                                  : "text-muted-foreground/50"
+                              }`} />
+                            </div>
+                          </div>
+                          <span className={`text-sm font-bold block ${
+                            selectedAspectRatio === ratio.value ? "text-primary" : "text-foreground"
+                          }`}>{ratio.label}</span>
                           <p className="text-[10px] text-muted-foreground">{ratio.desc}</p>
                         </button>
                       ))}
