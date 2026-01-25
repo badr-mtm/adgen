@@ -574,14 +574,72 @@ export default function ScriptSelection() {
                               : "bg-card/50 hover:bg-card border-border"
                           }`}
                         >
-                          {/* Thumbnail Placeholder */}
-                          <div className="aspect-video rounded-lg bg-muted mb-4 flex items-center justify-center relative overflow-hidden">
-                            <Film className="h-10 w-10 text-muted-foreground" />
+                          {/* Style Preview Thumbnail */}
+                          <div className="aspect-video rounded-lg mb-4 relative overflow-hidden group">
+                            {/* Stylized Preview based on variant type */}
+                            {variant.styleName.toLowerCase().includes('cinematic') && (
+                              <div className="absolute inset-0 bg-gradient-to-br from-amber-900/80 via-stone-900 to-slate-900">
+                                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent" />
+                                <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-16 h-9 border-2 border-amber-400/60 rounded-sm flex items-center justify-center bg-black/30">
+                                    <Play className="h-4 w-4 text-amber-400/80" />
+                                  </div>
+                                </div>
+                                <div className="absolute bottom-2 left-2 right-2 flex gap-1">
+                                  {[...Array(4)].map((_, i) => (
+                                    <div key={i} className="flex-1 h-1 bg-amber-500/40 rounded-full" />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {variant.styleName.toLowerCase().includes('modern') && (
+                              <div className="absolute inset-0 bg-gradient-to-br from-violet-900/80 via-slate-900 to-cyan-900/80">
+                                <div className="absolute inset-0 bg-[conic-gradient(from_180deg,_var(--tw-gradient-stops))] from-violet-500/10 via-transparent to-cyan-500/10" />
+                                <div className="absolute top-2 left-2 w-8 h-8 border border-cyan-400/40 rounded-md" />
+                                <div className="absolute top-4 right-4 w-6 h-6 border border-violet-400/40 rounded-full" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-12 h-12 border-2 border-cyan-400/60 rounded-lg flex items-center justify-center bg-black/30 rotate-3">
+                                    <Play className="h-5 w-5 text-cyan-400/80" />
+                                  </div>
+                                </div>
+                                <div className="absolute bottom-2 left-2 right-2 flex gap-2">
+                                  {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="flex-1 h-0.5 bg-gradient-to-r from-violet-500/60 to-cyan-500/60 rounded-full" />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {variant.styleName.toLowerCase().includes('authentic') && (
+                              <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/70 via-stone-800 to-amber-900/60">
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-emerald-500/15 via-transparent to-amber-500/10" />
+                                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-14 h-10 border-2 border-emerald-400/50 rounded flex items-center justify-center bg-black/20">
+                                    <Play className="h-4 w-4 text-emerald-400/80" />
+                                  </div>
+                                </div>
+                                <div className="absolute bottom-2 left-2 right-2">
+                                  <div className="h-1 bg-emerald-500/30 rounded-full w-3/4" />
+                                </div>
+                              </div>
+                            )}
+                            {/* Fallback for other styles */}
+                            {!variant.styleName.toLowerCase().includes('cinematic') && 
+                             !variant.styleName.toLowerCase().includes('modern') && 
+                             !variant.styleName.toLowerCase().includes('authentic') && (
+                              <div className="absolute inset-0 bg-muted flex items-center justify-center">
+                                <Film className="h-10 w-10 text-muted-foreground" />
+                              </div>
+                            )}
+                            {/* Selection indicator */}
                             {selected && (
-                              <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                              <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-primary flex items-center justify-center z-10">
                                 <Check className="h-4 w-4 text-primary-foreground" />
                               </div>
                             )}
+                            {/* Hover overlay */}
+                            <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
 
                           <h3 className="font-bold text-lg text-foreground mb-1">{variant.styleName}</h3>
