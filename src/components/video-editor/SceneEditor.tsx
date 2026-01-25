@@ -52,7 +52,7 @@ interface SceneEditorProps {
   onClose: () => void;
   onSave: (scene: Scene) => void;
   onRegenerateVisual: (customPrompt?: string) => void;
-  onGenerateVideo: (model: string, customPrompt?: string) => void;
+  onGenerateVideo: (model: string, customPrompt?: string, duration?: string) => void;
   isRegenerating?: boolean;
   generationError?: string | null;
   onClearError?: () => void;
@@ -73,6 +73,7 @@ const SceneEditor = ({
   const [editedScene, setEditedScene] = useState<Scene>(scene);
   const [customPrompt, setCustomPrompt] = useState("");
   const [selectedModel, setSelectedModel] = useState("wan-fast"); // Default to Wan Fast
+  const [selectedDuration, setSelectedDuration] = useState<"5" | "10">("5"); // For Wan 2.5
   const [activeTab, setActiveTab] = useState<"visual" | "text" | "timing">("visual");
   const [viewMode, setViewMode] = useState<"static" | "motion">("static");
   const [isApplyingStyle, setIsApplyingStyle] = useState(false);
@@ -161,12 +162,15 @@ const SceneEditor = ({
         description: "Searching for cinematic clips matching your scene..."
       });
     } else {
+      const durationNote = selectedModel === "wan-25" ? ` (${selectedDuration}s clip)` : "";
       toast({
         title: `${modelNames[selectedModel] || selectedModel} Rendering`,
-        description: "AI video generation started. This may take 1-2 minutes."
+        description: `AI video generation started${durationNote}. This may take 1-2 minutes.`
       });
     }
-    onGenerateVideo(selectedModel, customPrompt || undefined);
+    // Pass duration for Wan 2.5 model
+    const duration = selectedModel === "wan-25" ? selectedDuration : undefined;
+    onGenerateVideo(selectedModel, customPrompt || undefined, duration);
   };
 
   const handleRegenerateClick = () => {
@@ -397,8 +401,41 @@ const SceneEditor = ({
                           </div>
                           {selectedModel === "wan-25" && <div className="w-2 h-2 bg-indigo-500 rounded-full" />}
                         </div>
-                        <p className="text-[10px] text-muted-foreground">Latest model. 1080p output, 5s clips.</p>
+                        <p className="text-[10px] text-muted-foreground">Latest model. 1080p output, 5s or 10s clips.</p>
                       </div>
+                      
+                      {/* Duration selector for Wan 2.5 */}
+                      {selectedModel === "wan-25" && (
+                        <div className="col-span-2 p-3 rounded-lg border border-indigo-500/30 bg-indigo-500/10">
+                          <Label className="text-xs font-bold text-muted-foreground uppercase mb-2 block">Clip Duration</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              onClick={() => setSelectedDuration("5")}
+                              className={`p-2 rounded-md border text-center transition-all ${
+                                selectedDuration === "5"
+                                  ? "border-indigo-500 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400"
+                                  : "border-border bg-muted/30 text-muted-foreground hover:border-indigo-500/50"
+                              }`}
+                            >
+                              <Clock className="w-4 h-4 mx-auto mb-1" />
+                              <span className="text-sm font-bold">5 sec</span>
+                              <p className="text-[10px] text-muted-foreground">Faster render</p>
+                            </button>
+                            <button
+                              onClick={() => setSelectedDuration("10")}
+                              className={`p-2 rounded-md border text-center transition-all ${
+                                selectedDuration === "10"
+                                  ? "border-indigo-500 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400"
+                                  : "border-border bg-muted/30 text-muted-foreground hover:border-indigo-500/50"
+                              }`}
+                            >
+                              <Clock className="w-4 h-4 mx-auto mb-1" />
+                              <span className="text-sm font-bold">10 sec</span>
+                              <p className="text-[10px] text-muted-foreground">Longer clip</p>
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       
                       {/* Luma Dream */}
                       <div
