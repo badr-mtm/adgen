@@ -387,7 +387,7 @@ export default function VideoEditor() {
     }
   };
 
-  const handleGenerateVideo = async (model: string, customPrompt?: string, duration?: string) => {
+  const handleGenerateVideo = async (model: string, customPrompt?: string, duration?: string, aspectRatio?: string) => {
     setIsRegenerating(true);
     setGenerationError(null);
     const FAL_KEY = import.meta.env.VITE_FAL_KEY;
@@ -474,7 +474,8 @@ export default function VideoEditor() {
           sceneNumber: scenes[currentSceneIndex].sceneNumber,
           model,
           customPrompt,
-          ...(duration && { duration }) // Pass duration for Wan 2.5
+          ...(duration && { duration }),
+          ...(aspectRatio && { aspectRatio })
         }
       });
 

@@ -46,13 +46,15 @@ interface Scene {
   type?: string;
 }
 
+type AspectRatioOption = "16:9" | "9:16" | "1:1";
+
 interface SceneEditorProps {
   scene: Scene;
   isOpen: boolean;
   onClose: () => void;
   onSave: (scene: Scene) => void;
   onRegenerateVisual: (customPrompt?: string) => void;
-  onGenerateVideo: (model: string, customPrompt?: string, duration?: string) => void;
+  onGenerateVideo: (model: string, customPrompt?: string, duration?: string, aspectRatio?: string) => void;
   isRegenerating?: boolean;
   generationError?: string | null;
   onClearError?: () => void;
@@ -74,6 +76,7 @@ const SceneEditor = ({
   const [customPrompt, setCustomPrompt] = useState("");
   const [selectedModel, setSelectedModel] = useState("wan-fast"); // Default to Wan Fast
   const [selectedDuration, setSelectedDuration] = useState<"5" | "10">("5"); // For Wan 2.5
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState<AspectRatioOption>("16:9");
   const [activeTab, setActiveTab] = useState<"visual" | "text" | "timing">("visual");
   const [viewMode, setViewMode] = useState<"static" | "motion">("static");
   const [isApplyingStyle, setIsApplyingStyle] = useState(false);
@@ -165,12 +168,12 @@ const SceneEditor = ({
       const durationNote = selectedModel === "wan-25" ? ` (${selectedDuration}s clip)` : "";
       toast({
         title: `${modelNames[selectedModel] || selectedModel} Rendering`,
-        description: `AI video generation started${durationNote}. This may take 1-2 minutes.`
+        description: `AI video generation started${durationNote} at ${selectedAspectRatio}. This may take 1-2 minutes.`
       });
     }
-    // Pass duration for Wan 2.5 model
+    // Pass duration for Wan 2.5 model and aspect ratio for all models
     const duration = selectedModel === "wan-25" ? selectedDuration : undefined;
-    onGenerateVideo(selectedModel, customPrompt || undefined, duration);
+    onGenerateVideo(selectedModel, customPrompt || undefined, duration, selectedAspectRatio);
   };
 
   const handleRegenerateClick = () => {
@@ -349,6 +352,32 @@ const SceneEditor = ({
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {activeTab === "visual" && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                  {/* Aspect Ratio Selection */}
+                  <div className="space-y-3">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">Aspect Ratio</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: "16:9" as AspectRatioOption, label: "16:9", desc: "Landscape / TV", icon: "▬" },
+                        { value: "9:16" as AspectRatioOption, label: "9:16", desc: "Vertical / Mobile", icon: "▮" },
+                        { value: "1:1" as AspectRatioOption, label: "1:1", desc: "Square / Social", icon: "■" },
+                      ].map((ratio) => (
+                        <button
+                          key={ratio.value}
+                          onClick={() => setSelectedAspectRatio(ratio.value)}
+                          className={`p-3 rounded-lg border text-center transition-all ${
+                            selectedAspectRatio === ratio.value
+                              ? "border-primary bg-primary/20 text-primary shadow-lg"
+                              : "border-border bg-muted/30 text-muted-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          <div className="text-lg mb-1">{ratio.icon}</div>
+                          <span className="text-sm font-bold block">{ratio.label}</span>
+                          <p className="text-[10px] text-muted-foreground">{ratio.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="space-y-3">
                     <Label className="text-xs font-bold text-muted-foreground uppercase">Creative Direction</Label>
                     <Textarea
