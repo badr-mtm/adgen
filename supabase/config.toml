@@ -35,15 +35,3 @@ verify_jwt = true
 
 [functions.video-ai-assistant]
 verify_jwt = false
-
-[functions.generate-variant-previews]
-verify_jwt = true
-
-[functions.generate-video-variants]
-verify_jwt = true
-
-[functions.generate-video-scene]
-verify_jwt = true
-
-[functions.generate-scripts]
-verify_jwt = false
