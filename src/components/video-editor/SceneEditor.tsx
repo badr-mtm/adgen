@@ -24,7 +24,9 @@ import {
   Camera,
   Wand2,
   Play,
-  Image as ImageIcon
+  Image as ImageIcon,
+  AlertTriangle,
+  RotateCcw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -52,6 +54,8 @@ interface SceneEditorProps {
   onRegenerateVisual: (customPrompt?: string) => void;
   onGenerateVideo: (model: string, customPrompt?: string) => void;
   isRegenerating?: boolean;
+  generationError?: string | null;
+  onClearError?: () => void;
 }
 
 const SceneEditor = ({
@@ -61,7 +65,9 @@ const SceneEditor = ({
   onSave,
   onRegenerateVisual,
   onGenerateVideo,
-  isRegenerating
+  isRegenerating,
+  generationError,
+  onClearError
 }: SceneEditorProps) => {
   const { toast } = useToast();
   const [editedScene, setEditedScene] = useState<Scene>(scene);
@@ -137,6 +143,9 @@ const SceneEditor = ({
   };
 
   const handleGenerateVideoClick = () => {
+    // Clear any previous error
+    onClearError?.();
+    
     const modelNames: Record<string, string> = {
       "wan-fast": "Wan Fast",
       "wan-pro": "Wan Pro",
@@ -161,6 +170,9 @@ const SceneEditor = ({
   };
 
   const handleRegenerateClick = () => {
+    // Clear any previous error
+    onClearError?.();
+    
     toast({
       title: "Regenerating Visual",
       description: "Creating a new static preview for this scene..."
@@ -428,6 +440,38 @@ const SceneEditor = ({
                       </div>
                     </div>
                   </div>
+
+                  {/* Error Display */}
+                  {generationError && (
+                    <div className="p-4 rounded-xl border border-destructive/50 bg-destructive/10 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-destructive">Video Generation Failed</p>
+                          <p className="text-xs text-destructive/80 mt-1 break-words">{generationError}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleGenerateVideoClick}
+                          size="sm"
+                          variant="destructive"
+                          className="flex-1"
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Retry Generation
+                        </Button>
+                        <Button
+                          onClick={() => onClearError?.()}
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          Dismiss
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="pt-4 flex flex-col gap-3">
                     <Button

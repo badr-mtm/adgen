@@ -33,6 +33,7 @@ export default function VideoEditor() {
   const [isEditingScene, setIsEditingScene] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showEndScreen, setShowEndScreen] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   // Undo/Redo History
   const [history, setHistory] = useState<any[]>([]);
@@ -350,6 +351,7 @@ export default function VideoEditor() {
 
   const handleRegenerateVisual = async (customPrompt?: string) => {
     setIsRegenerating(true);
+    setGenerationError(null);
     try {
       const { data, error } = await supabase.functions.invoke('generate-scene-visual', {
         body: {
@@ -377,7 +379,9 @@ export default function VideoEditor() {
         toast({ title: "Visual regenerated", description: "The new visual has been applied to this scene." });
       }
     } catch (err: any) {
-      toast({ title: "Regeneration failed", description: err.message, variant: "destructive" });
+      const errorMessage = err.message || "An unexpected error occurred";
+      setGenerationError(errorMessage);
+      toast({ title: "Regeneration failed", description: errorMessage, variant: "destructive" });
     } finally {
       setIsRegenerating(false);
     }
@@ -385,6 +389,7 @@ export default function VideoEditor() {
 
   const handleGenerateVideo = async (model: string, customPrompt?: string) => {
     setIsRegenerating(true);
+    setGenerationError(null);
     const FAL_KEY = import.meta.env.VITE_FAL_KEY;
 
     try {
@@ -491,7 +496,9 @@ export default function VideoEditor() {
         toast({ title: "Video generated", description: "The cinematic clip has been added to this scene." });
       }
     } catch (err: any) {
-      toast({ title: "Production failed", description: err.message, variant: "destructive" });
+      const errorMessage = err.message || "An unexpected error occurred during video generation";
+      setGenerationError(errorMessage);
+      toast({ title: "Production failed", description: errorMessage, variant: "destructive" });
     } finally {
       setIsRegenerating(false);
     }
@@ -733,11 +740,16 @@ export default function VideoEditor() {
           <SceneEditor
             scene={scenes[currentSceneIndex]}
             isOpen={isEditingScene}
-            onClose={() => setIsEditingScene(false)}
+            onClose={() => {
+              setIsEditingScene(false);
+              setGenerationError(null);
+            }}
             onSave={handleSaveScene}
             onRegenerateVisual={handleRegenerateVisual}
             onGenerateVideo={handleGenerateVideo}
             isRegenerating={isRegenerating}
+            generationError={generationError}
+            onClearError={() => setGenerationError(null)}
           />
         )}
       </div>
