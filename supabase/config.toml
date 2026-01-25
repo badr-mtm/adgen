@@ -46,4 +46,4 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.generate-scripts]
-verify_jwt = true
+verify_jwt = false
