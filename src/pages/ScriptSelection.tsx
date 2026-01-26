@@ -19,8 +19,18 @@ import {
   Lightbulb,
   Target,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Settings2,
+  Clock,
+  Monitor
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
@@ -86,7 +96,12 @@ export default function ScriptSelection() {
   const [generatingVideo, setGeneratingVideo] = useState(false);
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
   const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [showRegenSettings, setShowRegenSettings] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Video settings for regeneration
+  const [videoDuration, setVideoDuration] = useState<string>("5");
+  const [videoAspectRatio, setVideoAspectRatio] = useState<string>("16:9");
 
   useEffect(() => {
     if (navState?.adDescription) {
@@ -178,7 +193,7 @@ export default function ScriptSelection() {
     setEditingScript(false);
   };
 
-  const generateVideoAndContinue = async () => {
+  const generateVideoAndContinue = async (customDuration?: string, customAspectRatio?: string) => {
     const campaignId = id || navState?.campaignId;
     const scriptToUse = editedScript || selectedScript;
     
@@ -192,6 +207,7 @@ export default function ScriptSelection() {
     }
 
     setGeneratingVideo(true);
+    setShowRegenSettings(false);
 
     try {
       toast({
@@ -200,20 +216,16 @@ export default function ScriptSelection() {
         duration: 60000
       });
 
-      // Convert duration string to seconds for API
-      const durationStr = navState?.duration || '30s';
-      const durationSeconds = durationStr.includes('s') 
-        ? parseInt(durationStr.replace('s', '')) 
-        : 30;
-      // Fal.ai wan-2.5-t2v-fast supports 5s duration
-      const apiDuration = Math.min(durationSeconds, 5).toString();
+      // Use custom duration if provided, otherwise use state or default
+      const durationToUse = customDuration || videoDuration;
+      const aspectRatioToUse = customAspectRatio || videoAspectRatio;
 
       const { data: result, error } = await supabase.functions.invoke('generate-video-from-script', {
         body: {
           campaignId,
           script: scriptToUse,
-          duration: apiDuration,
-          aspectRatio: "16:9"
+          duration: durationToUse,
+          aspectRatio: aspectRatioToUse
         }
       });
 
@@ -224,7 +236,7 @@ export default function ScriptSelection() {
         setShowVideoPreview(true);
         toast({
           title: "Video Generated!",
-          description: "Preview your video below, then continue to the editor.",
+          description: `${durationToUse}s ${aspectRatioToUse} video ready for preview.`,
         });
       } else {
         throw new Error("No video generated");
@@ -452,7 +464,7 @@ export default function ScriptSelection() {
                     {!showVideoPreview ? (
                       <Button
                         size="lg"
-                        onClick={generateVideoAndContinue}
+                        onClick={() => generateVideoAndContinue()}
                         disabled={!selectedScript || generatingVideo}
                         className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
                       >
@@ -518,21 +530,95 @@ export default function ScriptSelection() {
                             className="w-full h-full object-contain"
                           />
                         </div>
-                        <div className="flex justify-between items-center mt-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setShowVideoPreview(false);
-                              setGeneratedVideoUrl(null);
-                            }}
-                          >
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                            Regenerate
-                          </Button>
-                          <p className="text-xs text-muted-foreground">
-                            Click "Continue to Editor" to refine your video
-                          </p>
+                        <div className="flex flex-col gap-4 mt-4">
+                          {/* Regeneration Settings */}
+                          <AnimatePresence>
+                            {showRegenSettings && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="p-4 bg-muted/50 rounded-lg border border-border space-y-4">
+                                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                                    <Settings2 className="h-4 w-4 text-primary" />
+                                    Regeneration Settings
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-2 gap-4">
+                                    {/* Duration */}
+                                    <div className="space-y-2">
+                                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                        <Clock className="h-3 w-3" />
+                                        Duration
+                                      </label>
+                                      <Select value={videoDuration} onValueChange={setVideoDuration}>
+                                        <SelectTrigger className="h-9">
+                                          <SelectValue placeholder="Duration" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="5">5 seconds</SelectItem>
+                                          <SelectItem value="10">10 seconds</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+
+                                    {/* Aspect Ratio */}
+                                    <div className="space-y-2">
+                                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                        <Monitor className="h-3 w-3" />
+                                        Aspect Ratio
+                                      </label>
+                                      <Select value={videoAspectRatio} onValueChange={setVideoAspectRatio}>
+                                        <SelectTrigger className="h-9">
+                                          <SelectValue placeholder="Aspect Ratio" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="16:9">16:9 (HDTV)</SelectItem>
+                                          <SelectItem value="4:3">4:3 (Legacy TV)</SelectItem>
+                                          <SelectItem value="21:9">21:9 (Cinematic)</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+
+                                  <Button
+                                    onClick={() => generateVideoAndContinue(videoDuration, videoAspectRatio)}
+                                    disabled={generatingVideo}
+                                    className="w-full"
+                                  >
+                                    {generatingVideo ? (
+                                      <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Regenerating...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Sparkles className="h-4 w-4 mr-2" />
+                                        Generate with New Settings
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          <div className="flex justify-between items-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowRegenSettings(!showRegenSettings)}
+                              disabled={generatingVideo}
+                            >
+                              <Settings2 className="h-4 w-4 mr-2" />
+                              {showRegenSettings ? "Hide Settings" : "Regenerate with Settings"}
+                            </Button>
+                            <p className="text-xs text-muted-foreground">
+                              Click "Continue to Editor" to refine your video
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </motion.div>
