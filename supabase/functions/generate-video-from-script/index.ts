@@ -38,18 +38,18 @@ serve(async (req) => {
 
         console.log(`Generating video from script: "${script.title}"`);
 
-        const WAN_VIDEO_KEY = Deno.env.get('WAN_VIDEO_KEY');
-        if (!WAN_VIDEO_KEY) throw new Error('WAN_VIDEO_KEY not configured');
+        const FAL_KEY = Deno.env.get('FAL_KEY');
+        if (!FAL_KEY) throw new Error('FAL_KEY not configured');
 
         // Build prompt from the full script
         const prompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}.`;
 
-        console.log(`Using wan-video/wan-2.5-t2v with prompt: ${prompt.substring(0, 100)}...`);
+        console.log(`Using fal-ai/wan-25-preview/text-to-video with prompt: ${prompt.substring(0, 100)}...`);
 
-        const response = await fetch(`https://fal.run/wan-video/wan-2.5-t2v`, {
+        const response = await fetch(`https://fal.run/fal-ai/wan-25-preview/text-to-video`, {
             method: "POST",
             headers: {
-                "Authorization": `Key ${WAN_VIDEO_KEY}`,
+                "Authorization": `Key ${FAL_KEY}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -64,8 +64,8 @@ serve(async (req) => {
 
         if (!response.ok) {
             const error = await response.text();
-            console.error('wan-video API error:', error);
-            throw new Error(`wan-video API error: ${error}`);
+            console.error('Fal.ai API error:', error);
+            throw new Error(`Fal.ai API error: ${error}`);
         }
 
         const result = await response.json();
