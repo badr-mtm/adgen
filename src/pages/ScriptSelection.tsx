@@ -66,6 +66,7 @@ interface Script {
 interface VideoVersion {
   id: string;
   url: string;
+  thumbnailUrl?: string;
   duration: string;
   aspectRatio: string;
   language: string;
@@ -150,6 +151,56 @@ export default function ScriptSelection() {
   
   // Tab state
   const [activeTab, setActiveTab] = useState<string>("scripts");
+  
+  // Helper function to generate video thumbnail
+  const generateVideoThumbnail = (videoUrl: string): Promise<string | undefined> => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      video.crossOrigin = 'anonymous';
+      video.muted = true;
+      video.preload = 'metadata';
+      
+      video.onloadeddata = () => {
+        // Seek to 1 second or 10% of the video
+        video.currentTime = Math.min(1, video.duration * 0.1);
+      };
+      
+      video.onseeked = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 160;
+          canvas.height = 90;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            resolve(thumbnailDataUrl);
+          } else {
+            resolve(undefined);
+          }
+        } catch {
+          resolve(undefined);
+        }
+        video.remove();
+      };
+      
+      video.onerror = () => {
+        resolve(undefined);
+        video.remove();
+      };
+      
+      // Timeout fallback
+      setTimeout(() => {
+        if (!video.paused) {
+          resolve(undefined);
+          video.remove();
+        }
+      }, 5000);
+      
+      video.src = videoUrl;
+      video.load();
+    });
+  };
   
   // Computed voiceover script
   const voiceoverScript = (editedScript || selectedScript)?.scenes 
@@ -287,10 +338,14 @@ export default function ScriptSelection() {
       if (error) throw error;
 
       if (result?.videoUrl) {
+        // Generate thumbnail from the video
+        const thumbnailUrl = await generateVideoThumbnail(result.videoUrl);
+        
         // Create new video version
         const newVersion: VideoVersion = {
           id: `v${Date.now()}`,
           url: result.videoUrl,
+          thumbnailUrl,
           duration: durationToUse,
           aspectRatio: aspectRatioToUse,
           language: voiceoverLanguage,
@@ -770,48 +825,73 @@ export default function ScriptSelection() {
                             <div
                               key={version.id}
                               onClick={() => selectVideoVersion(version)}
-                              className={`group relative p-3 rounded-lg border cursor-pointer transition-all ${
+                              className={`group relative rounded-lg border cursor-pointer transition-all overflow-hidden ${
                                 selectedVideoVersion === version.id
-                                  ? "bg-primary/10 border-primary"
+                                  ? "bg-primary/10 border-primary ring-1 ring-primary"
                                   : "bg-muted/30 border-border hover:border-primary/50"
                               }`}
                             >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  {selectedVideoVersion === version.id && (
-                                    <Check className="h-3 w-3 text-primary" />
-                                  )}
-                                  <span className="text-xs font-medium text-foreground">
-                                    Version {idx + 1}
-                                  </span>
+                              {/* Thumbnail Preview */}
+                              <div className="relative aspect-video bg-black/50">
+                                {version.thumbnailUrl ? (
+                                  <img 
+                                    src={version.thumbnailUrl} 
+                                    alt={`Version ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Video className="h-6 w-6 text-muted-foreground/50" />
+                                  </div>
+                                )}
+                                {/* Play overlay on hover */}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                    <Play className="h-4 w-4 text-black ml-0.5" />
+                                  </div>
                                 </div>
+                                {/* Selected indicator */}
+                                {selectedVideoVersion === version.id && (
+                                  <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                                    <Check className="h-3 w-3 text-primary-foreground" />
+                                  </div>
+                                )}
+                                {/* Delete button */}
                                 {videoVersions.length > 1 && (
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute top-1.5 left-1.5 h-5 w-5 bg-black/60 hover:bg-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       deleteVideoVersion(version.id);
                                     }}
                                   >
-                                    <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                                    <Trash2 className="h-3 w-3 text-white" />
                                   </Button>
                                 )}
                               </div>
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                  {version.duration}s
-                                </Badge>
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                  {version.aspectRatio}
-                                </Badge>
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                  {LANGUAGE_LABELS[version.language] || version.language}
-                                </Badge>
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                  {CAMERA_LABELS[version.cameraMovement] || version.cameraMovement}
-                                </Badge>
+                              {/* Version info */}
+                              <div className="p-2">
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <span className="text-xs font-medium text-foreground">
+                                    V{idx + 1}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {version.generatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                    {version.duration}s
+                                  </Badge>
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                    {LANGUAGE_LABELS[version.language] || version.language}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                    {CAMERA_LABELS[version.cameraMovement] || version.cameraMovement}
+                                  </Badge>
+                                </div>
                               </div>
                             </div>
                           ))}
