@@ -192,8 +192,7 @@ const Create = () => {
             opacity: 1
           }} transition={{
             delay: 0.2
-          }} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4">
-              <Sparkles className="h-3 w-3" />
+          }} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4">AI ADS GENERATOR<Sparkles className="h-3 w-3" />
               AI TV Ad Creator
             </motion.div>
 
