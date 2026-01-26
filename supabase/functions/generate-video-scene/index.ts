@@ -48,42 +48,59 @@ serve(async (req) => {
         const scene = storyboard.scenes.find((s: any) => s.sceneNumber === sceneNumber);
         if (!scene) throw new Error('Scene not found');
 
-        const WAN_VIDEO_KEY = Deno.env.get('WAN_VIDEO_KEY');
-        if (!WAN_VIDEO_KEY) throw new Error('WAN_VIDEO_KEY not configured');
+        const REPLICATE_API_TOKEN = Deno.env.get('REPLICATE_API_TOKEN');
+        if (!REPLICATE_API_TOKEN) throw new Error('REPLICATE_API_TOKEN not configured');
 
         const prompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality cinematic motion.`;
 
-        console.log(`Generating scene video with wan-video/wan-2.5-t2v`);
+        console.log(`Generating scene video with Replicate wan-video/wan-2.5-t2v`);
 
-        const response = await fetch(`https://fal.run/wan-video/wan-2.5-t2v`, {
-            method: "POST",
+        // Start prediction on Replicate
+        const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+            method: 'POST',
             headers: {
-                "Authorization": `Key ${WAN_VIDEO_KEY}`,
-                "Content-Type": "application/json",
+                'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'wait'
             },
             body: JSON.stringify({
-                prompt,
-                negative_prompt: "low resolution, error, worst quality, low quality, defects, blurry, distorted, text, watermark",
-                aspect_ratio: aspectRatio,
-                duration: duration,
-                enable_prompt_expansion: true,
-                enable_safety_checker: true
-            }),
+                version: 'wan-video/wan-2.5-t2v',
+                input: {
+                    prompt,
+                    duration: parseInt(duration) || 5,
+                    aspect_ratio: aspectRatio
+                }
+            })
         });
 
-        if (!response.ok) {
-            const error = await response.text();
-            console.error('wan-video API error:', error);
-            throw new Error(`wan-video API error: ${error}`);
+        if (!createResponse.ok) {
+            const error = await createResponse.text();
+            console.error('Replicate API error:', error);
+            throw new Error(`Replicate API error: ${error}`);
         }
 
-        const result = await response.json();
-        const videoUrl = result.video?.url || result.url;
+        let prediction = await createResponse.json();
+        console.log('Prediction started:', prediction.id, 'Status:', prediction.status);
+
+        // Poll for completion if not using Prefer: wait or if still processing
+        while (prediction.status !== 'succeeded' && prediction.status !== 'failed') {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            const pollResponse = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+                headers: { 'Authorization': `Bearer ${REPLICATE_API_TOKEN}` }
+            });
+            prediction = await pollResponse.json();
+            console.log('Polling status:', prediction.status);
+        }
+
+        if (prediction.status === 'failed') {
+            throw new Error(`Video generation failed: ${prediction.error || 'Unknown error'}`);
+        }
+
+        const videoUrl = prediction.output;
 
         if (!videoUrl) {
-            // Fal.ai might return a request_id for polling in some configurations, 
-            // but their standard run endpoint is usually synchronous or wait-for-result.
-            throw new Error('No video URL returned from Fal.ai');
+            throw new Error('No video URL returned from Replicate');
         }
 
         // Download video and upload to Supabase Storage
