@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { VideoProject, Scene, VideoOverlaySettings, defaultOverlaySettings } from "@/types/videoEditor";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Components
 import VideoEditorSidebar from "@/components/video-editor/VideoEditorSidebar";
@@ -34,6 +35,10 @@ export default function VideoEditor() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showEndScreen, setShowEndScreen] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  
+  // Generated video from ScriptSelection page
+  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
+  const [showGeneratedVideo, setShowGeneratedVideo] = useState(false);
 
   // Undo/Redo History
   const [history, setHistory] = useState<any[]>([]);
@@ -94,6 +99,31 @@ export default function VideoEditor() {
 
         // Optimistic Load from Transition State (new flow passes variant data)
         const locationState = location.state as any;
+        
+        // Check for generated video from ScriptSelection page
+        if (locationState?.generatedVideoUrl) {
+          setGeneratedVideoUrl(locationState.generatedVideoUrl);
+          setShowGeneratedVideo(true);
+          
+          // Store script info if passed
+          if (locationState.script) {
+            setProject((prev: any) => ({
+              ...prev,
+              selectedScript: locationState.script
+            }));
+            
+            // Create scenes from script if available
+            if (locationState.script.scenes && locationState.script.scenes.length > 0) {
+              const mappedScenes = locationState.script.scenes.map((s: any, idx: number) => 
+                normalizeScene({
+                  ...s,
+                  videoUrl: idx === 0 ? locationState.generatedVideoUrl : '' // Assign video to first scene
+                }, idx)
+              );
+              setScenes(mappedScenes);
+            }
+          }
+        }
         
         if (locationState?.preloadedScenes && locationState.preloadedScenes.length > 0) {
           const mappedScenes = locationState.preloadedScenes.map((s: any, idx: number) => 
@@ -666,30 +696,60 @@ export default function VideoEditor() {
 
           {/* Main Editor Area */}
           <div className="flex-1 flex flex-col min-h-0 min-w-0 relative">
-            {/* Preview Player */}
-            <VideoPreview
-              scenes={scenes.map((s, idx) => ({
-                id: idx,
-                visualUrl: s.visualUrl || s.imageUrl || s.thumbnail || s.url,
-                videoUrl: s.videoUrl,
-                duration: s.duration,
-                voiceover: s.voiceover
-              }))}
-              currentSceneIndex={currentSceneIndex}
-              currentTime={currentTime}
-              sceneProgress={timelineScenes[currentSceneIndex] ? (currentTime - timelineScenes[currentSceneIndex].startTime) / (parseInt(scenes[currentSceneIndex]?.duration) || 1) : 0}
-              isPlaying={isPlaying}
-              onPlayPause={() => setIsPlaying(!isPlaying)}
-              onEditScene={() => setIsEditingScene(true)}
-              currentVoiceover={scenes[currentSceneIndex]?.voiceover}
-              overlaySettings={overlaySettings}
-              showEndScreen={showEndScreen}
-              brandName={project?.brand_name || "Brand"}
-              headline={scenes[currentSceneIndex]?.visualDescription?.split('.')[0]}
-              description={scenes[currentSceneIndex]?.visualDescription}
-              ctaText={overlaySettings.endScreen.ctaText}
-              ctaUrl={overlaySettings.endScreen.ctaUrl}
-            />
+            {/* Preview Player - Show generated video if available */}
+            {showGeneratedVideo && generatedVideoUrl ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-black/90 relative">
+                <div className="absolute top-4 left-4 z-10 flex items-center gap-3">
+                  <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-sm font-medium text-white">AI Generated Video</span>
+                </div>
+                <div className="absolute top-4 right-4 z-10">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowGeneratedVideo(false)}
+                    className="bg-background/20 border-white/30 text-white hover:bg-background/40"
+                  >
+                    Switch to Scene Editor
+                  </Button>
+                </div>
+                <div className="w-full max-w-4xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
+                  <video
+                    src={generatedVideoUrl}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <p className="mt-4 text-sm text-white/60">
+                  This is your AI-generated video. Use the Scene Editor for detailed refinements.
+                </p>
+              </div>
+            ) : (
+              <VideoPreview
+                scenes={scenes.map((s, idx) => ({
+                  id: idx,
+                  visualUrl: s.visualUrl || s.imageUrl || s.thumbnail || s.url,
+                  videoUrl: s.videoUrl,
+                  duration: s.duration,
+                  voiceover: s.voiceover
+                }))}
+                currentSceneIndex={currentSceneIndex}
+                currentTime={currentTime}
+                sceneProgress={timelineScenes[currentSceneIndex] ? (currentTime - timelineScenes[currentSceneIndex].startTime) / (parseInt(scenes[currentSceneIndex]?.duration) || 1) : 0}
+                isPlaying={isPlaying}
+                onPlayPause={() => setIsPlaying(!isPlaying)}
+                onEditScene={() => setIsEditingScene(true)}
+                currentVoiceover={scenes[currentSceneIndex]?.voiceover}
+                overlaySettings={overlaySettings}
+                showEndScreen={showEndScreen}
+                brandName={project?.brand_name || "Brand"}
+                headline={scenes[currentSceneIndex]?.visualDescription?.split('.')[0]}
+                description={scenes[currentSceneIndex]?.visualDescription}
+                ctaText={overlaySettings.endScreen.ctaText}
+                ctaUrl={overlaySettings.endScreen.ctaUrl}
+              />
+            )}
 
             {/* Assistant Toggle - now positioned relative effectively */}
             <AIAssistantPanel

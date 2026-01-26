@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -84,6 +84,9 @@ export default function ScriptSelection() {
 
   // Video generation state
   const [generatingVideo, setGeneratingVideo] = useState(false);
+  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (navState?.adDescription) {
@@ -217,16 +220,11 @@ export default function ScriptSelection() {
       if (error) throw error;
 
       if (result?.videoUrl) {
+        setGeneratedVideoUrl(result.videoUrl);
+        setShowVideoPreview(true);
         toast({
           title: "Video Generated!",
-          description: "Redirecting to editor...",
-        });
-
-        navigate(`/video-editor/${campaignId}`, {
-          state: {
-            generatedVideoUrl: result.videoUrl,
-            script: scriptToUse
-          }
+          description: "Preview your video below, then continue to the editor.",
         });
       } else {
         throw new Error("No video generated");
@@ -451,26 +449,95 @@ export default function ScriptSelection() {
 
                   {/* Footer */}
                   <div className="p-6 border-t border-border bg-muted/30 flex justify-end">
-                    <Button
-                      size="lg"
-                      onClick={generateVideoAndContinue}
-                      disabled={!selectedScript || generatingVideo}
-                      className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
-                    >
-                      {generatingVideo ? (
-                        <>
-                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                          Generating Video...
-                        </>
-                      ) : (
-                        <>
-                          Generate Video & Continue
-                          <ArrowRight className="h-5 w-5 ml-2" />
-                        </>
-                      )}
-                    </Button>
+                    {!showVideoPreview ? (
+                      <Button
+                        size="lg"
+                        onClick={generateVideoAndContinue}
+                        disabled={!selectedScript || generatingVideo}
+                        className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                      >
+                        {generatingVideo ? (
+                          <>
+                            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                            Generating Video...
+                          </>
+                        ) : (
+                          <>
+                            Generate Video
+                            <Sparkles className="h-5 w-5 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="lg"
+                        onClick={() => {
+                          const campaignId = id || navState?.campaignId;
+                          navigate(`/video-editor/${campaignId}`, {
+                            state: {
+                              generatedVideoUrl,
+                              script: editedScript || selectedScript
+                            }
+                          });
+                        }}
+                        className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                      >
+                        Continue to Editor
+                        <ArrowRight className="h-5 w-5 ml-2" />
+                      </Button>
+                    )}
                   </div>
                 </div>
+
+                {/* Video Preview Panel */}
+                <AnimatePresence>
+                  {showVideoPreview && generatedVideoUrl && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      className="mt-6 bg-card rounded-2xl border border-border overflow-hidden shadow-xl"
+                    >
+                      <div className="bg-muted/50 border-b border-border p-4 flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+                          <span className="text-sm font-medium text-foreground">Generated Video Preview</span>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          <Check className="h-3 w-3 mr-1" />
+                          Ready
+                        </Badge>
+                      </div>
+                      <div className="p-6">
+                        <div className="aspect-video bg-black rounded-xl overflow-hidden">
+                          <video
+                            ref={videoRef}
+                            src={generatedVideoUrl}
+                            controls
+                            autoPlay
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div className="flex justify-between items-center mt-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setShowVideoPreview(false);
+                              setGeneratedVideoUrl(null);
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Regenerate
+                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            Click "Continue to Editor" to refine your video
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
         </AnimatePresence>
