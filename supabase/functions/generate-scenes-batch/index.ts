@@ -105,10 +105,41 @@ serve(async (req) => {
         const languageName = LANGUAGE_NAMES[language] || 'English';
         const cameraPromptSuffix = CAMERA_PROMPTS[cameraMovement] || '';
 
+        // Initialize progress tracking in database
+        const initialProgress = {
+            current: 0,
+            total: scenes.length,
+            completed: [] as number[],
+            failed: [] as number[],
+            status: 'processing',
+            startedAt: new Date().toISOString()
+        };
+        
+        await supabase
+            .from('campaigns')
+            .update({ generation_progress: initialProgress })
+            .eq('id', campaignId);
+
+        console.log('Initialized generation progress tracking');
+
         // Process scenes sequentially to avoid rate limits
         for (let i = 0; i < scenes.length; i++) {
             const scene = scenes[i];
             console.log(`Processing scene ${scene.sceneNumber} (${i + 1}/${scenes.length})`);
+            
+            // Update progress in database
+            await supabase
+                .from('campaigns')
+                .update({ 
+                    generation_progress: {
+                        ...initialProgress,
+                        current: i + 1,
+                        currentSceneName: scene.visualDescription?.substring(0, 50) || `Scene ${scene.sceneNumber}`,
+                        completed: results.filter(r => r.status === 'completed').map(r => r.sceneNumber),
+                        failed: results.filter(r => r.status === 'failed').map(r => r.sceneNumber)
+                    }
+                })
+                .eq('id', campaignId);
 
             try {
                 // Build visual prompt with camera movement
@@ -235,11 +266,20 @@ serve(async (req) => {
             lastBatchGeneration: new Date().toISOString()
         };
 
+        // Clear progress and update storyboard
         await supabase
             .from('campaigns')
             .update({ 
                 storyboard: updatedStoryboard, 
-                updated_at: new Date().toISOString() 
+                updated_at: new Date().toISOString(),
+                generation_progress: {
+                    current: scenes.length,
+                    total: scenes.length,
+                    completed: results.filter(r => r.status === 'completed').map(r => r.sceneNumber),
+                    failed: results.filter(r => r.status === 'failed').map(r => r.sceneNumber),
+                    status: 'completed',
+                    completedAt: new Date().toISOString()
+                }
             })
             .eq('id', campaignId);
 
