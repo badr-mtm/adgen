@@ -47,13 +47,20 @@ serve(async (req) => {
             : '[too short]';
         console.log(`Token format check: length=${REPLICATE_API_TOKEN.length}, preview=${tokenPreview}`);
 
-        // Build prompt from the full script
-        const prompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}.`;
+        // Build visual prompt from the full script
+        const visualPrompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}.`;
+        
+        // Build voiceover script from scenes or use hook + cta
+        const voiceoverScript = script.scenes 
+            ? script.scenes.map((s: any) => s.voiceover).filter(Boolean).join(' ')
+            : `${script.hook} ${script.cta}`;
 
-        console.log(`Using Replicate wan-video/wan-2.5-t2v with prompt: ${prompt.substring(0, 100)}...`);
+        console.log(`Using Replicate bytedance/seedance-1.5-pro with prompt: ${visualPrompt.substring(0, 100)}...`);
+        console.log(`Voiceover script: ${voiceoverScript.substring(0, 100)}...`);
 
-        // Start prediction on Replicate using the models endpoint
-        const createResponse = await fetch('https://api.replicate.com/v1/models/wan-video/wan-2.5-t2v/predictions', {
+        // Start prediction on Replicate using bytedance/seedance-1.5-pro
+        // This model generates video with synchronized audio/voiceover
+        const createResponse = await fetch('https://api.replicate.com/v1/models/bytedance/seedance-1.5-pro/predictions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
@@ -62,7 +69,8 @@ serve(async (req) => {
             },
             body: JSON.stringify({
                 input: {
-                    prompt,
+                    prompt: visualPrompt,
+                    audio_prompt: voiceoverScript,
                     duration: parseInt(duration) || 5,
                     aspect_ratio: aspectRatio
                 }
