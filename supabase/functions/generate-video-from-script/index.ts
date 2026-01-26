@@ -44,9 +44,9 @@ serve(async (req) => {
         // Build prompt from the full script
         const prompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}.`;
 
-        console.log(`Using wan-video/wan-2.5-t2v-fast with prompt: ${prompt.substring(0, 100)}...`);
+        console.log(`Using fal-ai/fast-animatediff/text-to-video with prompt: ${prompt.substring(0, 100)}...`);
 
-        const response = await fetch(`https://fal.run/wan-video/wan-2.5-t2v-fast`, {
+        const response = await fetch(`https://fal.run/fal-ai/fast-animatediff/text-to-video`, {
             method: "POST",
             headers: {
                 "Authorization": `Key ${FAL_KEY}`,
@@ -54,10 +54,10 @@ serve(async (req) => {
             },
             body: JSON.stringify({
                 prompt,
-                negative_prompt: "low resolution, error, worst quality, low quality, defects, blurry, distorted",
-                aspect_ratio: aspectRatio,
-                duration: duration,
-                enable_prompt_expansion: true,
+                negative_prompt: "low resolution, error, worst quality, low quality, defects, blurry, distorted, text, watermark",
+                num_frames: 16,
+                num_inference_steps: 25,
+                guidance_scale: 7.5,
                 enable_safety_checker: true
             }),
         });
