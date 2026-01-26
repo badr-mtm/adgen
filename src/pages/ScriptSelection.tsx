@@ -44,23 +44,7 @@ interface Script {
   }[];
 }
 
-interface VideoVariant {
-  id: string;
-  styleName: string;
-  styleDescription: string;
-  colorPalette?: string;
-  cameraStyle?: string;
-  editingPace?: string;
-  musicStyle?: string;
-  thumbnailPrompt: string;
-  scenes: {
-    sceneNumber: number;
-    duration: string;
-    visualPrompt: string;
-    transitionType?: string;
-    voiceover: string;
-  }[];
-}
+// VideoVariant interface removed - now generating single video from script
 
 const APPROACH_ICONS: Record<string, any> = {
   emotional: Heart,
@@ -98,11 +82,8 @@ export default function ScriptSelection() {
   const [editedScript, setEditedScript] = useState<Script | null>(null);
   const [expandedScenes, setExpandedScenes] = useState(true);
 
-  // Video variants state
-  const [view, setView] = useState<"scripts" | "variants">("scripts");
-  const [generatingVariants, setGeneratingVariants] = useState(false);
-  const [videoVariants, setVideoVariants] = useState<VideoVariant[]>([]);
-  const [selectedVariant, setSelectedVariant] = useState<VideoVariant | null>(null);
+  // Video generation state
+  const [generatingVideo, setGeneratingVideo] = useState(false);
 
   useEffect(() => {
     if (navState?.adDescription) {
@@ -194,106 +175,71 @@ export default function ScriptSelection() {
     setEditingScript(false);
   };
 
-  const generateVideoVariants = async () => {
-    if (!selectedScript) return;
-    
-    setGeneratingVariants(true);
-    setView("variants");
-
-    try {
-      const { data: result, error } = await supabase.functions.invoke('generate-video-variants', {
-        body: {
-          script: editedScript || selectedScript,
-          campaignId: id || navState?.campaignId,
-          duration: navState?.duration || '30s',
-          adDescription: navState?.adDescription
-        }
-      });
-
-      if (error) throw error;
-
-      if (result?.variants && result.variants.length > 0) {
-        setVideoVariants(result.variants);
-        setSelectedVariant(result.variants[0]);
-        toast({
-          title: "Video Variants Created",
-          description: "3 visual styles generated for your script.",
-        });
-      } else {
-        throw new Error("No variants generated");
-      }
-    } catch (err: any) {
-      console.error("Error generating variants:", err);
-      toast({
-        title: "Generation Failed",
-        description: err.message || "Failed to generate video variants.",
-        variant: "destructive"
-      });
-      setView("scripts");
-    } finally {
-      setGeneratingVariants(false);
-    }
-  };
-
-  const handleContinueToEditor = async () => {
+  const generateVideoAndContinue = async () => {
     const campaignId = id || navState?.campaignId;
+    const scriptToUse = editedScript || selectedScript;
     
-    if (!campaignId || !selectedVariant) {
+    if (!campaignId || !scriptToUse) {
       toast({
         title: "Selection Required",
-        description: "Please select a video variant to continue.",
+        description: "Please select a script to continue.",
         variant: "destructive"
       });
       return;
     }
 
-    toast({
-      title: "Initializing Editor",
-      description: "Preparing your video for editing...",
-      duration: 3000
-    });
+    setGeneratingVideo(true);
 
     try {
-      // Save selected variant to campaign
-      const storyboardData = {
-        selectedScript: editedScript || selectedScript,
-        selectedVariant: selectedVariant,
-        scenes: selectedVariant.scenes.map((s, idx) => ({
-          id: `scene-${idx + 1}`,
-          sceneNumber: s.sceneNumber,
-          duration: s.duration,
-          visualDescription: s.visualPrompt,
-          voiceover: s.voiceover,
-          type: "generated"
-        })),
-        generatedAt: new Date().toISOString()
-      };
+      toast({
+        title: "Generating Video",
+        description: "AI is creating your video from the script...",
+        duration: 60000
+      });
 
-      await supabase
-        .from('campaigns')
-        .update({
-          storyboard: storyboardData as any,
-          status: 'in_production'
-        })
-        .eq('id', campaignId);
+      // Convert duration string to seconds for API
+      const durationStr = navState?.duration || '30s';
+      const durationSeconds = durationStr.includes('s') 
+        ? parseInt(durationStr.replace('s', '')) 
+        : 30;
+      // Fal.ai wan-2.5-t2v-fast supports 5s duration
+      const apiDuration = Math.min(durationSeconds, 5).toString();
 
-      navigate(`/video-editor/${campaignId}`, {
-        state: {
-          preloadedScenes: selectedVariant.scenes.map((s, idx) => ({
-            id: `scene-${idx + 1}`,
-            name: `Scene ${s.sceneNumber}`,
-            duration: s.duration,
-            description: s.visualPrompt,
-            voiceover: s.voiceover,
-            type: "generated"
-          })),
-          script: editedScript || selectedScript,
-          variant: selectedVariant
+      const { data: result, error } = await supabase.functions.invoke('generate-video-from-script', {
+        body: {
+          campaignId,
+          script: scriptToUse,
+          duration: apiDuration,
+          aspectRatio: "16:9"
         }
       });
-    } catch (err) {
-      console.error("Failed to save:", err);
-      navigate(`/video-editor/${campaignId}`);
+
+      if (error) throw error;
+
+      if (result?.videoUrl) {
+        toast({
+          title: "Video Generated!",
+          description: "Redirecting to editor...",
+        });
+
+        navigate(`/video-editor/${campaignId}`, {
+          state: {
+            generatedVideoUrl: result.videoUrl,
+            script: scriptToUse
+          }
+        });
+      } else {
+        throw new Error("No video generated");
+      }
+    } catch (err: any) {
+      console.error("Error generating video:", err);
+      toast({
+        title: "Generation Failed",
+        description: err.message || "Failed to generate video. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setGeneratingVideo(false);
     }
   };
 
@@ -324,28 +270,12 @@ export default function ScriptSelection() {
             <div>
               <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                {view === "scripts" ? "Choose Your Script" : "Select Video Style"}
+                Choose Your Script
               </h1>
               <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest">
                 {navState?.duration || "30s"} • {navState?.goal || "awareness"}
               </p>
             </div>
-          </div>
-
-          <div className="flex bg-muted rounded-full p-1 border border-border">
-            <button
-              onClick={() => setView("scripts")}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${view === "scripts" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              Scripts
-            </button>
-            <button
-              onClick={() => { if (videoVariants.length > 0) setView("variants") }}
-              disabled={videoVariants.length === 0}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${view === "variants" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground disabled:opacity-30"}`}
-            >
-              Video Styles
-            </button>
           </div>
 
           <Button size="sm" variant="ghost" onClick={() => generateScripts()} className="text-muted-foreground hover:text-foreground">
@@ -356,9 +286,8 @@ export default function ScriptSelection() {
 
       <main className="max-w-7xl mx-auto p-6 py-8">
         <AnimatePresence mode="wait">
-          {view === "scripts" ? (
-            <motion.div
-              key="scripts"
+          <motion.div
+            key="scripts"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -524,174 +453,26 @@ export default function ScriptSelection() {
                   <div className="p-6 border-t border-border bg-muted/30 flex justify-end">
                     <Button
                       size="lg"
-                      onClick={generateVideoVariants}
-                      disabled={!selectedScript}
+                      onClick={generateVideoAndContinue}
+                      disabled={!selectedScript || generatingVideo}
                       className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
                     >
-                      Generate Video Variants
-                      <ArrowRight className="h-5 w-5 ml-2" />
+                      {generatingVideo ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Generating Video...
+                        </>
+                      ) : (
+                        <>
+                          Generate Video & Continue
+                          <ArrowRight className="h-5 w-5 ml-2" />
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
               </div>
             </motion.div>
-          ) : (
-            <motion.div
-              key="variants"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-8"
-            >
-              {generatingVariants ? (
-                <div className="py-20 text-center space-y-4">
-                  <div className="relative mx-auto w-20 h-20">
-                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
-                    <Loader2 className="h-20 w-20 text-primary animate-spin relative z-10" />
-                  </div>
-                  <div>
-                    <p className="text-foreground font-medium">Generating Video Variants...</p>
-                    <p className="text-sm text-muted-foreground">Creating 3 unique visual styles for your script</p>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold text-foreground mb-2">Choose Your Visual Style</h2>
-                    <p className="text-muted-foreground">Select the video treatment that best matches your brand</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {videoVariants.map((variant) => {
-                      const selected = selectedVariant?.id === variant.id;
-                      return (
-                        <Card
-                          key={variant.id}
-                          onClick={() => setSelectedVariant(variant)}
-                          className={`p-6 cursor-pointer transition-all ${
-                            selected 
-                              ? "ring-2 ring-primary bg-card" 
-                              : "bg-card/50 hover:bg-card border-border"
-                          }`}
-                        >
-                          {/* Style Preview Thumbnail */}
-                          <div className="aspect-video rounded-lg mb-4 relative overflow-hidden group">
-                            {/* Stylized Preview based on variant type */}
-                            {variant.styleName.toLowerCase().includes('cinematic') && (
-                              <div className="absolute inset-0 bg-gradient-to-br from-amber-900/80 via-stone-900 to-slate-900">
-                                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent" />
-                                <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <div className="w-16 h-9 border-2 border-amber-400/60 rounded-sm flex items-center justify-center bg-black/30">
-                                    <Play className="h-4 w-4 text-amber-400/80" />
-                                  </div>
-                                </div>
-                                <div className="absolute bottom-2 left-2 right-2 flex gap-1">
-                                  {[...Array(4)].map((_, i) => (
-                                    <div key={i} className="flex-1 h-1 bg-amber-500/40 rounded-full" />
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {variant.styleName.toLowerCase().includes('modern') && (
-                              <div className="absolute inset-0 bg-gradient-to-br from-violet-900/80 via-slate-900 to-cyan-900/80">
-                                <div className="absolute inset-0 bg-[conic-gradient(from_180deg,_var(--tw-gradient-stops))] from-violet-500/10 via-transparent to-cyan-500/10" />
-                                <div className="absolute top-2 left-2 w-8 h-8 border border-cyan-400/40 rounded-md" />
-                                <div className="absolute top-4 right-4 w-6 h-6 border border-violet-400/40 rounded-full" />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <div className="w-12 h-12 border-2 border-cyan-400/60 rounded-lg flex items-center justify-center bg-black/30 rotate-3">
-                                    <Play className="h-5 w-5 text-cyan-400/80" />
-                                  </div>
-                                </div>
-                                <div className="absolute bottom-2 left-2 right-2 flex gap-2">
-                                  {[...Array(3)].map((_, i) => (
-                                    <div key={i} className="flex-1 h-0.5 bg-gradient-to-r from-violet-500/60 to-cyan-500/60 rounded-full" />
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {variant.styleName.toLowerCase().includes('authentic') && (
-                              <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/70 via-stone-800 to-amber-900/60">
-                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-emerald-500/15 via-transparent to-amber-500/10" />
-                                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <div className="w-14 h-10 border-2 border-emerald-400/50 rounded flex items-center justify-center bg-black/20">
-                                    <Play className="h-4 w-4 text-emerald-400/80" />
-                                  </div>
-                                </div>
-                                <div className="absolute bottom-2 left-2 right-2">
-                                  <div className="h-1 bg-emerald-500/30 rounded-full w-3/4" />
-                                </div>
-                              </div>
-                            )}
-                            {/* Fallback for other styles */}
-                            {!variant.styleName.toLowerCase().includes('cinematic') && 
-                             !variant.styleName.toLowerCase().includes('modern') && 
-                             !variant.styleName.toLowerCase().includes('authentic') && (
-                              <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                                <Film className="h-10 w-10 text-muted-foreground" />
-                              </div>
-                            )}
-                            {/* Selection indicator */}
-                            {selected && (
-                              <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-primary flex items-center justify-center z-10">
-                                <Check className="h-4 w-4 text-primary-foreground" />
-                              </div>
-                            )}
-                            {/* Hover overlay */}
-                            <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </div>
-
-                          <h3 className="font-bold text-lg text-foreground mb-1">{variant.styleName}</h3>
-                          <p className="text-sm text-muted-foreground mb-3">{variant.styleDescription}</p>
-                          
-                          <div className="flex flex-wrap gap-2">
-                            {variant.editingPace && (
-                              <Badge variant="outline" className="text-xs">{variant.editingPace} pace</Badge>
-                            )}
-                            {variant.colorPalette && (
-                              <Badge variant="outline" className="text-xs">{variant.colorPalette}</Badge>
-                            )}
-                          </div>
-                        </Card>
-                      );
-                    })}
-                  </div>
-
-                  {/* Selected Variant Preview */}
-                  {selectedVariant && (
-                    <Card className="p-6 bg-card border-border mt-8">
-                      <h3 className="font-bold text-lg text-foreground mb-4">Scene Breakdown</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {selectedVariant.scenes.map((scene, idx) => (
-                          <div key={idx} className="p-4 rounded-lg bg-muted/50 border border-border">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-primary">Scene {scene.sceneNumber}</span>
-                              <Badge variant="secondary" className="text-xs">{scene.duration}</Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground line-clamp-3">{scene.visualPrompt}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </Card>
-                  )}
-
-                  {/* Continue Button */}
-                  <div className="flex justify-center pt-6">
-                    <Button
-                      size="lg"
-                      onClick={handleContinueToEditor}
-                      disabled={!selectedVariant}
-                      className="h-14 px-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
-                    >
-                      Continue to Editor
-                      <ArrowRight className="h-5 w-5 ml-2" />
-                    </Button>
-                  </div>
-                </>
-              )}
-            </motion.div>
-          )}
         </AnimatePresence>
       </main>
     </div>
