@@ -92,7 +92,7 @@ export default function ScriptSelection() {
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
   const [editingScript, setEditingScript] = useState(false);
   const [editedScript, setEditedScript] = useState<Script | null>(null);
-  const [expandedScenes, setExpandedScenes] = useState(true);
+  const [expandedScenes, setExpandedScenes] = useState(false);
 
   // Video generation state
   const [generatingVideo, setGeneratingVideo] = useState(false);
@@ -104,6 +104,7 @@ export default function ScriptSelection() {
   // Video settings for regeneration
   const [videoDuration, setVideoDuration] = useState<string>("5");
   const [videoAspectRatio, setVideoAspectRatio] = useState<string>("16:9");
+  const [videoModel, setVideoModel] = useState<string>("wan-fast");
   
   // Tab state
   const [activeTab, setActiveTab] = useState<string>("scripts");
@@ -487,7 +488,22 @@ export default function ScriptSelection() {
                     </ScrollArea>
 
                     {/* Footer */}
-                    <div className="p-6 border-t border-border bg-muted/30 flex justify-end">
+                    <div className="p-6 border-t border-border bg-muted/30 flex items-center justify-between gap-4">
+                      {/* Video Model Selector */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-muted-foreground">Model:</span>
+                        <Select value={videoModel} onValueChange={setVideoModel}>
+                          <SelectTrigger className="w-[160px] h-10 bg-background">
+                            <SelectValue placeholder="Select model" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover border-border">
+                            <SelectItem value="wan-fast">Wan Fast</SelectItem>
+                            <SelectItem value="wan-pro">Wan Pro</SelectItem>
+                            <SelectItem value="wan-2.5">Wan 2.5 (HD)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
                       <Button
                         size="lg"
                         onClick={() => generateVideoAndContinue()}
