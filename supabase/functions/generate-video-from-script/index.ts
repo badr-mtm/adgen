@@ -44,9 +44,9 @@ serve(async (req) => {
         // Build prompt from the full script
         const prompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}.`;
 
-        console.log(`Using wan-video/wan-2.5-t2v-fast with prompt: ${prompt.substring(0, 100)}...`);
+        console.log(`Using fal-ai/wan/v2.6/text-to-video with prompt: ${prompt.substring(0, 100)}...`);
 
-        const response = await fetch(`https://fal.run/wan-video/wan-2.5-t2v-fast`, {
+        const response = await fetch(`https://fal.run/fal-ai/wan/v2.6/text-to-video`, {
             method: "POST",
             headers: {
                 "Authorization": `Key ${FAL_KEY}`,
