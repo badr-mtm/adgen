@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,7 +23,8 @@ import {
   ChevronUp,
   Settings2,
   Clock,
-  Monitor
+  Monitor,
+  Video
 } from "lucide-react";
 import {
   Select,
@@ -102,6 +104,9 @@ export default function ScriptSelection() {
   // Video settings for regeneration
   const [videoDuration, setVideoDuration] = useState<string>("5");
   const [videoAspectRatio, setVideoAspectRatio] = useState<string>("16:9");
+  
+  // Tab state
+  const [activeTab, setActiveTab] = useState<string>("scripts");
 
   useEffect(() => {
     if (navState?.adDescription) {
@@ -234,6 +239,7 @@ export default function ScriptSelection() {
       if (result?.videoUrl) {
         setGeneratedVideoUrl(result.videoUrl);
         setShowVideoPreview(true);
+        setActiveTab("preview"); // Switch to preview tab after generation
         toast({
           title: "Video Generated!",
           description: `${durationToUse}s ${aspectRatioToUse} video ready for preview.`,
@@ -296,172 +302,192 @@ export default function ScriptSelection() {
 
       <main className="max-w-7xl mx-auto p-6 py-8">
         <AnimatePresence mode="wait">
-          <motion.div
-            key="scripts"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8"
-            >
-              {/* Left: Script Options */}
-              <div className="lg:col-span-4 space-y-6">
-                <div>
-                  <h2 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
-                    <Film className="h-5 w-5 text-primary" />
-                    Generated Scripts
-                  </h2>
-                  <div className="space-y-3">
-                    {scripts.map((script) => {
-                      const ApproachIcon = APPROACH_ICONS[script.approach] || Sparkles;
-                      const approachColor = APPROACH_COLORS[script.approach] || "text-primary bg-primary/10 border-primary/30";
-                      const selected = selectedScript?.id === script.id;
-                      
-                      return (
-                        <div
-                          key={script.id}
-                          onClick={() => handleSelectScript(script)}
-                          className={`group relative p-4 rounded-xl border transition-all cursor-pointer overflow-hidden ${
-                            selected 
-                              ? "bg-card border-primary ring-1 ring-primary" 
-                              : "bg-card/50 border-border hover:border-primary/50 hover:bg-card"
-                          }`}
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <Badge variant="outline" className={approachColor}>
-                              <ApproachIcon className="h-3 w-3 mr-1" />
-                              {script.approach.replace('_', ' ')}
-                            </Badge>
-                            {selected && <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="mb-6 bg-muted/50 p-1">
+              <TabsTrigger value="scripts" className="flex items-center gap-2">
+                <Film className="h-4 w-4" />
+                Script Selection
+              </TabsTrigger>
+              <TabsTrigger 
+                value="preview" 
+                disabled={!generatedVideoUrl}
+                className="flex items-center gap-2"
+              >
+                <Video className="h-4 w-4" />
+                Video Preview
+                {generatedVideoUrl && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs bg-green-500/20 text-green-500">
+                    Ready
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Scripts Tab */}
+            <TabsContent value="scripts" className="mt-0">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+              >
+                {/* Left: Script Options */}
+                <div className="lg:col-span-4 space-y-6">
+                  <div>
+                    <h2 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+                      <Film className="h-5 w-5 text-primary" />
+                      Generated Scripts
+                    </h2>
+                    <div className="space-y-3">
+                      {scripts.map((script) => {
+                        const ApproachIcon = APPROACH_ICONS[script.approach] || Sparkles;
+                        const approachColor = APPROACH_COLORS[script.approach] || "text-primary bg-primary/10 border-primary/30";
+                        const selected = selectedScript?.id === script.id;
+                        
+                        return (
+                          <div
+                            key={script.id}
+                            onClick={() => handleSelectScript(script)}
+                            className={`group relative p-4 rounded-xl border transition-all cursor-pointer overflow-hidden ${
+                              selected 
+                                ? "bg-card border-primary ring-1 ring-primary" 
+                                : "bg-card/50 border-border hover:border-primary/50 hover:bg-card"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <Badge variant="outline" className={approachColor}>
+                                <ApproachIcon className="h-3 w-3 mr-1" />
+                                {script.approach.replace('_', ' ')}
+                              </Badge>
+                              {selected && <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />}
+                            </div>
+                            <h3 className={`font-bold text-lg mb-1 ${selected ? "text-foreground" : "text-foreground/80"}`}>
+                              {script.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{script.hook}</p>
+                            <div className="flex items-center gap-2 mt-3">
+                              <Badge variant="secondary" className="text-xs">{script.tone}</Badge>
+                              <Badge variant="secondary" className="text-xs">{script.scenes?.length || 0} scenes</Badge>
+                            </div>
                           </div>
-                          <h3 className={`font-bold text-lg mb-1 ${selected ? "text-foreground" : "text-foreground/80"}`}>
-                            {script.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{script.hook}</p>
-                          <div className="flex items-center gap-2 mt-3">
-                            <Badge variant="secondary" className="text-xs">{script.tone}</Badge>
-                            <Badge variant="secondary" className="text-xs">{script.scenes?.length || 0} scenes</Badge>
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Right: Script Editor */}
-              <div className="lg:col-span-8">
-                <div className="h-full bg-card rounded-2xl border border-border flex flex-col overflow-hidden shadow-xl">
-                  {/* Editor Toolbar */}
-                  <div className="bg-muted/50 border-b border-border p-4 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full bg-red-500/50" />
-                      <span className="h-3 w-3 rounded-full bg-yellow-500/50" />
-                      <span className="h-3 w-3 rounded-full bg-green-500/50" />
-                      <span className="ml-4 text-xs font-mono text-muted-foreground">
-                        {editingScript ? "EDITING" : "PREVIEW"}
-                      </span>
+                {/* Right: Script Editor */}
+                <div className="lg:col-span-8">
+                  <div className="h-full bg-card rounded-2xl border border-border flex flex-col overflow-hidden shadow-xl">
+                    {/* Editor Toolbar */}
+                    <div className="bg-muted/50 border-b border-border p-4 flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="h-3 w-3 rounded-full bg-red-500/50" />
+                        <span className="h-3 w-3 rounded-full bg-yellow-500/50" />
+                        <span className="h-3 w-3 rounded-full bg-green-500/50" />
+                        <span className="ml-4 text-xs font-mono text-muted-foreground">
+                          {editingScript ? "EDITING" : "PREVIEW"}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingScript(!editingScript)}
+                        className={editingScript ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
+                      >
+                        <Edit3 className="h-4 w-4 mr-2" />
+                        {editingScript ? "Done" : "Edit"}
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingScript(!editingScript)}
-                      className={editingScript ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
-                    >
-                      <Edit3 className="h-4 w-4 mr-2" />
-                      {editingScript ? "Done" : "Edit"}
-                    </Button>
-                  </div>
 
-                  {/* Editor Content */}
-                  <ScrollArea className="flex-1 p-8">
-                    <div className="max-w-2xl mx-auto space-y-8">
-                      {/* Hook */}
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-primary font-bold">Hook</label>
-                        {editingScript ? (
-                          <Textarea
-                            value={editedScript?.hook}
-                            onChange={e => setEditedScript(prev => prev ? { ...prev, hook: e.target.value } : null)}
-                            className="bg-muted/50 border-border text-lg text-foreground font-medium min-h-[80px]"
-                          />
-                        ) : (
-                          <p className="text-xl text-foreground font-medium leading-relaxed">{selectedScript?.hook}</p>
-                        )}
-                      </div>
-
-                      {/* Full Script */}
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-purple-500 font-bold">Full Script</label>
-                        {editingScript ? (
-                          <Textarea
-                            value={editedScript?.fullScript}
-                            onChange={e => setEditedScript(prev => prev ? { ...prev, fullScript: e.target.value } : null)}
-                            className="bg-muted/50 border-border text-lg text-foreground/80 leading-relaxed min-h-[150px]"
-                          />
-                        ) : (
-                          <p className="text-lg text-foreground/80 leading-relaxed">{selectedScript?.fullScript}</p>
-                        )}
-                      </div>
-
-                      {/* CTA */}
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Call to Action</label>
-                        {editingScript ? (
-                          <Textarea
-                            value={editedScript?.cta}
-                            onChange={e => setEditedScript(prev => prev ? { ...prev, cta: e.target.value } : null)}
-                            className="bg-muted/50 border-border text-lg text-foreground font-semibold min-h-[60px]"
-                          />
-                        ) : (
-                          <p className="text-lg text-foreground font-semibold">{selectedScript?.cta}</p>
-                        )}
-                      </div>
-
-                      {/* Scenes */}
-                      <div className="space-y-3">
-                        <button 
-                          onClick={() => setExpandedScenes(!expandedScenes)}
-                          className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground font-bold hover:text-foreground transition-colors"
-                        >
-                          Storyboard ({selectedScript?.scenes?.length || 0} scenes)
-                          {expandedScenes ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </button>
-                        
-                        <AnimatePresence>
-                          {expandedScenes && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="space-y-3 overflow-hidden"
-                            >
-                              {(editedScript?.scenes || selectedScript?.scenes || []).map((scene, idx) => (
-                                <Card key={idx} className="p-4 bg-muted/30 border-border">
-                                  <div className="flex items-start gap-4">
-                                    <div className="w-16 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                                      <Play className="h-4 w-4 text-muted-foreground" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center justify-between mb-1">
-                                        <span className="text-sm font-medium text-primary">Scene {scene.sceneNumber}</span>
-                                        <Badge variant="outline" className="text-xs">{scene.duration}</Badge>
-                                      </div>
-                                      <p className="text-sm text-foreground mb-1">{scene.visualDescription}</p>
-                                      <p className="text-xs text-muted-foreground italic">"{scene.voiceover}"</p>
-                                    </div>
-                                  </div>
-                                </Card>
-                              ))}
-                            </motion.div>
+                    {/* Editor Content */}
+                    <ScrollArea className="flex-1 p-8">
+                      <div className="max-w-2xl mx-auto space-y-8">
+                        {/* Hook */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-widest text-primary font-bold">Hook</label>
+                          {editingScript ? (
+                            <Textarea
+                              value={editedScript?.hook}
+                              onChange={e => setEditedScript(prev => prev ? { ...prev, hook: e.target.value } : null)}
+                              className="bg-muted/50 border-border text-lg text-foreground font-medium min-h-[80px]"
+                            />
+                          ) : (
+                            <p className="text-xl text-foreground font-medium leading-relaxed">{selectedScript?.hook}</p>
                           )}
-                        </AnimatePresence>
-                      </div>
-                    </div>
-                  </ScrollArea>
+                        </div>
 
-                  {/* Footer */}
-                  <div className="p-6 border-t border-border bg-muted/30 flex justify-end">
-                    {!showVideoPreview ? (
+                        {/* Full Script */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-widest text-purple-500 font-bold">Full Script</label>
+                          {editingScript ? (
+                            <Textarea
+                              value={editedScript?.fullScript}
+                              onChange={e => setEditedScript(prev => prev ? { ...prev, fullScript: e.target.value } : null)}
+                              className="bg-muted/50 border-border text-lg text-foreground/80 leading-relaxed min-h-[150px]"
+                            />
+                          ) : (
+                            <p className="text-lg text-foreground/80 leading-relaxed">{selectedScript?.fullScript}</p>
+                          )}
+                        </div>
+
+                        {/* CTA */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Call to Action</label>
+                          {editingScript ? (
+                            <Textarea
+                              value={editedScript?.cta}
+                              onChange={e => setEditedScript(prev => prev ? { ...prev, cta: e.target.value } : null)}
+                              className="bg-muted/50 border-border text-lg text-foreground font-semibold min-h-[60px]"
+                            />
+                          ) : (
+                            <p className="text-lg text-foreground font-semibold">{selectedScript?.cta}</p>
+                          )}
+                        </div>
+
+                        {/* Scenes */}
+                        <div className="space-y-3">
+                          <button 
+                            onClick={() => setExpandedScenes(!expandedScenes)}
+                            className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground font-bold hover:text-foreground transition-colors"
+                          >
+                            Storyboard ({selectedScript?.scenes?.length || 0} scenes)
+                            {expandedScenes ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </button>
+                          
+                          <AnimatePresence>
+                            {expandedScenes && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="space-y-3 overflow-hidden"
+                              >
+                                {(editedScript?.scenes || selectedScript?.scenes || []).map((scene, idx) => (
+                                  <Card key={idx} className="p-4 bg-muted/30 border-border">
+                                    <div className="flex items-start gap-4">
+                                      <div className="w-16 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                                        <Play className="h-4 w-4 text-muted-foreground" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span className="text-sm font-medium text-primary">Scene {scene.sceneNumber}</span>
+                                          <Badge variant="outline" className="text-xs">{scene.duration}</Badge>
+                                        </div>
+                                        <p className="text-sm text-foreground mb-1">{scene.visualDescription}</p>
+                                        <p className="text-xs text-muted-foreground italic">"{scene.voiceover}"</p>
+                                      </div>
+                                    </div>
+                                  </Card>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    </ScrollArea>
+
+                    {/* Footer */}
+                    <div className="p-6 border-t border-border bg-muted/30 flex justify-end">
                       <Button
                         size="lg"
                         onClick={() => generateVideoAndContinue()}
@@ -480,48 +506,35 @@ export default function ScriptSelection() {
                           </>
                         )}
                       </Button>
-                    ) : (
-                      <Button
-                        size="lg"
-                        onClick={() => {
-                          const campaignId = id || navState?.campaignId;
-                          navigate(`/video-editor/${campaignId}`, {
-                            state: {
-                              generatedVideoUrl,
-                              script: editedScript || selectedScript
-                            }
-                          });
-                        }}
-                        className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
-                      >
-                        Continue to Editor
-                        <ArrowRight className="h-5 w-5 ml-2" />
-                      </Button>
-                    )}
+                    </div>
                   </div>
                 </div>
+              </motion.div>
+            </TabsContent>
 
-                {/* Video Preview Panel */}
-                <AnimatePresence>
-                  {showVideoPreview && generatedVideoUrl && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      className="mt-6 bg-card rounded-2xl border border-border overflow-hidden shadow-xl"
-                    >
-                      <div className="bg-muted/50 border-b border-border p-4 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                          <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-                          <span className="text-sm font-medium text-foreground">Generated Video Preview</span>
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                          <Check className="h-3 w-3 mr-1" />
-                          Ready
-                        </Badge>
+            {/* Video Preview Tab */}
+            <TabsContent value="preview" className="mt-0">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+              >
+                {/* Main Video Player */}
+                <div className="lg:col-span-2">
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-xl">
+                    <div className="bg-muted/50 border-b border-border p-4 flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-sm font-medium text-foreground">Generated Video Preview</span>
                       </div>
-                      <div className="p-6">
-                        <div className="aspect-video bg-black rounded-xl overflow-hidden">
+                      <Badge variant="secondary" className="text-xs">
+                        <Check className="h-3 w-3 mr-1" />
+                        Ready
+                      </Badge>
+                    </div>
+                    <div className="p-6">
+                      <div className="aspect-video bg-black rounded-xl overflow-hidden">
+                        {generatedVideoUrl && (
                           <video
                             ref={videoRef}
                             src={generatedVideoUrl}
@@ -529,103 +542,119 @@ export default function ScriptSelection() {
                             autoPlay
                             className="w-full h-full object-contain"
                           />
-                        </div>
-                        <div className="flex flex-col gap-4 mt-4">
-                          {/* Regeneration Settings */}
-                          <AnimatePresence>
-                            {showRegenSettings && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
-                              >
-                                <div className="p-4 bg-muted/50 rounded-lg border border-border space-y-4">
-                                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                                    <Settings2 className="h-4 w-4 text-primary" />
-                                    Regeneration Settings
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-2 gap-4">
-                                    {/* Duration */}
-                                    <div className="space-y-2">
-                                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                        <Clock className="h-3 w-3" />
-                                        Duration
-                                      </label>
-                                      <Select value={videoDuration} onValueChange={setVideoDuration}>
-                                        <SelectTrigger className="h-9">
-                                          <SelectValue placeholder="Duration" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="5">5 seconds</SelectItem>
-                                          <SelectItem value="10">10 seconds</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-
-                                    {/* Aspect Ratio */}
-                                    <div className="space-y-2">
-                                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                        <Monitor className="h-3 w-3" />
-                                        Aspect Ratio
-                                      </label>
-                                      <Select value={videoAspectRatio} onValueChange={setVideoAspectRatio}>
-                                        <SelectTrigger className="h-9">
-                                          <SelectValue placeholder="Aspect Ratio" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="16:9">16:9 (HDTV)</SelectItem>
-                                          <SelectItem value="4:3">4:3 (Legacy TV)</SelectItem>
-                                          <SelectItem value="21:9">21:9 (Cinematic)</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                  </div>
-
-                                  <Button
-                                    onClick={() => generateVideoAndContinue(videoDuration, videoAspectRatio)}
-                                    disabled={generatingVideo}
-                                    className="w-full"
-                                  >
-                                    {generatingVideo ? (
-                                      <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        Regenerating...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Sparkles className="h-4 w-4 mr-2" />
-                                        Generate with New Settings
-                                      </>
-                                    )}
-                                  </Button>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          <div className="flex justify-between items-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setShowRegenSettings(!showRegenSettings)}
-                              disabled={generatingVideo}
-                            >
-                              <Settings2 className="h-4 w-4 mr-2" />
-                              {showRegenSettings ? "Hide Settings" : "Regenerate with Settings"}
-                            </Button>
-                            <p className="text-xs text-muted-foreground">
-                              Click "Continue to Editor" to refine your video
-                            </p>
-                          </div>
-                        </div>
+                        )}
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </motion.div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Settings Panel */}
+                <div className="lg:col-span-1 space-y-6">
+                  {/* Regeneration Settings */}
+                  <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <Settings2 className="h-4 w-4 text-primary" />
+                      Regeneration Settings
+                    </div>
+                    
+                    {/* Duration */}
+                    <div className="space-y-2">
+                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Clock className="h-3 w-3" />
+                        Duration
+                      </label>
+                      <Select value={videoDuration} onValueChange={setVideoDuration}>
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5 seconds</SelectItem>
+                          <SelectItem value="10">10 seconds</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Aspect Ratio */}
+                    <div className="space-y-2">
+                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Monitor className="h-3 w-3" />
+                        Aspect Ratio
+                      </label>
+                      <Select value={videoAspectRatio} onValueChange={setVideoAspectRatio}>
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Aspect Ratio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="16:9">16:9 (HDTV)</SelectItem>
+                          <SelectItem value="4:3">4:3 (Legacy TV)</SelectItem>
+                          <SelectItem value="21:9">21:9 (Cinematic)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button
+                      onClick={() => generateVideoAndContinue(videoDuration, videoAspectRatio)}
+                      disabled={generatingVideo}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      {generatingVideo ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Regenerating...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Regenerate Video
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Script Summary */}
+                  <div className="bg-card rounded-2xl border border-border p-6 space-y-3">
+                    <div className="text-sm font-medium text-foreground">Selected Script</div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-foreground">{selectedScript?.title}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-3">{selectedScript?.hook}</p>
+                      <div className="flex items-center gap-2 pt-2">
+                        <Badge variant="secondary" className="text-xs">{selectedScript?.tone}</Badge>
+                        <Badge variant="secondary" className="text-xs">{selectedScript?.scenes?.length || 0} scenes</Badge>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setActiveTab("scripts")}
+                      className="w-full mt-2 text-muted-foreground hover:text-foreground"
+                    >
+                      <Edit3 className="h-3 w-3 mr-2" />
+                      Edit Script
+                    </Button>
+                  </div>
+
+                  {/* Continue Button */}
+                  <Button
+                    size="lg"
+                    onClick={() => {
+                      const campaignId = id || navState?.campaignId;
+                      navigate(`/video-editor/${campaignId}`, {
+                        state: {
+                          generatedVideoUrl,
+                          script: editedScript || selectedScript
+                        }
+                      });
+                    }}
+                    className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                  >
+                    Continue to Editor
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </div>
+              </motion.div>
+            </TabsContent>
+          </Tabs>
         </AnimatePresence>
       </main>
     </div>
