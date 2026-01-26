@@ -180,6 +180,36 @@ export default function ScriptSelection() {
   
   // Tab state
   const [activeTab, setActiveTab] = useState<string>("scripts");
+
+  // Realtime subscription for scene-by-scene progress
+  useEffect(() => {
+    const campaignId = id || navState?.campaignId;
+    if (!campaignId || generationMode !== "scene-by-scene" || !generatingVideo) return;
+
+    const channel = supabase
+      .channel(`campaign-progress-${campaignId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'campaigns',
+          filter: `id=eq.${campaignId}`
+        },
+        (payload) => {
+          const progress = payload.new.generation_progress as SceneGenerationProgress | null;
+          if (progress) {
+            setSceneProgress(progress);
+            console.log('Progress update:', progress);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, navState?.campaignId, generationMode, generatingVideo]);
   
   // Helper function to generate video thumbnail
   const generateVideoThumbnail = (videoUrl: string): Promise<string | undefined> => {
@@ -920,22 +950,64 @@ export default function ScriptSelection() {
                                 </p>
                               </div>
 
-                              {/* Scene-by-scene progress indicators */}
+                              {/* Scene-by-scene progress indicators with realtime updates */}
                               {generationMode === "scene-by-scene" && selectedScript?.scenes && (
                                 <div className="w-full space-y-3 mt-2">
-                                  <Progress value={0} className="h-2" />
+                                  <Progress 
+                                    value={sceneProgress ? (sceneProgress.current / sceneProgress.total) * 100 : 0} 
+                                    className="h-2" 
+                                  />
+                                  <div className="text-center text-xs text-muted-foreground mb-2">
+                                    {sceneProgress 
+                                      ? `Scene ${sceneProgress.current} of ${sceneProgress.total}`
+                                      : `Preparing ${selectedScript.scenes.length} scenes...`
+                                    }
+                                  </div>
                                   <div className="grid grid-cols-4 gap-2">
-                                    {selectedScript.scenes.map((scene, idx) => (
-                                      <div 
-                                        key={idx}
-                                        className="flex flex-col items-center gap-1 p-2 bg-background/50 rounded-lg border border-border"
-                                      >
-                                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                                          <CircleDashed className="h-4 w-4 text-muted-foreground animate-spin" />
+                                    {selectedScript.scenes.map((scene, idx) => {
+                                      const sceneNum = scene.sceneNumber || idx + 1;
+                                      const isCompleted = sceneProgress?.completed?.includes(sceneNum);
+                                      const isFailed = sceneProgress?.failed?.includes(sceneNum);
+                                      const isCurrent = sceneProgress?.current === idx + 1 && !isCompleted && !isFailed;
+                                      
+                                      return (
+                                        <div 
+                                          key={idx}
+                                          className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
+                                            isCompleted 
+                                              ? "bg-green-500/10 border-green-500/50" 
+                                              : isFailed 
+                                                ? "bg-destructive/10 border-destructive/50"
+                                                : isCurrent
+                                                  ? "bg-primary/10 border-primary/50"
+                                                  : "bg-background/50 border-border"
+                                          }`}
+                                        >
+                                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                            isCompleted 
+                                              ? "bg-green-500/20" 
+                                              : isFailed 
+                                                ? "bg-destructive/20"
+                                                : "bg-muted"
+                                          }`}>
+                                            {isCompleted ? (
+                                              <CircleCheck className="h-4 w-4 text-green-500" />
+                                            ) : isFailed ? (
+                                              <AlertCircle className="h-4 w-4 text-destructive" />
+                                            ) : isCurrent ? (
+                                              <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                                            ) : (
+                                              <CircleDashed className="h-4 w-4 text-muted-foreground" />
+                                            )}
+                                          </div>
+                                          <span className={`text-[10px] ${
+                                            isCompleted ? "text-green-500" : isFailed ? "text-destructive" : "text-muted-foreground"
+                                          }`}>
+                                            Sc {sceneNum}
+                                          </span>
                                         </div>
-                                        <span className="text-[10px] text-muted-foreground">Sc {idx + 1}</span>
-                                      </div>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               )}
@@ -992,52 +1064,106 @@ export default function ScriptSelection() {
                                   : "bg-muted/30 border-border hover:border-primary/50"
                               }`}
                             >
-                              {/* Thumbnail Preview */}
-                              <div className="relative aspect-video bg-black/50">
-                                {version.thumbnailUrl ? (
-                                  <img 
-                                    src={version.thumbnailUrl} 
-                                    alt={`Version ${idx + 1}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <Video className="h-6 w-6 text-muted-foreground/50" />
+                              {/* Thumbnail Preview - Different for scene-by-scene vs full */}
+                              {version.generationMode === "scene-by-scene" && version.sceneVideos ? (
+                                /* Scene Grid for scene-by-scene versions */
+                                <div className="p-2 bg-black/50">
+                                  <div className="grid grid-cols-4 gap-1">
+                                    {version.sceneVideos.slice(0, 4).map((sceneVideo, sceneIdx) => (
+                                      <div 
+                                        key={sceneIdx}
+                                        className={`aspect-video rounded overflow-hidden relative ${
+                                          sceneVideo.status === 'completed' 
+                                            ? 'bg-muted' 
+                                            : 'bg-destructive/20'
+                                        }`}
+                                      >
+                                        {sceneVideo.status === 'completed' ? (
+                                          <video 
+                                            src={sceneVideo.videoUrl} 
+                                            className="w-full h-full object-cover"
+                                            muted
+                                            onMouseEnter={(e) => e.currentTarget.play()}
+                                            onMouseLeave={(e) => {
+                                              e.currentTarget.pause();
+                                              e.currentTarget.currentTime = 0;
+                                            }}
+                                          />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center">
+                                            <AlertCircle className="h-3 w-3 text-destructive" />
+                                          </div>
+                                        )}
+                                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center py-0.5">
+                                          Sc {sceneVideo.sceneNumber}
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
-                                )}
-                                {/* Play overlay on hover */}
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                  <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-                                    <Play className="h-4 w-4 text-black ml-0.5" />
+                                  {version.sceneVideos.length > 4 && (
+                                    <div className="text-center text-[10px] text-muted-foreground mt-1">
+                                      +{version.sceneVideos.length - 4} more scenes
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                /* Single thumbnail for full video */
+                                <div className="relative aspect-video bg-black/50">
+                                  {version.thumbnailUrl ? (
+                                    <img 
+                                      src={version.thumbnailUrl} 
+                                      alt={`Version ${idx + 1}`}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <Video className="h-6 w-6 text-muted-foreground/50" />
+                                    </div>
+                                  )}
+                                  {/* Play overlay on hover */}
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                      <Play className="h-4 w-4 text-black ml-0.5" />
+                                    </div>
                                   </div>
                                 </div>
-                                {/* Selected indicator */}
-                                {selectedVideoVersion === version.id && (
-                                  <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                                    <Check className="h-3 w-3 text-primary-foreground" />
-                                  </div>
-                                )}
-                                {/* Delete button */}
-                                {videoVersions.length > 1 && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute top-1.5 left-1.5 h-5 w-5 bg-black/60 hover:bg-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      deleteVideoVersion(version.id);
-                                    }}
-                                  >
-                                    <Trash2 className="h-3 w-3 text-white" />
-                                  </Button>
-                                )}
-                              </div>
+                              )}
+                              
+                              {/* Selected indicator */}
+                              {selectedVideoVersion === version.id && (
+                                <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center z-10">
+                                  <Check className="h-3 w-3 text-primary-foreground" />
+                                </div>
+                              )}
+                              {/* Delete button */}
+                              {videoVersions.length > 1 && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute top-1.5 left-1.5 h-5 w-5 bg-black/60 hover:bg-destructive opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteVideoVersion(version.id);
+                                  }}
+                                >
+                                  <Trash2 className="h-3 w-3 text-white" />
+                                </Button>
+                              )}
+                              
                               {/* Version info */}
                               <div className="p-2">
                                 <div className="flex items-center justify-between mb-1.5">
-                                  <span className="text-xs font-medium text-foreground">
-                                    V{idx + 1}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs font-medium text-foreground">
+                                      V{idx + 1}
+                                    </span>
+                                    {version.generationMode === "scene-by-scene" && (
+                                      <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                                        <Layers className="h-2.5 w-2.5 mr-0.5" />
+                                        {version.sceneVideos?.length || 0}
+                                      </Badge>
+                                    )}
+                                  </div>
                                   <span className="text-[10px] text-muted-foreground">
                                     {version.generatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                   </span>

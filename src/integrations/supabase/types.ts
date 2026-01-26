@@ -65,6 +65,7 @@ export type Database = {
           creative_style: string | null
           cta_text: string | null
           description: string
+          generation_progress: Json | null
           goal: string
           id: string
           predicted_ctr: number | null
@@ -86,6 +87,7 @@ export type Database = {
           creative_style?: string | null
           cta_text?: string | null
           description: string
+          generation_progress?: Json | null
           goal: string
           id?: string
           predicted_ctr?: number | null
@@ -107,6 +109,7 @@ export type Database = {
           creative_style?: string | null
           cta_text?: string | null
           description?: string
+          generation_progress?: Json | null
           goal?: string
           id?: string
           predicted_ctr?: number | null
