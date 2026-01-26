@@ -53,79 +53,18 @@ serve(async (req) => {
 
         const prompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality cinematic motion.`;
 
-        // Map model to fal endpoint and build request body
-        let modelEndpoint: string;
-        let requestBody: Record<string, any>;
+        // Use wan-video/wan-2.5-t2v-fast for all video generation
+        const modelEndpoint = "wan-video/wan-2.5-t2v-fast";
+        const requestBody = {
+            prompt,
+            negative_prompt: "low resolution, error, worst quality, low quality, defects, blurry, distorted",
+            aspect_ratio: aspectRatio,
+            duration: duration,
+            enable_prompt_expansion: true,
+            enable_safety_checker: true
+        };
 
-        switch (model) {
-            case "wan-fast":
-                // Wan 2.2 Fast - optimized for speed
-                modelEndpoint = "fal-ai/wan/v2.2-5b/text-to-video/fast-wan";
-                requestBody = {
-                    prompt,
-                    num_frames: 81,
-                    frames_per_second: 24,
-                    resolution: "720p",
-                    aspect_ratio: aspectRatio,
-                    enable_safety_checker: true,
-                    enable_prompt_expansion: true,
-                    guidance_scale: 3.5,
-                    interpolator_model: "film",
-                    num_interpolated_frames: 0,
-                    video_quality: "high",
-                    video_write_mode: "balanced"
-                };
-                break;
-            case "wan-pro":
-                // Wan 2.2 A14B - highest quality
-                modelEndpoint = "fal-ai/wan/v2.2-a14b/text-to-video";
-                requestBody = {
-                    prompt,
-                    num_frames: 81,
-                    frames_per_second: 16,
-                    resolution: "720p",
-                    aspect_ratio: aspectRatio,
-                    num_inference_steps: 27,
-                    enable_safety_checker: true,
-                    enable_prompt_expansion: true,
-                    guidance_scale: 3.5,
-                    guidance_scale_2: 4,
-                    shift: 5,
-                    interpolator_model: "film",
-                    num_interpolated_frames: 1,
-                    video_quality: "high",
-                    video_write_mode: "balanced"
-                };
-                break;
-            case "wan-25":
-                // Wan 2.5 Preview - newest model
-                modelEndpoint = "fal-ai/wan-25-preview/text-to-video";
-                requestBody = {
-                    prompt,
-                    aspect_ratio: aspectRatio,
-                    resolution: "1080p",
-                    duration: duration,
-                    negative_prompt: "low resolution, error, worst quality, low quality, defects, blurry",
-                    enable_prompt_expansion: true,
-                    enable_safety_checker: true
-                };
-                break;
-            case "kling":
-                modelEndpoint = "fal-ai/kling-video/v1/standard/text-to-video";
-                requestBody = {
-                    prompt,
-                    ...(scene.visualUrl && { image_url: scene.visualUrl })
-                };
-                break;
-            case "luma":
-            default:
-                modelEndpoint = "fal-ai/luma-dream-machine";
-                requestBody = {
-                    prompt,
-                    ...(scene.visualUrl && { image_url: scene.visualUrl })
-                };
-                break;
-        }
+        console.log(`Using model: ${model} -> endpoint: ${modelEndpoint}`);
 
         console.log(`Calling Fal.ai: ${modelEndpoint}`);
 
