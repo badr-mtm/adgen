@@ -48,17 +48,17 @@ serve(async (req) => {
         const scene = storyboard.scenes.find((s: any) => s.sceneNumber === sceneNumber);
         if (!scene) throw new Error('Scene not found');
 
-        const FAL_KEY = Deno.env.get('FAL_KEY');
-        if (!FAL_KEY) throw new Error('FAL_KEY not configured');
+        const WAN_VIDEO_KEY = Deno.env.get('WAN_VIDEO_KEY');
+        if (!WAN_VIDEO_KEY) throw new Error('WAN_VIDEO_KEY not configured');
 
         const prompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality cinematic motion.`;
 
-        console.log(`Generating scene video with fal-ai/wan-25-preview/text-to-video`);
+        console.log(`Generating scene video with wan-video/wan-2.5-t2v`);
 
-        const response = await fetch(`https://fal.run/fal-ai/wan-25-preview/text-to-video`, {
+        const response = await fetch(`https://fal.run/wan-video/wan-2.5-t2v`, {
             method: "POST",
             headers: {
-                "Authorization": `Key ${FAL_KEY}`,
+                "Authorization": `Key ${WAN_VIDEO_KEY}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -73,8 +73,8 @@ serve(async (req) => {
 
         if (!response.ok) {
             const error = await response.text();
-            console.error('Fal.ai API error:', error);
-            throw new Error(`Fal.ai API error: ${error}`);
+            console.error('wan-video API error:', error);
+            throw new Error(`wan-video API error: ${error}`);
         }
 
         const result = await response.json();
