@@ -99,6 +99,12 @@ interface SceneGenerationProgress {
   currentSceneName?: string;
 }
 
+// Retry state for individual scenes
+interface SceneRetryState {
+  sceneNumber: number;
+  isRetrying: boolean;
+}
+
 const APPROACH_ICONS: Record<string, any> = {
   emotional: Heart,
   problem_solution: Lightbulb,
@@ -177,6 +183,7 @@ export default function ScriptSelection() {
   // Generation mode state
   const [generationMode, setGenerationMode] = useState<"full" | "scene-by-scene">("full");
   const [sceneProgress, setSceneProgress] = useState<SceneGenerationProgress | null>(null);
+  const [retryingScenes, setRetryingScenes] = useState<number[]>([]);
   
   // Tab state
   const [activeTab, setActiveTab] = useState<string>("scripts");
@@ -523,6 +530,95 @@ export default function ScriptSelection() {
       }
       return remaining;
     });
+  };
+
+  // Retry a single failed scene
+  const retryFailedScene = async (sceneNumber: number, versionId?: string) => {
+    const campaignId = id || navState?.campaignId;
+    const scriptToUse = editedScript || selectedScript;
+    
+    if (!campaignId || !scriptToUse) {
+      toast({
+        title: "Error",
+        description: "Missing campaign or script data.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setRetryingScenes(prev => [...prev, sceneNumber]);
+
+    try {
+      toast({
+        title: "Retrying Scene",
+        description: `Regenerating scene ${sceneNumber}...`,
+        duration: 60000
+      });
+
+      const { data: result, error } = await supabase.functions.invoke('generate-video-scene', {
+        body: {
+          campaignId,
+          sceneNumber,
+          duration: videoDuration,
+          aspectRatio: videoAspectRatio,
+          language: voiceoverLanguage,
+          cameraMovement: cameraMovement
+        }
+      });
+
+      if (error) throw error;
+
+      if (result?.videoUrl) {
+        // Update the video version with the new scene video
+        const targetVersionId = versionId || selectedVideoVersion;
+        
+        setVideoVersions(prev => prev.map(version => {
+          if (version.id === targetVersionId && version.sceneVideos) {
+            const updatedSceneVideos = version.sceneVideos.map(sv => {
+              if (sv.sceneNumber === sceneNumber) {
+                return {
+                  ...sv,
+                  videoUrl: result.videoUrl,
+                  status: 'completed' as const,
+                  error: undefined
+                };
+              }
+              return sv;
+            });
+
+            // Update the main URL if this is the first scene
+            const firstCompleted = updatedSceneVideos.find(s => s.status === 'completed');
+            
+            return {
+              ...version,
+              url: firstCompleted?.videoUrl || version.url,
+              sceneVideos: updatedSceneVideos
+            };
+          }
+          return version;
+        }));
+
+        // Update current video URL if needed
+        const currentVersion = videoVersions.find(v => v.id === selectedVideoVersion);
+        if (currentVersion?.sceneVideos?.[0]?.sceneNumber === sceneNumber) {
+          setGeneratedVideoUrl(result.videoUrl);
+        }
+
+        toast({
+          title: "Scene Regenerated!",
+          description: `Scene ${sceneNumber} has been successfully regenerated.`,
+        });
+      }
+    } catch (err: any) {
+      console.error("Error retrying scene:", err);
+      toast({
+        title: "Retry Failed",
+        description: err.message || `Failed to regenerate scene ${sceneNumber}. Please try again.`,
+        variant: "destructive"
+      });
+    } finally {
+      setRetryingScenes(prev => prev.filter(s => s !== sceneNumber));
+    }
   };
 
   if (loading) {
@@ -1069,36 +1165,52 @@ export default function ScriptSelection() {
                                 /* Scene Grid for scene-by-scene versions */
                                 <div className="p-2 bg-black/50">
                                   <div className="grid grid-cols-4 gap-1">
-                                    {version.sceneVideos.slice(0, 4).map((sceneVideo, sceneIdx) => (
-                                      <div 
-                                        key={sceneIdx}
-                                        className={`aspect-video rounded overflow-hidden relative ${
-                                          sceneVideo.status === 'completed' 
-                                            ? 'bg-muted' 
-                                            : 'bg-destructive/20'
-                                        }`}
-                                      >
-                                        {sceneVideo.status === 'completed' ? (
-                                          <video 
-                                            src={sceneVideo.videoUrl} 
-                                            className="w-full h-full object-cover"
-                                            muted
-                                            onMouseEnter={(e) => e.currentTarget.play()}
-                                            onMouseLeave={(e) => {
-                                              e.currentTarget.pause();
-                                              e.currentTarget.currentTime = 0;
-                                            }}
-                                          />
-                                        ) : (
-                                          <div className="w-full h-full flex items-center justify-center">
-                                            <AlertCircle className="h-3 w-3 text-destructive" />
+                                    {version.sceneVideos.slice(0, 4).map((sceneVideo, sceneIdx) => {
+                                      const isRetrying = retryingScenes.includes(sceneVideo.sceneNumber);
+                                      return (
+                                        <div 
+                                          key={sceneIdx}
+                                          className={`aspect-video rounded overflow-hidden relative group ${
+                                            sceneVideo.status === 'completed' 
+                                              ? 'bg-muted' 
+                                              : 'bg-destructive/20'
+                                          }`}
+                                        >
+                                          {sceneVideo.status === 'completed' ? (
+                                            <video 
+                                              src={sceneVideo.videoUrl} 
+                                              className="w-full h-full object-cover"
+                                              muted
+                                              onMouseEnter={(e) => e.currentTarget.play()}
+                                              onMouseLeave={(e) => {
+                                                e.currentTarget.pause();
+                                                e.currentTarget.currentTime = 0;
+                                              }}
+                                            />
+                                          ) : (
+                                            <div 
+                                              className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-destructive/30 transition-colors"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (!isRetrying) {
+                                                  retryFailedScene(sceneVideo.sceneNumber, version.id);
+                                                }
+                                              }}
+                                              title="Click to retry"
+                                            >
+                                              {isRetrying ? (
+                                                <Loader2 className="h-3 w-3 text-primary animate-spin" />
+                                              ) : (
+                                                <RefreshCw className="h-3 w-3 text-destructive group-hover:text-primary transition-colors" />
+                                              )}
+                                            </div>
+                                          )}
+                                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center py-0.5">
+                                            Sc {sceneVideo.sceneNumber}
                                           </div>
-                                        )}
-                                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center py-0.5">
-                                          Sc {sceneVideo.sceneNumber}
                                         </div>
-                                      </div>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
                                   {version.sceneVideos.length > 4 && (
                                     <div className="text-center text-[10px] text-muted-foreground mt-1">
@@ -1186,6 +1298,103 @@ export default function ScriptSelection() {
                       </ScrollArea>
                     </div>
                   )}
+
+                  {/* Failed Scenes Retry Panel */}
+                  {(() => {
+                    const currentVersion = videoVersions.find(v => v.id === selectedVideoVersion);
+                    const failedScenes = currentVersion?.sceneVideos?.filter(s => s.status === 'failed') || [];
+                    
+                    if (failedScenes.length === 0 || currentVersion?.generationMode !== "scene-by-scene") return null;
+                    
+                    return (
+                      <div className="bg-destructive/5 rounded-2xl border border-destructive/30 overflow-hidden">
+                        <div className="p-4 border-b border-destructive/20">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm font-medium text-destructive">
+                              <AlertCircle className="h-4 w-4" />
+                              Failed Scenes ({failedScenes.length})
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                              onClick={() => {
+                                // Retry all failed scenes
+                                failedScenes.forEach(scene => {
+                                  retryFailedScene(scene.sceneNumber, currentVersion.id);
+                                });
+                              }}
+                              disabled={retryingScenes.length > 0}
+                            >
+                              {retryingScenes.length > 0 ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                  Retrying...
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw className="h-3 w-3 mr-1" />
+                                  Retry All
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="p-3 space-y-2">
+                          {failedScenes.map((scene) => {
+                            const isRetrying = retryingScenes.includes(scene.sceneNumber);
+                            const scriptScene = (editedScript || selectedScript)?.scenes?.find(
+                              s => s.sceneNumber === scene.sceneNumber
+                            );
+                            
+                            return (
+                              <div 
+                                key={scene.sceneNumber}
+                                className="flex items-center gap-3 p-2 rounded-lg bg-background/50 border border-border"
+                              >
+                                <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                                  {isRetrying ? (
+                                    <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                                  ) : (
+                                    <AlertCircle className="h-4 w-4 text-destructive" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs font-medium text-foreground">
+                                    Scene {scene.sceneNumber}
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground truncate">
+                                    {scriptScene?.visualDescription?.substring(0, 50) || 'No description'}...
+                                  </div>
+                                  {scene.error && (
+                                    <div className="text-[10px] text-destructive mt-0.5 truncate">
+                                      {scene.error}
+                                    </div>
+                                  )}
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => retryFailedScene(scene.sceneNumber, currentVersion.id)}
+                                  disabled={isRetrying}
+                                >
+                                  {isRetrying ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <RefreshCw className="h-3 w-3 mr-1" />
+                                      Retry
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Voiceover Preview */}
                   <div className="bg-card rounded-2xl border border-border overflow-hidden">
