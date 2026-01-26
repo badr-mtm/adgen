@@ -524,26 +524,69 @@ export default function ScriptSelection() {
                   <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-xl">
                     <div className="bg-muted/50 border-b border-border p-4 flex justify-between items-center">
                       <div className="flex items-center gap-3">
-                        <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-                        <span className="text-sm font-medium text-foreground">Generated Video Preview</span>
+                        {generatingVideo ? (
+                          <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                        ) : (
+                          <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+                        )}
+                        <span className="text-sm font-medium text-foreground">
+                          {generatingVideo ? "Generating Video..." : "Generated Video Preview"}
+                        </span>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
-                        <Check className="h-3 w-3 mr-1" />
-                        Ready
-                      </Badge>
+                      {generatingVideo ? (
+                        <Badge variant="outline" className="text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Processing
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">
+                          <Check className="h-3 w-3 mr-1" />
+                          Ready
+                        </Badge>
+                      )}
                     </div>
                     <div className="p-6">
-                      <div className="aspect-video bg-black rounded-xl overflow-hidden">
-                        {generatedVideoUrl && (
-                          <video
-                            ref={videoRef}
-                            src={generatedVideoUrl}
-                            controls
-                            autoPlay
-                            className="w-full h-full object-contain"
-                          />
-                        )}
-                      </div>
+                      {generatingVideo ? (
+                        /* Loading Skeleton */
+                        <div className="aspect-video bg-muted rounded-xl overflow-hidden relative">
+                          <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6">
+                            {/* Animated gradient background */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 animate-pulse" />
+                            
+                            {/* Central loader */}
+                            <div className="relative z-10 flex flex-col items-center space-y-4">
+                              <div className="relative">
+                                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
+                                <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center relative z-10">
+                                  <Video className="h-6 w-6 text-primary animate-pulse" />
+                                </div>
+                              </div>
+                              <div className="text-center space-y-2">
+                                <p className="text-sm font-medium text-foreground">AI is generating your video</p>
+                                <p className="text-xs text-muted-foreground">This may take up to a minute...</p>
+                              </div>
+                            </div>
+                            
+                            {/* Skeleton bars */}
+                            <div className="absolute bottom-6 left-6 right-6 space-y-2">
+                              <div className="h-2 bg-muted-foreground/10 rounded-full w-3/4 animate-pulse" />
+                              <div className="h-2 bg-muted-foreground/10 rounded-full w-1/2 animate-pulse" style={{ animationDelay: "150ms" }} />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="aspect-video bg-black rounded-xl overflow-hidden">
+                          {generatedVideoUrl && (
+                            <video
+                              ref={videoRef}
+                              src={generatedVideoUrl}
+                              controls
+                              autoPlay
+                              className="w-full h-full object-contain"
+                            />
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
