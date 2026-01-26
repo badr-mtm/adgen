@@ -104,7 +104,7 @@ export default function ScriptSelection() {
   // Video settings for regeneration
   const [videoDuration, setVideoDuration] = useState<string>("5");
   const [videoAspectRatio, setVideoAspectRatio] = useState<string>("16:9");
-  const [videoModel, setVideoModel] = useState<string>("wan-fast");
+  const [videoModel, setVideoModel] = useState<string>("seedance-pro");
   
   // Tab state
   const [activeTab, setActiveTab] = useState<string>("scripts");
@@ -493,13 +493,11 @@ export default function ScriptSelection() {
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-muted-foreground">Model:</span>
                         <Select value={videoModel} onValueChange={setVideoModel}>
-                          <SelectTrigger className="w-[160px] h-10 bg-background">
+                          <SelectTrigger className="w-[200px] h-10 bg-background">
                             <SelectValue placeholder="Select model" />
                           </SelectTrigger>
                           <SelectContent className="bg-popover border-border">
-                            <SelectItem value="wan-fast">Wan Fast</SelectItem>
-                            <SelectItem value="wan-pro">Wan Pro</SelectItem>
-                            <SelectItem value="wan-2.5">Wan 2.5 (HD)</SelectItem>
+                            <SelectItem value="seedance-pro">Seedance 1.5 Pro (VO)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

@@ -51,12 +51,16 @@ serve(async (req) => {
         const REPLICATE_API_TOKEN = Deno.env.get('REPLICATE_API_TOKEN');
         if (!REPLICATE_API_TOKEN) throw new Error('REPLICATE_API_TOKEN not configured');
 
-        const prompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality cinematic motion.`;
+        const visualPrompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality cinematic motion.`;
+        
+        // Get voiceover from scene
+        const voiceoverScript = scene.voiceover || '';
 
-        console.log(`Generating scene video with Replicate wan-video/wan-2.5-t2v`);
+        console.log(`Generating scene video with Replicate bytedance/seedance-1.5-pro`);
 
-        // Start prediction on Replicate using the models endpoint
-        const createResponse = await fetch('https://api.replicate.com/v1/models/wan-video/wan-2.5-t2v/predictions', {
+        // Start prediction on Replicate using bytedance/seedance-1.5-pro
+        // This model generates video with synchronized audio/voiceover
+        const createResponse = await fetch('https://api.replicate.com/v1/models/bytedance/seedance-1.5-pro/predictions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
@@ -65,7 +69,8 @@ serve(async (req) => {
             },
             body: JSON.stringify({
                 input: {
-                    prompt,
+                    prompt: visualPrompt,
+                    audio_prompt: voiceoverScript,
                     duration: parseInt(duration) || 5,
                     aspect_ratio: aspectRatio
                 }
