@@ -197,14 +197,8 @@ const Create = () => {
               AI TV Ad Creator
             </motion.div>
 
-            <h1 className="text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50 md:text-5xl">
-              Describe Your Ad
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
-              Tell us about your product or service. We'll generate
-              <span className="text-foreground font-medium"> 3 unique scripts with storyboards </span>
-              tailored to your goals.
-            </p>
+            <h1 className="text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50 md:text-5xl">What Ad you're creating today ?</h1>
+            
           </div>
 
           {/* Input Area */}
