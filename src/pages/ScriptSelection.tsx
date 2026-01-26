@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import {
   ArrowLeft,
   ArrowRight,
@@ -30,7 +33,11 @@ import {
   MessageSquare,
   Volume2,
   Trash2,
-  Plus
+  Plus,
+  Layers,
+  CircleCheck,
+  CircleDashed,
+  AlertCircle
 } from "lucide-react";
 import {
   Select,
@@ -72,6 +79,24 @@ interface VideoVersion {
   language: string;
   cameraMovement: string;
   generatedAt: Date;
+  generationMode: "full" | "scene-by-scene";
+  sceneVideos?: {
+    sceneNumber: number;
+    videoUrl: string;
+    thumbnailUrl?: string;
+    duration: string;
+    status: 'completed' | 'failed';
+    error?: string;
+  }[];
+}
+
+// Scene generation progress tracking
+interface SceneGenerationProgress {
+  current: number;
+  total: number;
+  completed: number[];
+  failed: number[];
+  currentSceneName?: string;
 }
 
 const APPROACH_ICONS: Record<string, any> = {
@@ -148,6 +173,10 @@ export default function ScriptSelection() {
   const [voiceoverLanguage, setVoiceoverLanguage] = useState<string>("en");
   const [cameraMovement, setCameraMovement] = useState<string>("auto");
   const [showVoiceoverPreview, setShowVoiceoverPreview] = useState(false);
+  
+  // Generation mode state
+  const [generationMode, setGenerationMode] = useState<"full" | "scene-by-scene">("full");
+  const [sceneProgress, setSceneProgress] = useState<SceneGenerationProgress | null>(null);
   
   // Tab state
   const [activeTab, setActiveTab] = useState<string>("scripts");
@@ -313,64 +342,129 @@ export default function ScriptSelection() {
     setGeneratingVideo(true);
     setShowRegenSettings(false);
 
+    const durationToUse = customDuration || videoDuration;
+    const aspectRatioToUse = customAspectRatio || videoAspectRatio;
+
     try {
-      toast({
-        title: "Generating Video",
-        description: "AI is creating your video from the script...",
-        duration: 60000
-      });
-
-      // Use custom duration if provided, otherwise use state or default
-      const durationToUse = customDuration || videoDuration;
-      const aspectRatioToUse = customAspectRatio || videoAspectRatio;
-
-      const { data: result, error } = await supabase.functions.invoke('generate-video-from-script', {
-        body: {
-          campaignId,
-          script: scriptToUse,
-          duration: durationToUse,
-          aspectRatio: aspectRatioToUse,
-          language: voiceoverLanguage,
-          cameraMovement: cameraMovement
-        }
-      });
-
-      if (error) throw error;
-
-      if (result?.videoUrl) {
-        // Generate thumbnail from the video
-        const thumbnailUrl = await generateVideoThumbnail(result.videoUrl);
-        
-        // Create new video version
-        const newVersion: VideoVersion = {
-          id: `v${Date.now()}`,
-          url: result.videoUrl,
-          thumbnailUrl,
-          duration: durationToUse,
-          aspectRatio: aspectRatioToUse,
-          language: voiceoverLanguage,
-          cameraMovement: cameraMovement,
-          generatedAt: new Date()
-        };
-
-        if (saveAsVersion && generatedVideoUrl) {
-          // Add to versions list when regenerating
-          setVideoVersions(prev => [...prev, newVersion]);
-        } else {
-          // First generation or replace mode
-          setVideoVersions([newVersion]);
-        }
-
-        setGeneratedVideoUrl(result.videoUrl);
-        setSelectedVideoVersion(newVersion.id);
-        setShowVideoPreview(true);
-        setActiveTab("preview");
-        toast({
-          title: "Video Generated!",
-          description: `${durationToUse}s ${aspectRatioToUse} video ready for preview.`,
+      if (generationMode === "scene-by-scene") {
+        // Scene-by-scene generation
+        const totalScenes = scriptToUse.scenes?.length || 0;
+        setSceneProgress({
+          current: 0,
+          total: totalScenes,
+          completed: [],
+          failed: [],
+          currentSceneName: scriptToUse.scenes?.[0]?.visualDescription?.substring(0, 50) || 'Scene 1'
         });
+
+        toast({
+          title: "Generating Scenes",
+          description: `Processing ${totalScenes} scenes individually...`,
+          duration: 120000
+        });
+
+        const { data: result, error } = await supabase.functions.invoke('generate-scenes-batch', {
+          body: {
+            campaignId,
+            script: scriptToUse,
+            duration: durationToUse,
+            aspectRatio: aspectRatioToUse,
+            language: voiceoverLanguage,
+            cameraMovement: cameraMovement
+          }
+        });
+
+        if (error) throw error;
+
+        if (result?.sceneVideos) {
+          const completedScenes = result.sceneVideos.filter((s: any) => s.status === 'completed');
+          const firstCompletedUrl = completedScenes[0]?.videoUrl;
+          
+          // Generate thumbnail from first scene
+          const thumbnailUrl = firstCompletedUrl ? await generateVideoThumbnail(firstCompletedUrl) : undefined;
+
+          const newVersion: VideoVersion = {
+            id: `v${Date.now()}`,
+            url: firstCompletedUrl || '',
+            thumbnailUrl,
+            duration: durationToUse,
+            aspectRatio: aspectRatioToUse,
+            language: voiceoverLanguage,
+            cameraMovement: cameraMovement,
+            generatedAt: new Date(),
+            generationMode: "scene-by-scene",
+            sceneVideos: result.sceneVideos
+          };
+
+          if (saveAsVersion && generatedVideoUrl) {
+            setVideoVersions(prev => [...prev, newVersion]);
+          } else {
+            setVideoVersions([newVersion]);
+          }
+
+          setGeneratedVideoUrl(firstCompletedUrl);
+          setSelectedVideoVersion(newVersion.id);
+          setShowVideoPreview(true);
+          setActiveTab("preview");
+          
+          toast({
+            title: "Scene Generation Complete!",
+            description: `${result.completedCount} of ${totalScenes} scenes generated successfully.`,
+          });
+        }
       } else {
-        throw new Error("No video generated");
+        // Full video generation (existing flow)
+        toast({
+          title: "Generating Video",
+          description: "AI is creating your video from the script...",
+          duration: 60000
+        });
+
+        const { data: result, error } = await supabase.functions.invoke('generate-video-from-script', {
+          body: {
+            campaignId,
+            script: scriptToUse,
+            duration: durationToUse,
+            aspectRatio: aspectRatioToUse,
+            language: voiceoverLanguage,
+            cameraMovement: cameraMovement
+          }
+        });
+
+        if (error) throw error;
+
+        if (result?.videoUrl) {
+          const thumbnailUrl = await generateVideoThumbnail(result.videoUrl);
+          
+          const newVersion: VideoVersion = {
+            id: `v${Date.now()}`,
+            url: result.videoUrl,
+            thumbnailUrl,
+            duration: durationToUse,
+            aspectRatio: aspectRatioToUse,
+            language: voiceoverLanguage,
+            cameraMovement: cameraMovement,
+            generatedAt: new Date(),
+            generationMode: "full"
+          };
+
+          if (saveAsVersion && generatedVideoUrl) {
+            setVideoVersions(prev => [...prev, newVersion]);
+          } else {
+            setVideoVersions([newVersion]);
+          }
+
+          setGeneratedVideoUrl(result.videoUrl);
+          setSelectedVideoVersion(newVersion.id);
+          setShowVideoPreview(true);
+          setActiveTab("preview");
+          toast({
+            title: "Video Generated!",
+            description: `${durationToUse}s ${aspectRatioToUse} video ready for preview.`,
+          });
+        } else {
+          throw new Error("No video generated");
+        }
       }
     } catch (err: any) {
       console.error("Error generating video:", err);
@@ -381,6 +475,7 @@ export default function ScriptSelection() {
       });
     } finally {
       setGeneratingVideo(false);
+      setSceneProgress(null);
     }
   };
 
@@ -628,9 +723,40 @@ export default function ScriptSelection() {
                     </ScrollArea>
 
                     {/* Footer with all video settings */}
-                    <div className="p-4 border-t border-border bg-muted/30">
+                    <div className="p-4 border-t border-border bg-muted/30 space-y-4">
+                      {/* Generation Mode Toggle */}
+                      <div className="flex items-center gap-4 p-3 bg-background/50 rounded-lg border border-border">
+                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                          <Layers className="h-3.5 w-3.5" />
+                          Mode:
+                        </div>
+                        <RadioGroup 
+                          value={generationMode} 
+                          onValueChange={(v) => setGenerationMode(v as "full" | "scene-by-scene")}
+                          className="flex gap-4"
+                        >
+                          <div className="flex items-center gap-2">
+                            <RadioGroupItem value="full" id="mode-full" className="h-3.5 w-3.5" />
+                            <Label htmlFor="mode-full" className="text-xs cursor-pointer">
+                              Full Video
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <RadioGroupItem value="scene-by-scene" id="mode-scenes" className="h-3.5 w-3.5" />
+                            <Label htmlFor="mode-scenes" className="text-xs cursor-pointer">
+                              Scene-by-Scene
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                        {generationMode === "scene-by-scene" && (
+                          <Badge variant="outline" className="text-[10px] ml-auto">
+                            {selectedScript?.scenes?.length || 0} scenes
+                          </Badge>
+                        )}
+                      </div>
+
                       {/* Settings Row */}
-                      <div className="flex flex-wrap items-center gap-2 mb-4">
+                      <div className="flex flex-wrap items-center gap-2">
                         {/* Model */}
                         <Select value={videoModel} onValueChange={setVideoModel}>
                           <SelectTrigger className="w-[160px] h-9 bg-background text-xs">
@@ -712,11 +838,11 @@ export default function ScriptSelection() {
                         {generatingVideo ? (
                           <>
                             <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                            Generating Video...
+                            {generationMode === "scene-by-scene" ? "Generating Scenes..." : "Generating Video..."}
                           </>
                         ) : (
                           <>
-                            Generate Video
+                            {generationMode === "scene-by-scene" ? "Generate All Scenes" : "Generate Video"}
                             <Sparkles className="h-5 w-5 ml-2" />
                           </>
                         )}
@@ -762,31 +888,66 @@ export default function ScriptSelection() {
                     </div>
                     <div className="p-6">
                       {generatingVideo ? (
-                        /* Loading Skeleton */
+                        /* Loading Skeleton - with scene-by-scene progress */
                         <div className="aspect-video bg-muted rounded-xl overflow-hidden relative">
-                          <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6">
+                          <div className="absolute inset-0 flex flex-col items-center justify-center space-y-6 p-6">
                             {/* Animated gradient background */}
                             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 animate-pulse" />
                             
                             {/* Central loader */}
-                            <div className="relative z-10 flex flex-col items-center space-y-4">
+                            <div className="relative z-10 flex flex-col items-center space-y-4 w-full max-w-sm">
                               <div className="relative">
                                 <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
                                 <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center relative z-10">
-                                  <Video className="h-6 w-6 text-primary animate-pulse" />
+                                  {generationMode === "scene-by-scene" ? (
+                                    <Layers className="h-6 w-6 text-primary animate-pulse" />
+                                  ) : (
+                                    <Video className="h-6 w-6 text-primary animate-pulse" />
+                                  )}
                                 </div>
                               </div>
+                              
                               <div className="text-center space-y-2">
-                                <p className="text-sm font-medium text-foreground">AI is generating your video</p>
-                                <p className="text-xs text-muted-foreground">This may take up to a minute...</p>
+                                <p className="text-sm font-medium text-foreground">
+                                  {generationMode === "scene-by-scene" 
+                                    ? `Generating scenes...`
+                                    : "AI is generating your video"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {generationMode === "scene-by-scene"
+                                    ? `Processing ${selectedScript?.scenes?.length || 0} scenes individually`
+                                    : "This may take up to a minute..."}
+                                </p>
                               </div>
+
+                              {/* Scene-by-scene progress indicators */}
+                              {generationMode === "scene-by-scene" && selectedScript?.scenes && (
+                                <div className="w-full space-y-3 mt-2">
+                                  <Progress value={0} className="h-2" />
+                                  <div className="grid grid-cols-4 gap-2">
+                                    {selectedScript.scenes.map((scene, idx) => (
+                                      <div 
+                                        key={idx}
+                                        className="flex flex-col items-center gap-1 p-2 bg-background/50 rounded-lg border border-border"
+                                      >
+                                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                          <CircleDashed className="h-4 w-4 text-muted-foreground animate-spin" />
+                                        </div>
+                                        <span className="text-[10px] text-muted-foreground">Sc {idx + 1}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             
-                            {/* Skeleton bars */}
-                            <div className="absolute bottom-6 left-6 right-6 space-y-2">
-                              <div className="h-2 bg-muted-foreground/10 rounded-full w-3/4 animate-pulse" />
-                              <div className="h-2 bg-muted-foreground/10 rounded-full w-1/2 animate-pulse" style={{ animationDelay: "150ms" }} />
-                            </div>
+                            {/* Skeleton bars for full video mode */}
+                            {generationMode === "full" && (
+                              <div className="absolute bottom-6 left-6 right-6 space-y-2">
+                                <div className="h-2 bg-muted-foreground/10 rounded-full w-3/4 animate-pulse" />
+                                <div className="h-2 bg-muted-foreground/10 rounded-full w-1/2 animate-pulse" style={{ animationDelay: "150ms" }} />
+                              </div>
+                            )}
                           </div>
                         </div>
                       ) : (
@@ -1040,11 +1201,15 @@ export default function ScriptSelection() {
                     size="lg"
                     onClick={() => {
                       const campaignId = id || navState?.campaignId;
+                      const currentVersion = videoVersions.find(v => v.id === selectedVideoVersion);
                       navigate(`/video-editor/${campaignId}`, {
                         state: {
                           generatedVideoUrl,
                           script: editedScript || selectedScript,
-                          videoVersions
+                          videoVersions,
+                          // Pass scene videos if using scene-by-scene mode
+                          sceneVideos: currentVersion?.sceneVideos,
+                          generationMode: currentVersion?.generationMode || generationMode
                         }
                       });
                     }}

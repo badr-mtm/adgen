@@ -112,8 +112,21 @@ export default function VideoEditor() {
               selectedScript: locationState.script
             }));
             
-            // Create scenes from script if available
-            if (locationState.script.scenes && locationState.script.scenes.length > 0) {
+            // Handle scene-by-scene videos
+            if (locationState.generationMode === "scene-by-scene" && locationState.sceneVideos) {
+              // Map scene videos to scenes
+              const mappedScenes = locationState.script.scenes.map((s: any, idx: number) => {
+                const sceneVideo = locationState.sceneVideos.find((sv: any) => sv.sceneNumber === (s.sceneNumber || idx + 1));
+                return normalizeScene({
+                  ...s,
+                  videoUrl: sceneVideo?.videoUrl || ''
+                }, idx);
+              });
+              setScenes(mappedScenes);
+              console.log('Loaded scene-by-scene videos:', mappedScenes.length);
+            } 
+            // Create scenes from script for full video mode
+            else if (locationState.script.scenes && locationState.script.scenes.length > 0) {
               const mappedScenes = locationState.script.scenes.map((s: any, idx: number) => 
                 normalizeScene({
                   ...s,

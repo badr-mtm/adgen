@@ -7,6 +7,28 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Language code to full name mapping for audio prompt
+const LANGUAGE_NAMES: Record<string, string> = {
+    en: 'English',
+    es: 'Spanish',
+    ja: 'Japanese',
+    ko: 'Korean',
+    zh: 'Mandarin Chinese',
+    pt: 'Portuguese',
+    id: 'Indonesian'
+};
+
+// Camera movement prompt modifiers
+const CAMERA_PROMPTS: Record<string, string> = {
+    auto: '',
+    static: 'Static camera, no movement.',
+    pan: 'Smooth horizontal panning camera movement.',
+    zoom: 'Gradual zoom in camera movement.',
+    dolly: 'Dolly push-in camera movement.',
+    orbit: 'Orbiting camera movement around subject.',
+    tracking: 'Tracking shot following the action.'
+};
+
 serve(async (req) => {
     if (req.method === 'OPTIONS') {
         return new Response(null, { headers: corsHeaders });
@@ -30,8 +52,19 @@ serve(async (req) => {
         const { data: { user }, error: userError } = await supabaseAuth.auth.getUser(token);
         if (userError || !user) throw new Error('Unauthorized');
 
-        const { campaignId, sceneNumber, model = "wan-fast", customPrompt, duration = "5", aspectRatio = "16:9" } = await req.json();
+        const { 
+            campaignId, 
+            sceneNumber, 
+            model = "wan-fast", 
+            customPrompt, 
+            duration = "5", 
+            aspectRatio = "16:9",
+            language = "en",
+            cameraMovement = "auto"
+        } = await req.json();
+        
         console.log(`Generating video for scene ${sceneNumber} using model ${model}`);
+        console.log(`Language: ${language}, Camera: ${cameraMovement}`);
 
         const { data: campaign, error: campaignError } = await supabase
             .from('campaigns')
@@ -51,15 +84,20 @@ serve(async (req) => {
         const REPLICATE_API_TOKEN = Deno.env.get('REPLICATE_API_TOKEN');
         if (!REPLICATE_API_TOKEN) throw new Error('REPLICATE_API_TOKEN not configured');
 
-        const visualPrompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals}. Style: ${campaign.creative_style || 'professional'}. High quality cinematic motion.`;
+        // Build visual prompt with camera movement
+        const cameraPromptSuffix = CAMERA_PROMPTS[cameraMovement] || '';
+        const visualPrompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals || ''}. ${cameraPromptSuffix} Style: ${campaign.creative_style || 'professional'}. High quality cinematic motion.`.trim();
         
-        // Get voiceover from scene
+        // Build audio prompt with language context
+        const languageName = LANGUAGE_NAMES[language] || 'English';
         const voiceoverScript = scene.voiceover || '';
+        const audioPrompt = voiceoverScript ? `[${languageName}] ${voiceoverScript}` : '';
 
         console.log(`Generating scene video with Replicate bytedance/seedance-1.5-pro`);
+        console.log(`Visual prompt: ${visualPrompt.substring(0, 100)}...`);
+        console.log(`Audio prompt: ${audioPrompt.substring(0, 100)}...`);
 
         // Start prediction on Replicate using bytedance/seedance-1.5-pro
-        // This model generates video with synchronized audio/voiceover
         const createResponse = await fetch('https://api.replicate.com/v1/models/bytedance/seedance-1.5-pro/predictions', {
             method: 'POST',
             headers: {
@@ -70,7 +108,7 @@ serve(async (req) => {
             body: JSON.stringify({
                 input: {
                     prompt: visualPrompt,
-                    audio_prompt: voiceoverScript,
+                    audio_prompt: audioPrompt,
                     duration: parseInt(duration) || 5,
                     aspect_ratio: aspectRatio
                 }
@@ -129,7 +167,17 @@ serve(async (req) => {
         // Update storyboard
         const updatedScenes = storyboard.scenes.map((s: any) => {
             if (s.sceneNumber === sceneNumber) {
-                return { ...s, videoUrl: publicUrl, generatedAt: new Date().toISOString() };
+                return { 
+                    ...s, 
+                    videoUrl: publicUrl, 
+                    generatedAt: new Date().toISOString(),
+                    generationSettings: {
+                        language,
+                        cameraMovement,
+                        duration,
+                        aspectRatio
+                    }
+                };
             }
             return s;
         });
