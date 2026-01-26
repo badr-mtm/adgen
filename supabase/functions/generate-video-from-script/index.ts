@@ -44,9 +44,9 @@ serve(async (req) => {
         // Build prompt from the full script
         const prompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}.`;
 
-        console.log(`Using fal-ai/wan/v2.1/1.3b/text-to-video with prompt: ${prompt.substring(0, 100)}...`);
+        console.log(`Using fal-ai/wan-25-preview/text-to-video with prompt: ${prompt.substring(0, 100)}...`);
 
-        const response = await fetch(`https://fal.run/fal-ai/wan/v2.1/1.3b/text-to-video`, {
+        const response = await fetch(`https://fal.run/fal-ai/wan-25-preview/text-to-video`, {
             method: "POST",
             headers: {
                 "Authorization": `Key ${FAL_KEY}`,
@@ -56,8 +56,9 @@ serve(async (req) => {
                 prompt,
                 negative_prompt: "low resolution, error, worst quality, low quality, defects, blurry, distorted",
                 aspect_ratio: aspectRatio,
-                num_inference_steps: 30,
-                guidance_scale: 5,
+                resolution: "1080p",
+                duration: duration,
+                enable_prompt_expansion: true,
                 enable_safety_checker: true
             }),
         });
