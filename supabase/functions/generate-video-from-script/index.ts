@@ -38,34 +38,34 @@ serve(async (req) => {
 
         console.log(`Generating video from script: "${script.title}"`);
 
-        const FAL_KEY = Deno.env.get('FAL_KEY');
-        if (!FAL_KEY) throw new Error('FAL_KEY not configured');
+        const WAN_VIDEO_KEY = Deno.env.get('WAN_VIDEO_KEY');
+        if (!WAN_VIDEO_KEY) throw new Error('WAN_VIDEO_KEY not configured');
 
         // Build prompt from the full script
         const prompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}.`;
 
-        console.log(`Using fal-ai/fast-animatediff/text-to-video with prompt: ${prompt.substring(0, 100)}...`);
+        console.log(`Using wan-video/wan-2.5-t2v with prompt: ${prompt.substring(0, 100)}...`);
 
-        const response = await fetch(`https://fal.run/fal-ai/fast-animatediff/text-to-video`, {
+        const response = await fetch(`https://fal.run/wan-video/wan-2.5-t2v`, {
             method: "POST",
             headers: {
-                "Authorization": `Key ${FAL_KEY}`,
+                "Authorization": `Key ${WAN_VIDEO_KEY}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 prompt,
                 negative_prompt: "low resolution, error, worst quality, low quality, defects, blurry, distorted, text, watermark",
-                num_frames: 16,
-                num_inference_steps: 25,
-                guidance_scale: 7.5,
+                aspect_ratio: aspectRatio,
+                duration: duration,
+                enable_prompt_expansion: true,
                 enable_safety_checker: true
             }),
         });
 
         if (!response.ok) {
             const error = await response.text();
-            console.error('Fal.ai API error:', error);
-            throw new Error(`Fal.ai API error: ${error}`);
+            console.error('wan-video API error:', error);
+            throw new Error(`wan-video API error: ${error}`);
         }
 
         const result = await response.json();
