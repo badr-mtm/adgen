@@ -24,7 +24,11 @@ import {
   Settings2,
   Clock,
   Monitor,
-  Video
+  Video,
+  Globe,
+  Camera,
+  MessageSquare,
+  Volume2
 } from "lucide-react";
 import {
   Select,
@@ -105,9 +109,17 @@ export default function ScriptSelection() {
   const [videoDuration, setVideoDuration] = useState<string>("5");
   const [videoAspectRatio, setVideoAspectRatio] = useState<string>("16:9");
   const [videoModel, setVideoModel] = useState<string>("seedance-pro");
+  const [voiceoverLanguage, setVoiceoverLanguage] = useState<string>("en");
+  const [cameraMovement, setCameraMovement] = useState<string>("auto");
+  const [showVoiceoverPreview, setShowVoiceoverPreview] = useState(false);
   
   // Tab state
   const [activeTab, setActiveTab] = useState<string>("scripts");
+  
+  // Computed voiceover script
+  const voiceoverScript = (editedScript || selectedScript)?.scenes 
+    ? (editedScript || selectedScript)?.scenes.map((s) => s.voiceover).filter(Boolean).join(' ')
+    : `${(editedScript || selectedScript)?.hook || ''} ${(editedScript || selectedScript)?.cta || ''}`;
 
   useEffect(() => {
     if (navState?.adDescription) {
@@ -231,7 +243,9 @@ export default function ScriptSelection() {
           campaignId,
           script: scriptToUse,
           duration: durationToUse,
-          aspectRatio: aspectRatioToUse
+          aspectRatio: aspectRatioToUse,
+          language: voiceoverLanguage,
+          cameraMovement: cameraMovement
         }
       });
 
@@ -607,11 +621,86 @@ export default function ScriptSelection() {
 
                 {/* Settings Panel */}
                 <div className="lg:col-span-1 space-y-6">
+                  {/* Voiceover Preview */}
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                    <button 
+                      onClick={() => setShowVoiceoverPreview(!showVoiceoverPreview)}
+                      className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                        <Volume2 className="h-4 w-4 text-primary" />
+                        Voiceover Script Preview
+                      </div>
+                      {showVoiceoverPreview ? (
+                        <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </button>
+                    {showVoiceoverPreview && (
+                      <div className="px-4 pb-4 space-y-3">
+                        <div className="p-3 bg-muted/50 rounded-lg border border-border">
+                          <p className="text-sm text-foreground leading-relaxed">
+                            {voiceoverScript || "No voiceover script available"}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <MessageSquare className="h-3 w-3" />
+                          <span>{voiceoverScript?.split(' ').length || 0} words • ~{Math.ceil((voiceoverScript?.split(' ').length || 0) / 2.5)}s read time</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Regeneration Settings */}
                   <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
                     <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                       <Settings2 className="h-4 w-4 text-primary" />
-                      Regeneration Settings
+                      Video Settings
+                    </div>
+                    
+                    {/* Language */}
+                    <div className="space-y-2">
+                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Globe className="h-3 w-3" />
+                        Voiceover Language
+                      </label>
+                      <Select value={voiceoverLanguage} onValueChange={setVoiceoverLanguage}>
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="es">Spanish</SelectItem>
+                          <SelectItem value="ja">Japanese</SelectItem>
+                          <SelectItem value="ko">Korean</SelectItem>
+                          <SelectItem value="zh">Mandarin Chinese</SelectItem>
+                          <SelectItem value="pt">Portuguese</SelectItem>
+                          <SelectItem value="id">Indonesian</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Camera Movement */}
+                    <div className="space-y-2">
+                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Camera className="h-3 w-3" />
+                        Camera Movement
+                      </label>
+                      <Select value={cameraMovement} onValueChange={setCameraMovement}>
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Camera Movement" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Auto (AI Decides)</SelectItem>
+                          <SelectItem value="static">Static</SelectItem>
+                          <SelectItem value="pan">Pan</SelectItem>
+                          <SelectItem value="zoom">Zoom</SelectItem>
+                          <SelectItem value="dolly">Dolly</SelectItem>
+                          <SelectItem value="orbit">Orbit</SelectItem>
+                          <SelectItem value="tracking">Tracking Shot</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     {/* Duration */}

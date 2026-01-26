@@ -30,7 +30,7 @@ serve(async (req) => {
         const { data: { user }, error: userError } = await supabaseAuth.auth.getUser(token);
         if (userError || !user) throw new Error('Unauthorized');
 
-        const { campaignId, script, duration = "5", aspectRatio = "16:9" } = await req.json();
+        const { campaignId, script, duration = "5", aspectRatio = "16:9", language = "en", cameraMovement = "auto" } = await req.json();
         
         if (!script) {
             throw new Error('Script is required');
@@ -47,16 +47,44 @@ serve(async (req) => {
             : '[too short]';
         console.log(`Token format check: length=${REPLICATE_API_TOKEN.length}, preview=${tokenPreview}`);
 
-        // Build visual prompt from the full script
-        const visualPrompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}.`;
+        // Map language codes to full names for better prompt understanding
+        const languageMap: Record<string, string> = {
+            'en': 'English',
+            'es': 'Spanish',
+            'ja': 'Japanese',
+            'ko': 'Korean',
+            'zh': 'Mandarin Chinese',
+            'pt': 'Portuguese',
+            'id': 'Indonesian'
+        };
+        
+        // Map camera movement to prompt instructions
+        const cameraInstructions: Record<string, string> = {
+            'auto': '',
+            'static': 'Static camera, no movement.',
+            'pan': 'Slow horizontal pan across the scene.',
+            'zoom': 'Gradual zoom in on the subject.',
+            'dolly': 'Smooth dolly movement forward.',
+            'orbit': 'Cinematic orbit around the subject.',
+            'tracking': 'Camera tracking shot following the action.'
+        };
+
+        // Build visual prompt from the full script with camera movement
+        const cameraInstruction = cameraInstructions[cameraMovement] || '';
+        const visualPrompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}. ${cameraInstruction}`.trim();
         
         // Build voiceover script from scenes or use hook + cta
         const voiceoverScript = script.scenes 
             ? script.scenes.map((s: any) => s.voiceover).filter(Boolean).join(' ')
             : `${script.hook} ${script.cta}`;
+        
+        // Add language instruction to audio prompt
+        const languageName = languageMap[language] || 'English';
+        const audioPrompt = `[${languageName}] ${voiceoverScript}`;
 
         console.log(`Using Replicate bytedance/seedance-1.5-pro with prompt: ${visualPrompt.substring(0, 100)}...`);
-        console.log(`Voiceover script: ${voiceoverScript.substring(0, 100)}...`);
+        console.log(`Voiceover script (${languageName}): ${audioPrompt.substring(0, 100)}...`);
+        console.log(`Camera movement: ${cameraMovement}`);
 
         // Start prediction on Replicate using bytedance/seedance-1.5-pro
         // This model generates video with synchronized audio/voiceover
@@ -70,7 +98,7 @@ serve(async (req) => {
             body: JSON.stringify({
                 input: {
                     prompt: visualPrompt,
-                    audio_prompt: voiceoverScript,
+                    audio_prompt: audioPrompt,
                     duration: parseInt(duration) || 5,
                     aspect_ratio: aspectRatio
                 }
