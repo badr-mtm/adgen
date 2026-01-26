@@ -55,8 +55,8 @@ serve(async (req) => {
 
         console.log(`Generating scene video with Replicate wan-video/wan-2.5-t2v`);
 
-        // Start prediction on Replicate
-        const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+        // Start prediction on Replicate using the models endpoint
+        const createResponse = await fetch('https://api.replicate.com/v1/models/wan-video/wan-2.5-t2v/predictions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
@@ -64,7 +64,6 @@ serve(async (req) => {
                 'Prefer': 'wait'
             },
             body: JSON.stringify({
-                version: 'wan-video/wan-2.5-t2v',
                 input: {
                     prompt,
                     duration: parseInt(duration) || 5,
