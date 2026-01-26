@@ -28,7 +28,9 @@ import {
   Globe,
   Camera,
   MessageSquare,
-  Volume2
+  Volume2,
+  Trash2,
+  Plus
 } from "lucide-react";
 import {
   Select,
@@ -60,7 +62,16 @@ interface Script {
   }[];
 }
 
-// VideoVariant interface removed - now generating single video from script
+// Video version interface for tracking multiple generated videos
+interface VideoVersion {
+  id: string;
+  url: string;
+  duration: string;
+  aspectRatio: string;
+  language: string;
+  cameraMovement: string;
+  generatedAt: Date;
+}
 
 const APPROACH_ICONS: Record<string, any> = {
   emotional: Heart,
@@ -72,6 +83,26 @@ const APPROACH_COLORS: Record<string, string> = {
   emotional: "text-rose-400 bg-rose-500/10 border-rose-500/30",
   problem_solution: "text-amber-400 bg-amber-500/10 border-amber-500/30",
   aspirational: "text-blue-400 bg-blue-500/10 border-blue-500/30",
+};
+
+const LANGUAGE_LABELS: Record<string, string> = {
+  en: "EN",
+  es: "ES",
+  ja: "JA",
+  ko: "KO",
+  zh: "ZH",
+  pt: "PT",
+  id: "ID"
+};
+
+const CAMERA_LABELS: Record<string, string> = {
+  auto: "Auto",
+  static: "Static",
+  pan: "Pan",
+  zoom: "Zoom",
+  dolly: "Dolly",
+  orbit: "Orbit",
+  tracking: "Track"
 };
 
 export default function ScriptSelection() {
@@ -104,6 +135,10 @@ export default function ScriptSelection() {
   const [showVideoPreview, setShowVideoPreview] = useState(false);
   const [showRegenSettings, setShowRegenSettings] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Video versions for comparison
+  const [videoVersions, setVideoVersions] = useState<VideoVersion[]>([]);
+  const [selectedVideoVersion, setSelectedVideoVersion] = useState<string | null>(null);
 
   // Video settings for regeneration
   const [videoDuration, setVideoDuration] = useState<string>("5");
@@ -211,7 +246,7 @@ export default function ScriptSelection() {
     setEditingScript(false);
   };
 
-  const generateVideoAndContinue = async (customDuration?: string, customAspectRatio?: string) => {
+  const generateVideoAndContinue = async (customDuration?: string, customAspectRatio?: string, saveAsVersion = false) => {
     const campaignId = id || navState?.campaignId;
     const scriptToUse = editedScript || selectedScript;
     
@@ -252,9 +287,29 @@ export default function ScriptSelection() {
       if (error) throw error;
 
       if (result?.videoUrl) {
+        // Create new video version
+        const newVersion: VideoVersion = {
+          id: `v${Date.now()}`,
+          url: result.videoUrl,
+          duration: durationToUse,
+          aspectRatio: aspectRatioToUse,
+          language: voiceoverLanguage,
+          cameraMovement: cameraMovement,
+          generatedAt: new Date()
+        };
+
+        if (saveAsVersion && generatedVideoUrl) {
+          // Add to versions list when regenerating
+          setVideoVersions(prev => [...prev, newVersion]);
+        } else {
+          // First generation or replace mode
+          setVideoVersions([newVersion]);
+        }
+
         setGeneratedVideoUrl(result.videoUrl);
+        setSelectedVideoVersion(newVersion.id);
         setShowVideoPreview(true);
-        setActiveTab("preview"); // Switch to preview tab after generation
+        setActiveTab("preview");
         toast({
           title: "Video Generated!",
           description: `${durationToUse}s ${aspectRatioToUse} video ready for preview.`,
@@ -272,6 +327,22 @@ export default function ScriptSelection() {
     } finally {
       setGeneratingVideo(false);
     }
+  };
+
+  const selectVideoVersion = (version: VideoVersion) => {
+    setSelectedVideoVersion(version.id);
+    setGeneratedVideoUrl(version.url);
+  };
+
+  const deleteVideoVersion = (versionId: string) => {
+    setVideoVersions(prev => {
+      const remaining = prev.filter(v => v.id !== versionId);
+      if (selectedVideoVersion === versionId && remaining.length > 0) {
+        setSelectedVideoVersion(remaining[remaining.length - 1].id);
+        setGeneratedVideoUrl(remaining[remaining.length - 1].url);
+      }
+      return remaining;
+    });
   };
 
   if (loading) {
@@ -501,26 +572,87 @@ export default function ScriptSelection() {
                       </div>
                     </ScrollArea>
 
-                    {/* Footer */}
-                    <div className="p-6 border-t border-border bg-muted/30 flex items-center justify-between gap-4">
-                      {/* Video Model Selector */}
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground">Model:</span>
+                    {/* Footer with all video settings */}
+                    <div className="p-4 border-t border-border bg-muted/30">
+                      {/* Settings Row */}
+                      <div className="flex flex-wrap items-center gap-2 mb-4">
+                        {/* Model */}
                         <Select value={videoModel} onValueChange={setVideoModel}>
-                          <SelectTrigger className="w-[200px] h-10 bg-background">
-                            <SelectValue placeholder="Select model" />
+                          <SelectTrigger className="w-[160px] h-9 bg-background text-xs">
+                            <Sparkles className="h-3 w-3 mr-1.5 text-primary" />
+                            <SelectValue placeholder="Model" />
                           </SelectTrigger>
                           <SelectContent className="bg-popover border-border">
-                            <SelectItem value="seedance-pro">Seedance 1.5 Pro (VO)</SelectItem>
+                            <SelectItem value="seedance-pro">Seedance 1.5 Pro</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        {/* Language */}
+                        <Select value={voiceoverLanguage} onValueChange={setVoiceoverLanguage}>
+                          <SelectTrigger className="w-[100px] h-9 bg-background text-xs">
+                            <Globe className="h-3 w-3 mr-1.5 text-muted-foreground" />
+                            <SelectValue placeholder="Lang" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="es">Spanish</SelectItem>
+                            <SelectItem value="ja">Japanese</SelectItem>
+                            <SelectItem value="ko">Korean</SelectItem>
+                            <SelectItem value="zh">Mandarin</SelectItem>
+                            <SelectItem value="pt">Portuguese</SelectItem>
+                            <SelectItem value="id">Indonesian</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        {/* Camera */}
+                        <Select value={cameraMovement} onValueChange={setCameraMovement}>
+                          <SelectTrigger className="w-[110px] h-9 bg-background text-xs">
+                            <Camera className="h-3 w-3 mr-1.5 text-muted-foreground" />
+                            <SelectValue placeholder="Camera" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">Auto</SelectItem>
+                            <SelectItem value="static">Static</SelectItem>
+                            <SelectItem value="pan">Pan</SelectItem>
+                            <SelectItem value="zoom">Zoom</SelectItem>
+                            <SelectItem value="dolly">Dolly</SelectItem>
+                            <SelectItem value="orbit">Orbit</SelectItem>
+                            <SelectItem value="tracking">Tracking</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        {/* Duration */}
+                        <Select value={videoDuration} onValueChange={setVideoDuration}>
+                          <SelectTrigger className="w-[90px] h-9 bg-background text-xs">
+                            <Clock className="h-3 w-3 mr-1.5 text-muted-foreground" />
+                            <SelectValue placeholder="Time" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="5">5s</SelectItem>
+                            <SelectItem value="10">10s</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        {/* Aspect Ratio */}
+                        <Select value={videoAspectRatio} onValueChange={setVideoAspectRatio}>
+                          <SelectTrigger className="w-[100px] h-9 bg-background text-xs">
+                            <Monitor className="h-3 w-3 mr-1.5 text-muted-foreground" />
+                            <SelectValue placeholder="Ratio" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="16:9">16:9</SelectItem>
+                            <SelectItem value="4:3">4:3</SelectItem>
+                            <SelectItem value="21:9">21:9</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       
+                      {/* Generate Button */}
                       <Button
                         size="lg"
                         onClick={() => generateVideoAndContinue()}
                         disabled={!selectedScript || generatingVideo}
-                        className="h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                        className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
                       >
                         {generatingVideo ? (
                           <>
@@ -620,7 +752,74 @@ export default function ScriptSelection() {
                 </div>
 
                 {/* Settings Panel */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-4">
+                  {/* Video Versions */}
+                  {videoVersions.length > 0 && (
+                    <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                      <div className="p-4 border-b border-border">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                            <Film className="h-4 w-4 text-primary" />
+                            Video Versions ({videoVersions.length})
+                          </div>
+                        </div>
+                      </div>
+                      <ScrollArea className="max-h-[200px]">
+                        <div className="p-2 space-y-2">
+                          {videoVersions.map((version, idx) => (
+                            <div
+                              key={version.id}
+                              onClick={() => selectVideoVersion(version)}
+                              className={`group relative p-3 rounded-lg border cursor-pointer transition-all ${
+                                selectedVideoVersion === version.id
+                                  ? "bg-primary/10 border-primary"
+                                  : "bg-muted/30 border-border hover:border-primary/50"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  {selectedVideoVersion === version.id && (
+                                    <Check className="h-3 w-3 text-primary" />
+                                  )}
+                                  <span className="text-xs font-medium text-foreground">
+                                    Version {idx + 1}
+                                  </span>
+                                </div>
+                                {videoVersions.length > 1 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteVideoVersion(version.id);
+                                    }}
+                                  >
+                                    <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                                  </Button>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                  {version.duration}s
+                                </Badge>
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                  {version.aspectRatio}
+                                </Badge>
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                  {LANGUAGE_LABELS[version.language] || version.language}
+                                </Badge>
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                  {CAMERA_LABELS[version.cameraMovement] || version.cameraMovement}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  )}
+
                   {/* Voiceover Preview */}
                   <div className="bg-card rounded-2xl border border-border overflow-hidden">
                     <button 
@@ -629,7 +828,7 @@ export default function ScriptSelection() {
                     >
                       <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                         <Volume2 className="h-4 w-4 text-primary" />
-                        Voiceover Script Preview
+                        Voiceover Script
                       </div>
                       {showVoiceoverPreview ? (
                         <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -653,20 +852,17 @@ export default function ScriptSelection() {
                   </div>
 
                   {/* Regeneration Settings */}
-                  <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+                  <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
                     <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                       <Settings2 className="h-4 w-4 text-primary" />
-                      Video Settings
+                      Generate New Version
                     </div>
                     
-                    {/* Language */}
-                    <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        <Globe className="h-3 w-3" />
-                        Voiceover Language
-                      </label>
+                    {/* Compact Settings Grid */}
+                    <div className="grid grid-cols-2 gap-2">
                       <Select value={voiceoverLanguage} onValueChange={setVoiceoverLanguage}>
-                        <SelectTrigger className="h-10">
+                        <SelectTrigger className="h-9 text-xs">
+                          <Globe className="h-3 w-3 mr-1.5 text-muted-foreground" />
                           <SelectValue placeholder="Language" />
                         </SelectTrigger>
                         <SelectContent>
@@ -674,43 +870,31 @@ export default function ScriptSelection() {
                           <SelectItem value="es">Spanish</SelectItem>
                           <SelectItem value="ja">Japanese</SelectItem>
                           <SelectItem value="ko">Korean</SelectItem>
-                          <SelectItem value="zh">Mandarin Chinese</SelectItem>
+                          <SelectItem value="zh">Mandarin</SelectItem>
                           <SelectItem value="pt">Portuguese</SelectItem>
                           <SelectItem value="id">Indonesian</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
 
-                    {/* Camera Movement */}
-                    <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        <Camera className="h-3 w-3" />
-                        Camera Movement
-                      </label>
                       <Select value={cameraMovement} onValueChange={setCameraMovement}>
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder="Camera Movement" />
+                        <SelectTrigger className="h-9 text-xs">
+                          <Camera className="h-3 w-3 mr-1.5 text-muted-foreground" />
+                          <SelectValue placeholder="Camera" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="auto">Auto (AI Decides)</SelectItem>
+                          <SelectItem value="auto">Auto</SelectItem>
                           <SelectItem value="static">Static</SelectItem>
                           <SelectItem value="pan">Pan</SelectItem>
                           <SelectItem value="zoom">Zoom</SelectItem>
                           <SelectItem value="dolly">Dolly</SelectItem>
                           <SelectItem value="orbit">Orbit</SelectItem>
-                          <SelectItem value="tracking">Tracking Shot</SelectItem>
+                          <SelectItem value="tracking">Tracking</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-                    
-                    {/* Duration */}
-                    <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        <Clock className="h-3 w-3" />
-                        Duration
-                      </label>
+
                       <Select value={videoDuration} onValueChange={setVideoDuration}>
-                        <SelectTrigger className="h-10">
+                        <SelectTrigger className="h-9 text-xs">
+                          <Clock className="h-3 w-3 mr-1.5 text-muted-foreground" />
                           <SelectValue placeholder="Duration" />
                         </SelectTrigger>
                         <SelectContent>
@@ -718,28 +902,22 @@ export default function ScriptSelection() {
                           <SelectItem value="10">10 seconds</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
 
-                    {/* Aspect Ratio */}
-                    <div className="space-y-2">
-                      <label className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        <Monitor className="h-3 w-3" />
-                        Aspect Ratio
-                      </label>
                       <Select value={videoAspectRatio} onValueChange={setVideoAspectRatio}>
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder="Aspect Ratio" />
+                        <SelectTrigger className="h-9 text-xs">
+                          <Monitor className="h-3 w-3 mr-1.5 text-muted-foreground" />
+                          <SelectValue placeholder="Ratio" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="16:9">16:9 (HDTV)</SelectItem>
-                          <SelectItem value="4:3">4:3 (Legacy TV)</SelectItem>
-                          <SelectItem value="21:9">21:9 (Cinematic)</SelectItem>
+                          <SelectItem value="16:9">16:9</SelectItem>
+                          <SelectItem value="4:3">4:3</SelectItem>
+                          <SelectItem value="21:9">21:9</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <Button
-                      onClick={() => generateVideoAndContinue(videoDuration, videoAspectRatio)}
+                      onClick={() => generateVideoAndContinue(videoDuration, videoAspectRatio, true)}
                       disabled={generatingVideo}
                       variant="outline"
                       className="w-full"
@@ -747,33 +925,30 @@ export default function ScriptSelection() {
                       {generatingVideo ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Regenerating...
+                          Generating...
                         </>
                       ) : (
                         <>
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Regenerate Video
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add New Version
                         </>
                       )}
                     </Button>
                   </div>
 
                   {/* Script Summary */}
-                  <div className="bg-card rounded-2xl border border-border p-6 space-y-3">
-                    <div className="text-sm font-medium text-foreground">Selected Script</div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-foreground">{selectedScript?.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-3">{selectedScript?.hook}</p>
-                      <div className="flex items-center gap-2 pt-2">
-                        <Badge variant="secondary" className="text-xs">{selectedScript?.tone}</Badge>
-                        <Badge variant="secondary" className="text-xs">{selectedScript?.scenes?.length || 0} scenes</Badge>
-                      </div>
+                  <div className="bg-card rounded-2xl border border-border p-4 space-y-2">
+                    <div className="text-xs font-medium text-muted-foreground">Selected Script</div>
+                    <p className="text-sm font-semibold text-foreground">{selectedScript?.title}</p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">{selectedScript?.tone}</Badge>
+                      <Badge variant="secondary" className="text-xs">{selectedScript?.scenes?.length || 0} scenes</Badge>
                     </div>
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => setActiveTab("scripts")}
-                      className="w-full mt-2 text-muted-foreground hover:text-foreground"
+                      className="w-full mt-1 text-xs text-muted-foreground hover:text-foreground"
                     >
                       <Edit3 className="h-3 w-3 mr-2" />
                       Edit Script
@@ -788,7 +963,8 @@ export default function ScriptSelection() {
                       navigate(`/video-editor/${campaignId}`, {
                         state: {
                           generatedVideoUrl,
-                          script: editedScript || selectedScript
+                          script: editedScript || selectedScript,
+                          videoVersions
                         }
                       });
                     }}
