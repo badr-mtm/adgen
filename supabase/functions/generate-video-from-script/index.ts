@@ -40,14 +40,20 @@ serve(async (req) => {
 
         const REPLICATE_API_TOKEN = Deno.env.get('REPLICATE_API_TOKEN');
         if (!REPLICATE_API_TOKEN) throw new Error('REPLICATE_API_TOKEN not configured');
+        
+        // Log token format (first/last chars only for security)
+        const tokenPreview = REPLICATE_API_TOKEN.length > 8 
+            ? `${REPLICATE_API_TOKEN.substring(0, 4)}...${REPLICATE_API_TOKEN.substring(REPLICATE_API_TOKEN.length - 4)}`
+            : '[too short]';
+        console.log(`Token format check: length=${REPLICATE_API_TOKEN.length}, preview=${tokenPreview}`);
 
         // Build prompt from the full script
         const prompt = `${script.fullScript}. Style: professional TV commercial. High quality cinematic motion. Tone: ${script.tone || 'professional'}.`;
 
         console.log(`Using Replicate wan-video/wan-2.5-t2v with prompt: ${prompt.substring(0, 100)}...`);
 
-        // Start prediction on Replicate
-        const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+        // Start prediction on Replicate using the models endpoint
+        const createResponse = await fetch('https://api.replicate.com/v1/models/wan-video/wan-2.5-t2v/predictions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${REPLICATE_API_TOKEN}`,
@@ -55,7 +61,6 @@ serve(async (req) => {
                 'Prefer': 'wait'
             },
             body: JSON.stringify({
-                version: 'wan-video/wan-2.5-t2v',
                 input: {
                     prompt,
                     duration: parseInt(duration) || 5,
