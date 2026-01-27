@@ -12,6 +12,13 @@ import {
   DialogClose
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Sparkles,
   RefreshCw,
   Save,
@@ -26,7 +33,9 @@ import {
   Play,
   Image as ImageIcon,
   AlertTriangle,
-  RotateCcw
+  RotateCcw,
+  Globe,
+  Video
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -47,6 +56,28 @@ interface Scene {
 }
 
 type AspectRatioOption = "16:9" | "4:3" | "21:9";
+type LanguageOption = "en" | "es" | "ja" | "ko" | "zh" | "pt" | "id";
+type CameraMovementOption = "auto" | "static" | "pan" | "zoom" | "dolly" | "orbit" | "tracking";
+
+const LANGUAGE_OPTIONS: { value: LanguageOption; label: string; flag: string }[] = [
+  { value: "en", label: "English", flag: "🇺🇸" },
+  { value: "es", label: "Spanish", flag: "🇪🇸" },
+  { value: "ja", label: "Japanese", flag: "🇯🇵" },
+  { value: "ko", label: "Korean", flag: "🇰🇷" },
+  { value: "zh", label: "Mandarin", flag: "🇨🇳" },
+  { value: "pt", label: "Portuguese", flag: "🇧🇷" },
+  { value: "id", label: "Indonesian", flag: "🇮🇩" },
+];
+
+const CAMERA_MOVEMENT_OPTIONS: { value: CameraMovementOption; label: string; desc: string }[] = [
+  { value: "auto", label: "Auto", desc: "AI decides best camera" },
+  { value: "static", label: "Static", desc: "No camera movement" },
+  { value: "pan", label: "Pan", desc: "Horizontal sweep" },
+  { value: "zoom", label: "Zoom", desc: "Gradual zoom in" },
+  { value: "dolly", label: "Dolly", desc: "Push-in movement" },
+  { value: "orbit", label: "Orbit", desc: "Circle around subject" },
+  { value: "tracking", label: "Tracking", desc: "Follow the action" },
+];
 
 interface SceneEditorProps {
   scene: Scene;
@@ -54,7 +85,7 @@ interface SceneEditorProps {
   onClose: () => void;
   onSave: (scene: Scene) => void;
   onRegenerateVisual: (customPrompt?: string) => void;
-  onGenerateVideo: (model: string, customPrompt?: string, duration?: string, aspectRatio?: string) => void;
+  onGenerateVideo: (model: string, customPrompt?: string, duration?: string, aspectRatio?: string, language?: string, cameraMovement?: string) => void;
   isRegenerating?: boolean;
   generationError?: string | null;
   onClearError?: () => void;
@@ -77,6 +108,8 @@ const SceneEditor = ({
   const [selectedModel, setSelectedModel] = useState("wan-fast"); // Default to Wan Fast
   const [selectedDuration, setSelectedDuration] = useState<"5" | "10">("5"); // For Wan 2.5
   const [selectedAspectRatio, setSelectedAspectRatio] = useState<AspectRatioOption>("16:9");
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>("en");
+  const [selectedCameraMovement, setSelectedCameraMovement] = useState<CameraMovementOption>("auto");
   const [activeTab, setActiveTab] = useState<"visual" | "text" | "timing">("visual");
   const [viewMode, setViewMode] = useState<"static" | "motion">("static");
   const [isApplyingStyle, setIsApplyingStyle] = useState(false);
@@ -171,9 +204,9 @@ const SceneEditor = ({
         description: `AI video generation started${durationNote} at ${selectedAspectRatio}. This may take 1-2 minutes.`
       });
     }
-    // Pass duration for Wan 2.5 model and aspect ratio for all models
+    // Pass duration for Wan 2.5 model, aspect ratio, language, and camera movement for all models
     const duration = selectedModel === "wan-25" ? selectedDuration : undefined;
-    onGenerateVideo(selectedModel, customPrompt || undefined, duration, selectedAspectRatio);
+    onGenerateVideo(selectedModel, customPrompt || undefined, duration, selectedAspectRatio, selectedLanguage, selectedCameraMovement);
   };
 
   const handleRegenerateClick = () => {
@@ -526,6 +559,58 @@ const SceneEditor = ({
                         </div>
                         <p className="text-[10px] text-muted-foreground">Instant stock clips. No API cost.</p>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Language Selection */}
+                  <div className="space-y-3">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
+                      <Globe className="w-3.5 h-3.5" />
+                      Voiceover Language
+                    </Label>
+                    <Select value={selectedLanguage} onValueChange={(v) => setSelectedLanguage(v as LanguageOption)}>
+                      <SelectTrigger className="bg-muted/50 border-border">
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LANGUAGE_OPTIONS.map((lang) => (
+                          <SelectItem key={lang.value} value={lang.value}>
+                            <span className="flex items-center gap-2">
+                              <span>{lang.flag}</span>
+                              <span>{lang.label}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground">
+                      TTS voiceover will be generated in the selected language
+                    </p>
+                  </div>
+
+                  {/* Camera Movement Selection */}
+                  <div className="space-y-3">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
+                      <Video className="w-3.5 h-3.5" />
+                      Camera Movement
+                    </Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {CAMERA_MOVEMENT_OPTIONS.map((cam) => (
+                        <button
+                          key={cam.value}
+                          onClick={() => setSelectedCameraMovement(cam.value)}
+                          className={`p-2 rounded-lg border text-center transition-all ${
+                            selectedCameraMovement === cam.value
+                              ? "border-primary bg-primary/20 shadow-md ring-1 ring-primary/30"
+                              : "border-border bg-muted/30 hover:border-primary/50"
+                          }`}
+                        >
+                          <span className={`text-xs font-bold block ${
+                            selectedCameraMovement === cam.value ? "text-primary" : "text-foreground"
+                          }`}>{cam.label}</span>
+                          <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">{cam.desc}</p>
+                        </button>
+                      ))}
                     </div>
                   </div>
 
