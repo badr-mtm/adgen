@@ -49,6 +49,11 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
+import {
+  isEdgeFunctionNetworkError,
+  pollForCampaignFullVideoUrl,
+  pollForCampaignSceneVideoUrl,
+} from "@/lib/campaignVideoPolling";
 
 interface Script {
   id: string;
@@ -382,6 +387,8 @@ export default function ScriptSelection() {
     const durationToUse = customDuration || videoDuration;
     const aspectRatioToUse = customAspectRatio || videoAspectRatio;
 
+    const startedAt = Date.now();
+
     try {
       if (generationMode === "scene-by-scene") {
         // Scene-by-scene generation
@@ -504,6 +511,55 @@ export default function ScriptSelection() {
         }
       }
     } catch (err: any) {
+      // This video generation is long-running; the browser client can timeout/abort the fetch
+      // even though the backend keeps working. When that happens, we poll the campaign record
+      // for the resulting URL instead of failing the flow.
+      if (generationMode === "full" && isEdgeFunctionNetworkError(err)) {
+        try {
+          toast({
+            title: "Still rendering…",
+            description: "Generation is still running — we'll keep checking until your video is ready.",
+            duration: 10000,
+          });
+
+          const url = await pollForCampaignFullVideoUrl(campaignId, { startedAt });
+          if (url) {
+            const thumbnailUrl = await generateVideoThumbnail(url);
+
+            const newVersion: VideoVersion = {
+              id: `v${Date.now()}`,
+              url,
+              thumbnailUrl,
+              duration: durationToUse,
+              aspectRatio: aspectRatioToUse,
+              language: voiceoverLanguage,
+              cameraMovement: cameraMovement,
+              generatedAt: new Date(),
+              generationMode: "full",
+            };
+
+            if (saveAsVersion && generatedVideoUrl) {
+              setVideoVersions((prev) => [...prev, newVersion]);
+            } else {
+              setVideoVersions([newVersion]);
+            }
+
+            setGeneratedVideoUrl(url);
+            setSelectedVideoVersion(newVersion.id);
+            setShowVideoPreview(true);
+            setActiveTab("preview");
+
+            toast({
+              title: "Video Ready!",
+              description: `${durationToUse}s ${aspectRatioToUse} video generated successfully.`,
+            });
+            return;
+          }
+        } catch {
+          // fall through to generic error
+        }
+      }
+
       console.error("Error generating video:", err);
       toast({
         title: "Generation Failed",
@@ -547,6 +603,8 @@ export default function ScriptSelection() {
     }
 
     setRetryingScenes(prev => [...prev, sceneNumber]);
+
+    const startedAt = Date.now();
 
     try {
       toast({
@@ -610,6 +668,52 @@ export default function ScriptSelection() {
         });
       }
     } catch (err: any) {
+      if (isEdgeFunctionNetworkError(err)) {
+        try {
+          toast({
+            title: "Still rendering…",
+            description: `Scene ${sceneNumber} is still generating — we'll keep checking for the clip.`,
+            duration: 10000,
+          });
+
+          const url = await pollForCampaignSceneVideoUrl(campaignId, sceneNumber, { startedAt });
+          if (url) {
+            const targetVersionId = versionId || selectedVideoVersion;
+
+            setVideoVersions((prev) =>
+              prev.map((version) => {
+                if (version.id === targetVersionId && version.sceneVideos) {
+                  const updatedSceneVideos = version.sceneVideos.map((sv) =>
+                    sv.sceneNumber === sceneNumber
+                      ? { ...sv, videoUrl: url, status: "completed" as const, error: undefined }
+                      : sv
+                  );
+
+                  const firstCompleted = updatedSceneVideos.find((s) => s.status === "completed");
+                  return {
+                    ...version,
+                    url: firstCompleted?.videoUrl || version.url,
+                    sceneVideos: updatedSceneVideos,
+                  };
+                }
+                return version;
+              })
+            );
+
+            // If the first scene changes, use it as the preview URL.
+            if (sceneNumber === 1) setGeneratedVideoUrl(url);
+
+            toast({
+              title: "Scene Ready!",
+              description: `Scene ${sceneNumber} clip generated successfully.`,
+            });
+            return;
+          }
+        } catch {
+          // fall through
+        }
+      }
+
       console.error("Error retrying scene:", err);
       toast({
         title: "Retry Failed",
