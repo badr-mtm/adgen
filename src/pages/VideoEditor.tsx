@@ -15,6 +15,7 @@ import AIAssistantPanel from "@/components/video-editor/AIAssistantPanel";
 import SceneEditor from "@/components/video-editor/SceneEditor";
 import VideoEditorHeader from "@/components/video-editor/VideoEditorHeader";
 import { searchPexelsVideos } from "@/utils/pexels";
+import { isEdgeFunctionNetworkError, pollForCampaignSceneVideoUrl } from "@/lib/campaignVideoPolling";
 
 export default function VideoEditor() {
   const { id } = useParams();
@@ -434,6 +435,7 @@ export default function VideoEditor() {
     setIsRegenerating(true);
     setGenerationError(null);
     const FAL_KEY = import.meta.env.VITE_FAL_KEY;
+    const startedAt = Date.now();
 
     try {
       if (model === "pexels") {
@@ -543,6 +545,45 @@ export default function VideoEditor() {
         toast({ title: "Video generated", description: "The cinematic clip has been added to this scene." });
       }
     } catch (err: any) {
+      // Scene clip generation can run longer than the client fetch timeout.
+      // If the request was aborted client-side, keep the flow alive by polling the campaign.
+      if (id && isEdgeFunctionNetworkError(err)) {
+        try {
+          const sceneNumber = scenes[currentSceneIndex]?.sceneNumber;
+          if (sceneNumber) {
+            toast({
+              title: "Still rendering…",
+              description: "Generation is still running — we'll keep checking for the clip.",
+              duration: 10000,
+            });
+
+            const url = await pollForCampaignSceneVideoUrl(id, sceneNumber, { startedAt });
+            if (url) {
+              saveToHistory(scenes, overlaySettings);
+              const updatedScenes = [...scenes];
+              updatedScenes[currentSceneIndex] = {
+                ...updatedScenes[currentSceneIndex],
+                videoUrl: url,
+                type: "video",
+              };
+              setScenes(updatedScenes);
+
+              let startTime = 0;
+              for (let i = 0; i < currentSceneIndex; i++) {
+                startTime += parseInt(scenes[i].duration) || 0;
+              }
+              setCurrentTime(startTime);
+              setIsPlaying(true);
+
+              toast({ title: "Video generated", description: "The cinematic clip has been added to this scene." });
+              return;
+            }
+          }
+        } catch {
+          // fall through
+        }
+      }
+
       const errorMessage = err.message || "An unexpected error occurred during video generation";
       setGenerationError(errorMessage);
       toast({ title: "Production failed", description: errorMessage, variant: "destructive" });
