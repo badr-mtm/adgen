@@ -312,47 +312,88 @@ const Dashboard = () => {
                       </Button> : <Button variant="link" className="mt-2" onClick={() => navigate("/create")}>
                         Create your first campaign
                       </Button>}
-                  </div> : filteredCampaigns.map((campaign, i) => <motion.div key={campaign.id} initial={{
-                opacity: 0,
-                x: -20
-              }} animate={{
-                opacity: 1,
-                x: 0
-              }} transition={{
-                delay: 0.3 + i * 0.1
-              }} className="group bg-background/50 hover:bg-accent/50 border border-border/50 hover:border-primary/30 rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer" onClick={() => navigate(`/campaigns/${campaign.id}`)}>
-                      <div className="relative h-16 w-28 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                        <Tv className="h-6 w-6 text-muted-foreground" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent" />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors text-foreground">{campaign.title}</h3>
-                          <Badge variant="outline" className={`
-                            ${campaign.status === 'live' ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : ''}
-                            ${campaign.status === 'scheduled' ? 'text-amber-600 dark:text-amber-400 border-amber-500/30' : ''}
-                            ${campaign.status === 'concept' ? 'text-blue-600 dark:text-blue-400 border-blue-500/30' : ''}
-                            ${campaign.status === 'paused' || campaign.status === 'draft' ? 'text-muted-foreground border-border' : ''}
-                            uppercase text-[10px] h-5
-                          `}>
-                            {campaign.status === 'live' && <span className="mr-1.5 relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span>}
-                            {campaign.status || 'draft'}
-                          </Badge>
+                  </div> : filteredCampaigns.map((campaign, i) => {
+                    // Extract video URL from storyboard
+                    const storyboard = campaign.storyboard as any;
+                    const videoUrl = storyboard?.selectedScript?.generatedVideoUrl || 
+                                     storyboard?.generatedVideoUrl || 
+                                     storyboard?.videoUrl || null;
+                    
+                    return (
+                      <motion.div 
+                        key={campaign.id} 
+                        initial={{ opacity: 0, x: -20 }} 
+                        animate={{ opacity: 1, x: 0 }} 
+                        transition={{ delay: 0.3 + i * 0.1 }} 
+                        className="group bg-background/50 hover:bg-accent/50 border border-border/50 hover:border-primary/30 rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer" 
+                        onClick={() => navigate(`/campaigns/${campaign.id}`)}
+                      >
+                        <div 
+                          className="relative h-16 w-28 rounded-lg overflow-hidden bg-muted flex items-center justify-center"
+                          onMouseEnter={(e) => {
+                            const video = e.currentTarget.querySelector('video');
+                            if (video) video.play();
+                          }}
+                          onMouseLeave={(e) => {
+                            const video = e.currentTarget.querySelector('video');
+                            if (video) {
+                              video.pause();
+                              video.currentTime = 0;
+                            }
+                          }}
+                        >
+                          {videoUrl ? (
+                            <>
+                              <video 
+                                src={videoUrl} 
+                                className="absolute inset-0 w-full h-full object-cover"
+                                muted
+                                loop
+                                playsInline
+                                preload="metadata"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity">
+                                <div className="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center">
+                                  <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-foreground border-b-[5px] border-b-transparent ml-0.5" />
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <Tv className="h-6 w-6 text-muted-foreground" />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent pointer-events-none" />
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {getNetworkForCampaign(i)}</span>
-                          <span className="flex items-center gap-1 capitalize"><Activity className="h-3 w-3" /> {campaign.ad_type}</span>
-                          <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> {campaign.goal}</span>
-                        </div>
-                      </div>
 
-                      <div className="px-4">
-                        <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity text-foreground">
-                          <ArrowUpRight className="h-5 w-5" />
-                        </Button>
-                      </div>
-                    </motion.div>)}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors text-foreground">{campaign.title}</h3>
+                            <Badge variant="outline" className={`
+                              ${campaign.status === 'live' ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : ''}
+                              ${campaign.status === 'scheduled' ? 'text-amber-600 dark:text-amber-400 border-amber-500/30' : ''}
+                              ${campaign.status === 'concept' ? 'text-blue-600 dark:text-blue-400 border-blue-500/30' : ''}
+                              ${campaign.status === 'paused' || campaign.status === 'draft' ? 'text-muted-foreground border-border' : ''}
+                              ${campaign.status === 'video_generated' ? 'text-primary border-primary/30' : ''}
+                              uppercase text-[10px] h-5
+                            `}>
+                              {campaign.status === 'live' && <span className="mr-1.5 relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span>}
+                              {campaign.status || 'draft'}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {getNetworkForCampaign(i)}</span>
+                            <span className="flex items-center gap-1 capitalize"><Activity className="h-3 w-3" /> {campaign.ad_type}</span>
+                            <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> {campaign.goal}</span>
+                          </div>
+                        </div>
+
+                        <div className="px-4">
+                          <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity text-foreground">
+                            <ArrowUpRight className="h-5 w-5" />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
               </div>
             </div>
           </div>
