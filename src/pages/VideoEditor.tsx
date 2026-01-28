@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import SceneEditor from "@/components/video-editor/SceneEditor";
 import VideoEditorHeader from "@/components/video-editor/VideoEditorHeader";
 import { searchPexelsVideos } from "@/utils/pexels";
 import { isEdgeFunctionNetworkError, pollForCampaignSceneVideoUrl } from "@/lib/campaignVideoPolling";
+import { useGenerationResume } from "@/hooks/useGenerationResume";
 
 export default function VideoEditor() {
   const { id } = useParams();
@@ -199,6 +200,30 @@ export default function VideoEditor() {
     }
     loadProject();
   }, [id, toast]);
+
+  // Resume polling on page load if a scene generation is still in-progress
+  const handleGenerationResume = useCallback(
+    (url: string, mode: "full" | "scene", sceneNumber?: number) => {
+      if (mode === "scene" && sceneNumber) {
+        const sceneIdx = scenes.findIndex((s) => s.sceneNumber === sceneNumber);
+        if (sceneIdx !== -1) {
+          saveToHistory(scenes, overlaySettings);
+          const updatedScenes = [...scenes];
+          updatedScenes[sceneIdx] = { ...updatedScenes[sceneIdx], videoUrl: url, type: "video" };
+          setScenes(updatedScenes);
+          toast({ title: "Video Ready!", description: `Scene ${sceneNumber} finished generating.` });
+        }
+      } else if (mode === "full") {
+        setGeneratedVideoUrl(url);
+        setShowGeneratedVideo(true);
+        toast({ title: "Video Ready!", description: "Your video has finished generating." });
+      }
+      setIsRegenerating(false);
+    },
+    [scenes, overlaySettings, toast]
+  );
+
+  useGenerationResume(id, handleGenerationResume, { enabled: !isRegenerating && !loading });
 
   // Debounced Auto-save for Overlay Settings
   useEffect(() => {
