@@ -9,20 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { InteractiveGlobalMap } from "@/components/dashboard/InteractiveGlobalMap";
-import {
-  Plus,
-  Tv,
-  Globe,
-  Activity,
-  Zap,
-  BarChart3,
-  ArrowUpRight,
-  Clock,
-  MapPin,
-  TrendingUp,
-  Signal,
-  CheckCircle2
-} from "lucide-react";
+import { Plus, Tv, Globe, Activity, Zap, BarChart3, ArrowUpRight, Clock, MapPin, TrendingUp, Signal, CheckCircle2 } from "lucide-react";
 
 // Network mapping for display
 const NETWORKS = ["Hulu", "Roku", "Samsung TV", "Apple TV+", "Amazon Fire"];
@@ -33,7 +20,7 @@ const REGION_MAPPING: Record<string, string[]> = {
   na: ["north america", "usa", "us", "united states", "canada"],
   eu: ["europe", "uk", "germany", "france", "spain", "italy"],
   apac: ["asia", "pacific", "japan", "china", "australia", "india"],
-  latam: ["latin america", "brazil", "mexico", "argentina"],
+  latam: ["latin america", "brazil", "mexico", "argentina"]
 };
 
 // Leaflet
@@ -41,51 +28,51 @@ import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON as LeafletGeoJSON
 import 'leaflet/dist/leaflet.css';
 import { LOCATION_DATA } from "@/lib/locations";
 import usStatesData from "@/lib/us-states.json";
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
-
   useEffect(() => {
     const initializeDashboard = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       setSession(session);
-
       if (!session) {
         navigate("/auth");
         return;
       }
 
       // Fetch active campaigns for telemetry
-      const { data: campaigns } = await supabase
-        .from('campaigns')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .eq('status', 'active');
-
+      const {
+        data: campaigns
+      } = await supabase.from('campaigns').select('*').eq('user_id', session.user.id).eq('status', 'active');
       if (campaigns) setActiveCampaigns(campaigns);
       setLoading(false);
     };
-
     initializeDashboard();
   }, [navigate]);
 
   // Fetch all campaigns for stats
-  const { data: allCampaigns = [] } = useQuery({
+  const {
+    data: allCampaigns = []
+  } = useQuery({
     queryKey: ['all-campaigns'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('campaigns')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('campaigns').select('*').order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
       return data || [];
     },
-    enabled: !!session,
+    enabled: !!session
   });
 
   // Calculate coordinates for active campaigns
@@ -121,15 +108,10 @@ const Dashboard = () => {
     const estimatedSpend = totalCampaigns * 2450;
     const completedViews = totalCampaigns * 168420;
     const complianceScore = totalCampaigns > 0 ? 100 : 0;
-
     return {
       totalSpend: `$${estimatedSpend.toLocaleString()}`,
       spendTrend: totalCampaigns > 0 ? `+${Math.min(12, totalCampaigns * 2)}%` : "0%",
-      completedViews: completedViews > 1000000
-        ? `${(completedViews / 1000000).toFixed(1)}M`
-        : completedViews > 1000
-          ? `${(completedViews / 1000).toFixed(1)}K`
-          : completedViews.toString(),
+      completedViews: completedViews > 1000000 ? `${(completedViews / 1000000).toFixed(1)}M` : completedViews > 1000 ? `${(completedViews / 1000).toFixed(1)}K` : completedViews.toString(),
       viewsTrend: `+${(avgCtr * 100).toFixed(1)}%`,
       liftRate: `${(avgCtr * 100).toFixed(1)}%`,
       liftTrend: `+${(avgCtr * 20).toFixed(1)}%`,
@@ -137,36 +119,28 @@ const Dashboard = () => {
       complianceTrend: complianceScore === 100 ? "Perfect" : "Needs Review",
       totalHouseholds: (totalCampaigns * 8.56).toFixed(1),
       activeNetworks: Math.min(14, totalCampaigns * 2 + 2),
-      avgCpm: `$${(18.42 - (totalCampaigns * 0.1)).toFixed(2)}`,
-      liveSpots: liveCampaigns * 170 + 10,
+      avgCpm: `$${(18.42 - totalCampaigns * 0.1).toFixed(2)}`,
+      liveSpots: liveCampaigns * 170 + 10
     };
   }, [allCampaigns]);
 
   // Filter campaigns by selected region
   const filteredCampaigns = useMemo(() => {
     if (!selectedRegion) return allCampaigns.slice(0, 5);
-
     const regionKeywords = REGION_MAPPING[selectedRegion] || [];
     return allCampaigns.filter(campaign => {
       const targetAudience = campaign.target_audience as any;
       if (!targetAudience) return false;
-
       const audienceStr = JSON.stringify(targetAudience).toLowerCase();
       return regionKeywords.some(keyword => audienceStr.includes(keyword));
     }).slice(0, 5);
   }, [allCampaigns, selectedRegion]);
-
-  if (loading) return (
-    <DashboardLayout>
+  if (loading) return <DashboardLayout>
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
-    </DashboardLayout>
-  );
-
-
-  return (
-    <DashboardLayout>
+    </DashboardLayout>;
+  return <DashboardLayout>
       <div className="min-h-screen bg-background text-foreground p-6 space-y-8 max-w-[1600px] mx-auto">
 
         {/* Header Section */}
@@ -185,10 +159,7 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" size="lg" className="h-12 border-border hover:bg-accent" onClick={() => navigate("/campaigns")}>
-                <Activity className="h-4 w-4 mr-2" />
-                Strategy Studio
-              </Button>
+              
               <Button size="lg" className="h-12 bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_hsl(var(--primary)/0.3)]" onClick={() => navigate("/create")}>
                 <Plus className="h-5 w-5 mr-2" />
                 New Campaign
@@ -203,34 +174,20 @@ const Dashboard = () => {
 
             {/* Live Map Foundation - Seamless Tiling */}
             <div className="absolute inset-0 z-0">
-              <MapContainer
-                center={[20, 0]}
-                zoom={2}
-                minZoom={2}
-                maxZoom={6}
-                worldCopyJump={true}
-                style={{ height: "100%", width: "100%", background: 'hsl(var(--card))' }}
-                zoomControl={false}
-                attributionControl={false}
-              >
-                <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
-                  noWrap={false}
-                />
+              <MapContainer center={[20, 0]} zoom={2} minZoom={2} maxZoom={6} worldCopyJump={true} style={{
+              height: "100%",
+              width: "100%",
+              background: 'hsl(var(--card))'
+            }} zoomControl={false} attributionControl={false}>
+                <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png" noWrap={false} />
 
-                {campaignLocations.map((loc: any, idx: number) => (
-                  <CircleMarker
-                    key={`${loc.name}-${idx}`}
-                    center={[loc.lat, loc.lng]}
-                    radius={15}
-                    pathOptions={{
-                      fillColor: 'hsl(var(--primary))',
-                      fillOpacity: 0.4,
-                      color: 'hsl(var(--primary))',
-                      weight: 1,
-                      className: 'animate-pulse'
-                    }}
-                  >
+                {campaignLocations.map((loc: any, idx: number) => <CircleMarker key={`${loc.name}-${idx}`} center={[loc.lat, loc.lng]} radius={15} pathOptions={{
+                fillColor: 'hsl(var(--primary))',
+                fillOpacity: 0.4,
+                color: 'hsl(var(--primary))',
+                weight: 1,
+                className: 'animate-pulse'
+              }}>
                     <Popup>
                       <div className="p-1">
                         <p className="font-bold text-xs uppercase tracking-widest text-primary mb-1">Live Delivery</p>
@@ -238,32 +195,41 @@ const Dashboard = () => {
                         <p className="text-xs text-muted-foreground">{loc.name}</p>
                       </div>
                     </Popup>
-                  </CircleMarker>
-                ))}
+                  </CircleMarker>)}
 
                 {/* Always show a few global beacons for depth if no active campaigns */}
-                {campaignLocations.length === 0 && (
-                  <>
-                    <CircleMarker center={[40.7128, -74.0060]} radius={8} pathOptions={{ fillColor: 'hsl(var(--primary))', fillOpacity: 0.2, color: 'hsl(var(--primary))', weight: 1 }} />
-                    <CircleMarker center={[51.5074, -0.1278]} radius={8} pathOptions={{ fillColor: 'hsl(var(--primary))', fillOpacity: 0.15, color: 'hsl(var(--primary))', weight: 1 }} />
-                    <CircleMarker center={[35.6762, 139.6503]} radius={8} pathOptions={{ fillColor: 'hsl(var(--primary))', fillOpacity: 0.15, color: 'hsl(var(--primary))', weight: 1 }} />
-                  </>
-                )}
+                {campaignLocations.length === 0 && <>
+                    <CircleMarker center={[40.7128, -74.0060]} radius={8} pathOptions={{
+                  fillColor: 'hsl(var(--primary))',
+                  fillOpacity: 0.2,
+                  color: 'hsl(var(--primary))',
+                  weight: 1
+                }} />
+                    <CircleMarker center={[51.5074, -0.1278]} radius={8} pathOptions={{
+                  fillColor: 'hsl(var(--primary))',
+                  fillOpacity: 0.15,
+                  color: 'hsl(var(--primary))',
+                  weight: 1
+                }} />
+                    <CircleMarker center={[35.6762, 139.6503]} radius={8} pathOptions={{
+                  fillColor: 'hsl(var(--primary))',
+                  fillOpacity: 0.15,
+                  color: 'hsl(var(--primary))',
+                  weight: 1
+                }} />
+                  </>}
 
-                <LeafletGeoJSON
-                  data={usStatesData as any}
-                  style={(feature) => {
-                    const isActive = activeRegions.has(feature?.properties?.name);
-                    return {
-                      fillColor: isActive ? 'hsl(var(--primary))' : 'transparent',
-                      weight: isActive ? 1 : 0.5,
-                      opacity: 1,
-                      color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--border))',
-                      dashArray: isActive ? '' : '3',
-                      fillOpacity: isActive ? 0.25 : 0
-                    };
-                  }}
-                />
+                <LeafletGeoJSON data={usStatesData as any} style={feature => {
+                const isActive = activeRegions.has(feature?.properties?.name);
+                return {
+                  fillColor: isActive ? 'hsl(var(--primary))' : 'transparent',
+                  weight: isActive ? 1 : 0.5,
+                  opacity: 1,
+                  color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                  dashArray: isActive ? '' : '3',
+                  fillOpacity: isActive ? 0.25 : 0
+                };
+              }} />
               </MapContainer>
             </div>
 
@@ -276,16 +242,12 @@ const Dashboard = () => {
                 <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">Live Broadcast Telemetry</span>
               </div>
-              {activeCampaigns.length > 0 && (
-                <div className="px-3 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-tighter">
+              {activeCampaigns.length > 0 && <div className="px-3 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-tighter">
                   Streaming to {activeCampaigns.length} Active Nodes
-                </div>
-              )}
-              {selectedRegion && (
-                <Badge variant="outline" className="bg-primary/10 border-primary/20 text-primary uppercase text-[10px]">
+                </div>}
+              {selectedRegion && <Badge variant="outline" className="bg-primary/10 border-primary/20 text-primary uppercase text-[10px]">
                   Region: {selectedRegion}
-                </Badge>
-              )}
+                </Badge>}
             </div>
 
             {/* Hero Metrics Overlay */}
@@ -319,43 +281,18 @@ const Dashboard = () => {
         {/* Key Performance Indicators - Real Data */}
         <ScrollReveal direction="up" duration={0.5} delay={0.2}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              title="Total Ad Spend"
-
-              value={kpiStats.totalSpend}
-              trend={kpiStats.spendTrend}
-              icon={<Zap className="h-5 w-5 text-amber-500" />}
-              color="from-amber-500/10 to-transparent"
-            />
-            <StatCard
-              title="Completed Views"
-              value={kpiStats.completedViews}
-              trend={kpiStats.viewsTrend}
-              icon={<Tv className="h-5 w-5 text-primary" />}
-              color="from-primary/10 to-transparent"
-            />
-            <StatCard
-              title="Avg. Lift Rate"
-              value={kpiStats.liftRate}
-              trend={kpiStats.liftTrend}
-              icon={<TrendingUp className="h-5 w-5 text-indigo-500" />}
-              color="from-indigo-500/10 to-transparent"
-            />
-            <StatCard
-              title="Compliance Score"
-              value={kpiStats.complianceScore}
-              trend={kpiStats.complianceTrend}
-              icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />}
-              color="from-emerald-500/10 to-transparent"
-            />
+            <StatCard title="Total Ad Spend" value={kpiStats.totalSpend} trend={kpiStats.spendTrend} icon={<Zap className="h-5 w-5 text-amber-500" />} color="from-amber-500/10 to-transparent" />
+            <StatCard title="Completed Views" value={kpiStats.completedViews} trend={kpiStats.viewsTrend} icon={<Tv className="h-5 w-5 text-primary" />} color="from-primary/10 to-transparent" />
+            <StatCard title="Avg. Lift Rate" value={kpiStats.liftRate} trend={kpiStats.liftTrend} icon={<TrendingUp className="h-5 w-5 text-indigo-500" />} color="from-indigo-500/10 to-transparent" />
+            <StatCard title="Compliance Score" value={kpiStats.complianceScore} trend={kpiStats.complianceTrend} icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />} color="from-emerald-500/10 to-transparent" />
           </div>
-        </ScrollReveal >
+        </ScrollReveal>
 
         {/* On-Air Status & Quick Actions */}
-        < div className="grid grid-cols-1 lg:grid-cols-3 gap-8" >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Active Campaigns List */}
-          < div className="lg:col-span-2" >
+          <div className="lg:col-span-2">
             <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-4 backdrop-blur-sm">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold flex items-center gap-2">
@@ -365,32 +302,25 @@ const Dashboard = () => {
                 <Button variant="link" className="text-muted-foreground" onClick={() => navigate("/campaigns")}>View All</Button>
               </div>
               <div className="space-y-3">
-                {filteredCampaigns.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
+                {filteredCampaigns.length === 0 ? <div className="text-center py-8 text-muted-foreground">
                     <Tv className="h-10 w-10 mx-auto mb-3 opacity-50" />
                     <p className="text-sm">
                       {selectedRegion ? `No campaigns in this region` : `No campaigns yet`}
                     </p>
-                    {selectedRegion ? (
-                      <Button variant="link" className="mt-2" onClick={() => setSelectedRegion(null)}>
+                    {selectedRegion ? <Button variant="link" className="mt-2" onClick={() => setSelectedRegion(null)}>
                         Clear filter
-                      </Button>
-                    ) : (
-                      <Button variant="link" className="mt-2" onClick={() => navigate("/create")}>
+                      </Button> : <Button variant="link" className="mt-2" onClick={() => navigate("/create")}>
                         Create your first campaign
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  filteredCampaigns.map((campaign, i) => (
-                    <motion.div
-                      key={campaign.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + (i * 0.1) }}
-                      className="group bg-background/50 hover:bg-accent/50 border border-border/50 hover:border-primary/30 rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer"
-                      onClick={() => navigate(`/campaigns/${campaign.id}`)}
-                    >
+                      </Button>}
+                  </div> : filteredCampaigns.map((campaign, i) => <motion.div key={campaign.id} initial={{
+                opacity: 0,
+                x: -20
+              }} animate={{
+                opacity: 1,
+                x: 0
+              }} transition={{
+                delay: 0.3 + i * 0.1
+              }} className="group bg-background/50 hover:bg-accent/50 border border-border/50 hover:border-primary/30 rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer" onClick={() => navigate(`/campaigns/${campaign.id}`)}>
                       <div className="relative h-16 w-28 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
                         <Tv className="h-6 w-6 text-muted-foreground" />
                         <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent" />
@@ -422,37 +352,20 @@ const Dashboard = () => {
                           <ArrowUpRight className="h-5 w-5" />
                         </Button>
                       </div>
-                    </motion.div>
-                  ))
-                )}
+                    </motion.div>)}
               </div>
             </div>
-          </div >
+          </div>
 
           {/* Quick Actions Panel */}
-          < ScrollReveal direction="left" duration={0.5} delay={0.4} >
+          <ScrollReveal direction="left" duration={0.5} delay={0.4}>
             <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-6 backdrop-blur-sm">
               <h3 className="font-bold text-lg">Quick Actions</h3>
 
               <div className="grid gap-3">
-                <QuickAction
-                  icon={<Tv className="h-5 w-5" />}
-                  label="Generate New Ad"
-                  desc="Create a new TV advertisement"
-                  onClick={() => navigate("/create")}
-                />
-                <QuickAction
-                  icon={<BarChart3 className="h-5 w-5" />}
-                  label="Check Attribution"
-                  desc="Analyze pixel performance"
-                  onClick={() => navigate("/integrations")}
-                />
-                <QuickAction
-                  icon={<Globe className="h-5 w-5" />}
-                  label="Global Inventory"
-                  desc="View real-time network availability"
-                  onClick={() => navigate("/campaigns")}
-                />
+                <QuickAction icon={<Tv className="h-5 w-5" />} label="Generate New Ad" desc="Create a new TV advertisement" onClick={() => navigate("/create")} />
+                <QuickAction icon={<BarChart3 className="h-5 w-5" />} label="Check Attribution" desc="Analyze pixel performance" onClick={() => navigate("/integrations")} />
+                <QuickAction icon={<Globe className="h-5 w-5" />} label="Global Inventory" desc="View real-time network availability" onClick={() => navigate("/campaigns")} />
               </div>
 
               <div className="pt-4 border-t border-border/30">
@@ -473,19 +386,23 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </ScrollReveal >
-        </div >
+          </ScrollReveal>
+        </div>
 
 
-      </div >
-    </DashboardLayout >
-  );
+      </div>
+    </DashboardLayout>;
 };
 
 // --- Sub-Components ---
 
-const StatCard = ({ title, value, trend, icon, color }: any) => (
-  <Card className="border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden relative group hover:border-primary/30 transition-all">
+const StatCard = ({
+  title,
+  value,
+  trend,
+  icon,
+  color
+}: any) => <Card className="border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden relative group hover:border-primary/30 transition-all">
     <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
     <CardContent className="p-6 relative">
       <div className="flex items-start justify-between mb-4">
@@ -504,14 +421,13 @@ const StatCard = ({ title, value, trend, icon, color }: any) => (
         <span className="text-xs text-muted-foreground">vs last 30 days</span>
       </div>
     </CardContent>
-  </Card>
-);
-
-const QuickAction = ({ icon, label, desc, onClick }: any) => (
-  <button
-    onClick={onClick}
-    className="flex items-center gap-4 p-3 rounded-xl bg-background/80 hover:bg-accent border border-border/50 hover:border-primary/30 transition-all text-left group w-full"
-  >
+  </Card>;
+const QuickAction = ({
+  icon,
+  label,
+  desc,
+  onClick
+}: any) => <button onClick={onClick} className="flex items-center gap-4 p-3 rounded-xl bg-background/80 hover:bg-accent border border-border/50 hover:border-primary/30 transition-all text-left group w-full">
     <div className="h-10 w-10 rounded-lg bg-card flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors border border-border shadow-sm">
       {icon}
     </div>
@@ -520,7 +436,5 @@ const QuickAction = ({ icon, label, desc, onClick }: any) => (
       <p className="text-xs text-muted-foreground">{desc}</p>
     </div>
     <ArrowUpRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 transition-all" />
-  </button>
-);
-
+  </button>;
 export default Dashboard;
