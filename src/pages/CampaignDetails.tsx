@@ -100,6 +100,19 @@ const CampaignDetails = () => {
     return sb?.generatedImageUrl || sb?.scenes?.[0]?.visualUrl || null;
   };
 
+  const getVideoUrl = () => {
+    const sb = campaign?.storyboard as any;
+    return sb?.selectedScript?.generatedVideoUrl || sb?.generatedVideoUrl || sb?.videoUrl || null;
+  };
+
+  const handleEditVideo = () => {
+    if (campaign.status === "concept" || !getVideoUrl()) {
+      navigate(`/storyboard/${id}`);
+    } else {
+      navigate(`/video-editor/${id}`);
+    }
+  };
+
   if (loading) return null;
 
   // Mock Data for "Command Center" Visuals
@@ -125,21 +138,51 @@ const CampaignDetails = () => {
 
           <div className="absolute inset-x-0 bottom-0 top-0 z-20 p-8 flex flex-col justify-end max-w-[1600px] mx-auto">
             <div className="flex items-end justify-between gap-6">
-              <div className="flex items-end gap-6">
-                {/* Main Thumbnail Card */}
-                <div className="w-48 h-28 rounded-xl overflow-hidden border-2 border-white/20 shadow-2xl bg-black relative mb-1 group cursor-pointer transition-transform hover:scale-105" onClick={() => navigate(campaign.status === "concept" ? `/storyboard/${id}` : `/video-editor/${id}`)}>
-                  {getThumbnail() ? (
-                    <img src={getThumbnail()} className="w-full h-full object-cover" alt="Thumbnail" />
+              <div className="flex items-end gap-6 relative group/preview">
+                {/* Main Video/Thumbnail Card */}
+                <div className="w-48 h-28 rounded-xl overflow-hidden border-2 border-white/20 shadow-2xl bg-black relative mb-1 group cursor-pointer transition-transform hover:scale-105" onClick={handleEditVideo}>
+                  {getVideoUrl() ? (
+                    <>
+                      <video
+                        src={getVideoUrl()}
+                        muted
+                        loop
+                        playsInline
+                        className="w-full h-full object-cover"
+                        onMouseEnter={(e) => e.currentTarget.play()}
+                        onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                      />
+                      {/* Play button overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
+                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                          <Play className="h-4 w-4 text-primary-foreground ml-0.5" fill="currentColor" />
+                        </div>
+                      </div>
+                    </>
+                  ) : getThumbnail() ? (
+                    <>
+                      <img src={getThumbnail()} className="w-full h-full object-cover" alt="Thumbnail" />
+                      <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Play className="h-8 w-8 text-white fill-white drop-shadow-lg" />
+                      </div>
+                    </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-muted">
                       <Film className="h-8 w-8 text-white/50" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors" />
-                  <div className="absolute center inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Play className="h-8 w-8 text-white fill-white drop-shadow-lg" />
-                  </div>
                 </div>
+                
+                {/* Edit Video Button */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 border-white/20 bg-black/60 text-white hover:bg-white/20 hover:text-white backdrop-blur-md gap-1.5 text-xs h-7 px-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => { e.stopPropagation(); handleEditVideo(); }}
+                >
+                  <Edit className="h-3 w-3" /> Edit
+                </Button>
 
                 <div className="mb-2 space-y-1">
                   <div className="flex items-center gap-3">
