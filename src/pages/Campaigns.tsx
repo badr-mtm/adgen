@@ -8,6 +8,7 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getCampaignRoute, getCampaignStageLabel, isCampaignComplete } from "@/lib/campaignNavigation";
 import {
     Plus,
     Search,
@@ -26,7 +27,9 @@ import {
     ArrowUpRight,
     Pencil,
     Check,
-    X
+    X,
+    FileText,
+    Layers
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -216,7 +219,7 @@ const Campaigns = () => {
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     transition={{ duration: 0.2, delay: i * 0.05 }}
                                     className={`group relative bg-card hover:bg-card/80 border border-border/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 ${viewMode === 'list' ? 'flex items-center p-4 gap-6' : ''}`}
-                                    onClick={() => navigate(`/campaign/${campaign.id}`)}
+                                    onClick={() => navigate(getCampaignRoute(campaign))}
                                 >
                                     {/* Thumbnail / Video Preview */}
                                     <div className={`${viewMode === 'list' ? 'w-48 h-28' : 'w-full aspect-video'} bg-muted relative overflow-hidden shrink-0`}>
@@ -247,7 +250,7 @@ const Campaigns = () => {
                                         )}
 
                                         {/* Live Status Badge */}
-                                        <div className="absolute top-3 left-3 flex gap-2">
+                                        <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
                                             {campaign.status === 'active' && (
                                                 <Badge className="bg-green-500/90 hover:bg-green-600 text-white border-none shadow-sm backdrop-blur-sm pl-2 pr-3">
                                                     <div className="w-1.5 h-1.5 bg-white rounded-full mr-2 animate-pulse" />
@@ -255,7 +258,15 @@ const Campaigns = () => {
                                                 </Badge>
                                             )}
                                             {campaign.status === 'paused' && <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-sm border-none"><Pause className="h-3 w-3 mr-1" /> PAUSED</Badge>}
-                                            {campaign.status === 'concept' && <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-sm border-none">DRAFT</Badge>}
+                                            {campaign.status === 'concept' && !isCampaignComplete(campaign) && (
+                                                <Badge variant="secondary" className="bg-amber-500/90 text-white backdrop-blur-sm border-none gap-1">
+                                                    <FileText className="h-3 w-3" />
+                                                    {getCampaignStageLabel(campaign)}
+                                                </Badge>
+                                            )}
+                                            {campaign.status === 'concept' && isCampaignComplete(campaign) && (
+                                                <Badge variant="secondary" className="bg-black/50 text-white backdrop-blur-sm border-none">DRAFT</Badge>
+                                            )}
                                         </div>
                                     </div>
 
