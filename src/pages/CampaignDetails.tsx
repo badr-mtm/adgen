@@ -11,8 +11,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PublishDialog } from "@/components/campaign/PublishDialog";
 import { StrategyEditModal } from "@/components/campaign/StrategyEditModal";
+import VideoPreviewModal from "@/components/campaign/VideoPreviewModal";
 import { StrategyPanel } from "@/components/storyboard/StrategyPanel";
 import { TVAdStrategy } from "@/components/strategy/StrategyModule";
+import { useGenerationResume } from "@/hooks/useGenerationResume";
 import {
   ArrowLeft,
   Play,
@@ -36,7 +38,10 @@ import {
   Globe,
   MonitorPlay,
   Share2,
-  Zap
+  Zap,
+  Loader2,
+  CheckCircle2,
+  Clock
 } from "lucide-react";
 import {
   AreaChart,
@@ -57,7 +62,19 @@ const CampaignDetails = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [strategyModalOpen, setStrategyModalOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [strategy, setStrategy] = useState<TVAdStrategy | null>(null);
+  const [generationStatus, setGenerationStatus] = useState<"idle" | "generating" | "completed">("idle");
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  // Handle generation resume
+  const handleVideoReady = (url: string) => {
+    setVideoUrl(url);
+    setGenerationStatus("completed");
+    toast({ title: "Video Ready", description: "Your video has finished generating." });
+  };
+
+  useGenerationResume(id || "", handleVideoReady);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -78,6 +95,20 @@ const CampaignDetails = () => {
       }
 
       setCampaign(data);
+      
+      // Check generation status
+      const progress = data.generation_progress as any;
+      if (progress?.status === "generating") {
+        setGenerationStatus("generating");
+      } else if (progress?.status === "completed") {
+        setGenerationStatus("completed");
+      }
+
+      // Get video URL
+      const sb = data.storyboard as any;
+      const url = sb?.selectedScript?.generatedVideoUrl || sb?.generatedVideoUrl || sb?.videoUrl || null;
+      setVideoUrl(url);
+
       if (data.storyboard && typeof data.storyboard === 'object') {
         const storyboard = data.storyboard as any;
         if (storyboard.strategy) {
@@ -101,9 +132,34 @@ const CampaignDetails = () => {
   };
 
   const getVideoUrl = () => {
-    const sb = campaign?.storyboard as any;
-    return sb?.selectedScript?.generatedVideoUrl || sb?.generatedVideoUrl || sb?.videoUrl || null;
+    return videoUrl;
   };
+
+  const getGenerationStatusBadge = () => {
+    if (generationStatus === "generating") {
+      return (
+        <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 gap-1.5 animate-pulse">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Generating
+        </Badge>
+      );
+    }
+    if (videoUrl) {
+      return (
+        <Badge className="bg-green-500/20 text-green-400 border-green-500/30 gap-1.5">
+          <CheckCircle2 className="h-3 w-3" />
+          Video Ready
+        </Badge>
+      );
+    }
+    return (
+      <Badge className="bg-muted text-muted-foreground border-border gap-1.5">
+        <Clock className="h-3 w-3" />
+        Awaiting Video
+      </Badge>
+    );
+  };
+
 
   const handleEditVideo = () => {
     if (campaign.status === "concept" || !getVideoUrl()) {
@@ -140,11 +196,19 @@ const CampaignDetails = () => {
             <div className="flex items-end justify-between gap-6">
               <div className="flex items-end gap-6 relative group/preview">
                 {/* Main Video/Thumbnail Card */}
-                <div className="w-48 h-28 rounded-xl overflow-hidden border-2 border-white/20 shadow-2xl bg-black relative mb-1 group cursor-pointer transition-transform hover:scale-105" onClick={handleEditVideo}>
-                  {getVideoUrl() ? (
+                <div 
+                  className="w-48 h-28 rounded-xl overflow-hidden border-2 border-white/20 shadow-2xl bg-black relative mb-1 group cursor-pointer transition-transform hover:scale-105" 
+                  onClick={() => getVideoUrl() ? setVideoModalOpen(true) : handleEditVideo()}
+                >
+                  {generationStatus === "generating" ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/20 to-black">
+                      <Loader2 className="h-8 w-8 text-amber-400 animate-spin mb-2" />
+                      <span className="text-xs text-amber-400/80 font-medium">Generating...</span>
+                    </div>
+                  ) : getVideoUrl() ? (
                     <>
                       <video
-                        src={getVideoUrl()}
+                        src={getVideoUrl() || undefined}
                         muted
                         loop
                         playsInline
@@ -178,7 +242,7 @@ const CampaignDetails = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 border-white/20 bg-black/60 text-white hover:bg-white/20 hover:text-white backdrop-blur-md gap-1.5 text-xs h-7 px-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -bottom-2 left-24 -translate-x-1/2 border-white/20 bg-black/60 text-white hover:bg-white/20 hover:text-white backdrop-blur-md gap-1.5 text-xs h-7 px-3 opacity-0 group-hover/preview:opacity-100 transition-opacity z-10"
                   onClick={(e) => { e.stopPropagation(); handleEditVideo(); }}
                 >
                   <Edit className="h-3 w-3" /> Edit
@@ -190,6 +254,7 @@ const CampaignDetails = () => {
                     <Badge className={`uppercase tracking-widest text-[10px] py-1 px-2 border-white/20 backdrop-blur-md ${campaign.status === 'active' ? 'bg-green-500/80 text-white' : 'bg-white/10 text-white'}`}>
                       {campaign.status || 'Draft'}
                     </Badge>
+                    {getGenerationStatusBadge()}
                   </div>
                   <div className="flex items-center gap-4 text-white/60 text-sm">
                     <span className="flex items-center gap-1.5"><Tv className="h-4 w-4" /> {campaign.ad_type} Campaign</span>
@@ -337,6 +402,14 @@ const CampaignDetails = () => {
         {/* Modals */}
         <PublishDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen} campaign={campaign} creatives={[]} onPublish={() => setPublishDialogOpen(false)} />
         <StrategyEditModal open={strategyModalOpen} onOpenChange={setStrategyModalOpen} campaignId={id || ""} initialStrategy={strategy} onStrategySaved={setStrategy} />
+        <VideoPreviewModal 
+          open={videoModalOpen} 
+          onOpenChange={setVideoModalOpen} 
+          videoUrl={getVideoUrl()} 
+          thumbnailUrl={getThumbnail()} 
+          title={campaign?.title} 
+          onEditClick={handleEditVideo} 
+        />
 
       </div>
     </DashboardLayout>
