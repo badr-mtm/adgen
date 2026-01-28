@@ -50,7 +50,7 @@ const Campaigns = () => {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
     useEffect(() => {
         const fetchCampaigns = async () => {
@@ -88,6 +88,15 @@ const Campaigns = () => {
         if (c.storyboard?.generatedImageUrl) return c.storyboard.generatedImageUrl;
         if (c.storyboard?.scenes?.[0]?.visualUrl) return c.storyboard.scenes[0].visualUrl;
         return null;
+    };
+
+    const getVideoUrl = (c: Campaign) => {
+        return (
+            c.storyboard?.selectedScript?.generatedVideoUrl ||
+            c.storyboard?.generatedVideoUrl ||
+            c.storyboard?.videoUrl ||
+            null
+        );
     };
 
     return (
@@ -173,9 +182,19 @@ const Campaigns = () => {
                                     className={`group relative bg-card hover:bg-card/80 border border-border/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 ${viewMode === 'list' ? 'flex items-center p-4 gap-6' : ''}`}
                                     onClick={() => navigate(`/campaign/${campaign.id}`)}
                                 >
-                                    {/* Thumbnail */}
+                                    {/* Thumbnail / Video Preview */}
                                     <div className={`${viewMode === 'list' ? 'w-48 h-28' : 'w-full aspect-video'} bg-muted relative overflow-hidden shrink-0`}>
-                                        {getThumbnail(campaign) ? (
+                                        {getVideoUrl(campaign) ? (
+                                            <video
+                                                src={getVideoUrl(campaign)}
+                                                muted
+                                                loop
+                                                playsInline
+                                                className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
+                                                onMouseEnter={(e) => e.currentTarget.play()}
+                                                onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                                            />
+                                        ) : getThumbnail(campaign) ? (
                                             <img src={getThumbnail(campaign)} alt="" className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
