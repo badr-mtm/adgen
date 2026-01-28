@@ -38,6 +38,18 @@ serve(async (req) => {
 
         console.log(`Generating video from script: "${script.title}"`);
 
+        // Mark generation as in-progress so clients can resume polling on refresh
+        await supabase
+            .from('campaigns')
+            .update({
+                generation_progress: {
+                    status: 'generating',
+                    mode: 'full',
+                    startedAt: Date.now()
+                }
+            })
+            .eq('id', campaignId);
+
         const REPLICATE_API_TOKEN = Deno.env.get('REPLICATE_API_TOKEN');
         if (!REPLICATE_API_TOKEN) throw new Error('REPLICATE_API_TOKEN not configured');
         
@@ -169,7 +181,8 @@ serve(async (req) => {
             .update({ 
                 storyboard: storyboardData,
                 status: 'video_generated',
-                updated_at: new Date().toISOString() 
+                updated_at: new Date().toISOString(),
+                generation_progress: { status: 'completed', mode: 'full' }
             })
             .eq('id', campaignId);
 

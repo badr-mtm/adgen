@@ -81,6 +81,19 @@ serve(async (req) => {
         const scene = storyboard.scenes.find((s: any) => s.sceneNumber === sceneNumber);
         if (!scene) throw new Error('Scene not found');
 
+        // Mark generation as in-progress so clients can resume polling on refresh
+        await supabase
+            .from('campaigns')
+            .update({
+                generation_progress: {
+                    status: 'generating',
+                    mode: 'scene',
+                    sceneNumber,
+                    startedAt: Date.now()
+                }
+            })
+            .eq('id', campaignId);
+
         const REPLICATE_API_TOKEN = Deno.env.get('REPLICATE_API_TOKEN');
         if (!REPLICATE_API_TOKEN) throw new Error('REPLICATE_API_TOKEN not configured');
 
@@ -186,7 +199,11 @@ serve(async (req) => {
 
         const { error: updateError } = await supabase
             .from('campaigns')
-            .update({ storyboard: updatedStoryboard, updated_at: new Date().toISOString() })
+            .update({ 
+                storyboard: updatedStoryboard, 
+                updated_at: new Date().toISOString(),
+                generation_progress: { status: 'completed', mode: 'scene', sceneNumber }
+            })
             .eq('id', campaignId);
 
         if (updateError) throw updateError;

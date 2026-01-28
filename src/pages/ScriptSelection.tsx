@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ import {
   pollForCampaignFullVideoUrl,
   pollForCampaignSceneVideoUrl,
 } from "@/lib/campaignVideoPolling";
+import { useGenerationResume } from "@/hooks/useGenerationResume";
 
 interface Script {
   id: string;
@@ -193,9 +194,56 @@ export default function ScriptSelection() {
   // Tab state
   const [activeTab, setActiveTab] = useState<string>("scripts");
 
+  // Resume polling on page load if a generation is still in-progress
+  const campaignId = id || navState?.campaignId;
+  const handleGenerationResume = useCallback(
+    async (url: string, mode: "full" | "scene", sceneNumber?: number) => {
+      if (mode === "full") {
+        const thumbnailUrl = await generateVideoThumbnail(url);
+        const newVersion: VideoVersion = {
+          id: `v${Date.now()}`,
+          url,
+          thumbnailUrl,
+          duration: videoDuration,
+          aspectRatio: videoAspectRatio,
+          language: voiceoverLanguage,
+          cameraMovement,
+          generatedAt: new Date(),
+          generationMode: "full",
+        };
+        setVideoVersions([newVersion]);
+        setGeneratedVideoUrl(url);
+        setSelectedVideoVersion(newVersion.id);
+        setShowVideoPreview(true);
+        setActiveTab("preview");
+        setGeneratingVideo(false);
+        toast({ title: "Video Ready!", description: "Your video has finished generating." });
+      } else if (sceneNumber) {
+        setVideoVersions((prev) =>
+          prev.map((version) => {
+            if (version.id === selectedVideoVersion && version.sceneVideos) {
+              const updatedSceneVideos = version.sceneVideos.map((sv) =>
+                sv.sceneNumber === sceneNumber
+                  ? { ...sv, videoUrl: url, status: "completed" as const, error: undefined }
+                  : sv
+              );
+              return { ...version, sceneVideos: updatedSceneVideos };
+            }
+            return version;
+          })
+        );
+        if (sceneNumber === 1) setGeneratedVideoUrl(url);
+        setGeneratingVideo(false);
+        toast({ title: "Scene Ready!", description: `Scene ${sceneNumber} finished generating.` });
+      }
+    },
+    [videoDuration, videoAspectRatio, voiceoverLanguage, cameraMovement, selectedVideoVersion, toast]
+  );
+
+  useGenerationResume(campaignId, handleGenerationResume, { enabled: !generatingVideo });
+
   // Realtime subscription for scene-by-scene progress
   useEffect(() => {
-    const campaignId = id || navState?.campaignId;
     if (!campaignId || generationMode !== "scene-by-scene" || !generatingVideo) return;
 
     const channel = supabase
@@ -221,7 +269,7 @@ export default function ScriptSelection() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [id, navState?.campaignId, generationMode, generatingVideo]);
+  }, [campaignId, generationMode, generatingVideo]);
   
   // Helper function to generate video thumbnail
   const generateVideoThumbnail = (videoUrl: string): Promise<string | undefined> => {
