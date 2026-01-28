@@ -9,7 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { InteractiveGlobalMap } from "@/components/dashboard/InteractiveGlobalMap";
-import { Plus, Tv, Globe, Activity, Zap, BarChart3, ArrowUpRight, Clock, MapPin, TrendingUp, Signal, CheckCircle2 } from "lucide-react";
+import { getCampaignRoute, getCampaignStageLabel, isCampaignComplete } from "@/lib/campaignNavigation";
+import { Plus, Tv, Globe, Activity, Zap, BarChart3, ArrowUpRight, Clock, MapPin, TrendingUp, Signal, CheckCircle2, FileText, Play } from "lucide-react";
 
 // Network mapping for display
 const NETWORKS = ["Hulu", "Roku", "Samsung TV", "Apple TV+", "Amazon Fire"];
@@ -326,7 +327,7 @@ const Dashboard = () => {
                         animate={{ opacity: 1, x: 0 }} 
                         transition={{ delay: 0.3 + i * 0.1 }} 
                         className="group bg-background/50 hover:bg-accent/50 border border-border/50 hover:border-primary/30 rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer" 
-                        onClick={() => navigate(`/campaigns/${campaign.id}`)}
+                        onClick={() => navigate(getCampaignRoute(campaign as any))}
                       >
                         <div 
                           className="relative h-16 w-28 rounded-lg overflow-hidden bg-muted flex items-center justify-center"
@@ -367,17 +368,24 @@ const Dashboard = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors text-foreground">{campaign.title}</h3>
-                            <Badge variant="outline" className={`
-                              ${campaign.status === 'live' ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : ''}
-                              ${campaign.status === 'scheduled' ? 'text-amber-600 dark:text-amber-400 border-amber-500/30' : ''}
-                              ${campaign.status === 'concept' ? 'text-blue-600 dark:text-blue-400 border-blue-500/30' : ''}
-                              ${campaign.status === 'paused' || campaign.status === 'draft' ? 'text-muted-foreground border-border' : ''}
-                              ${campaign.status === 'video_generated' ? 'text-primary border-primary/30' : ''}
-                              uppercase text-[10px] h-5
-                            `}>
-                              {campaign.status === 'live' && <span className="mr-1.5 relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span>}
-                              {campaign.status || 'draft'}
-                            </Badge>
+                            {isCampaignComplete(campaign as any) ? (
+                              <Badge variant="outline" className={`
+                                ${campaign.status === 'live' ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : ''}
+                                ${campaign.status === 'scheduled' ? 'text-amber-600 dark:text-amber-400 border-amber-500/30' : ''}
+                                ${campaign.status === 'concept' ? 'text-blue-600 dark:text-blue-400 border-blue-500/30' : ''}
+                                ${campaign.status === 'paused' || campaign.status === 'draft' ? 'text-muted-foreground border-border' : ''}
+                                ${campaign.status === 'video_generated' ? 'text-primary border-primary/30' : ''}
+                                uppercase text-[10px] h-5
+                              `}>
+                                {campaign.status === 'live' && <span className="mr-1.5 relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span>}
+                                {campaign.status || 'draft'}
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 uppercase text-[10px] h-5 gap-1">
+                                <FileText className="h-3 w-3" />
+                                {getCampaignStageLabel(campaign as any)}
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex items-center gap-4 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {getNetworkForCampaign(i)}</span>
