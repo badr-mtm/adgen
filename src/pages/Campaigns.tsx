@@ -109,7 +109,7 @@ const Campaigns = () => {
                         <h1 className="text-3xl font-bold tracking-tight">Campaigns</h1>
                         <p className="text-muted-foreground text-lg">Manage your TV ad spots and monitor performance.</p>
                     </div>
-                    <Button size="lg" className="h-12 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20" onClick={() => navigate("/create")}>
+                    <Button size="lg" className="h-12" onClick={() => navigate("/create")}>
                         <Plus className="h-5 w-5 mr-2" />
                         New Campaign
                     </Button>
@@ -166,7 +166,7 @@ const Campaigns = () => {
                         </div>
                         <h3 className="text-lg font-semibold">No campaigns found</h3>
                         <p className="text-muted-foreground max-w-sm mx-auto mt-2 mb-6">Create your first TV ad campaign to reach millions of households.</p>
-                        <Button variant="outline" onClick={() => navigate("/create")}>Create Campaign</Button>
+                        <Button onClick={() => navigate("/create")}>Create Campaign</Button>
                     </div>
                 ) : (
                     <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
@@ -185,15 +185,23 @@ const Campaigns = () => {
                                     {/* Thumbnail / Video Preview */}
                                     <div className={`${viewMode === 'list' ? 'w-48 h-28' : 'w-full aspect-video'} bg-muted relative overflow-hidden shrink-0`}>
                                         {getVideoUrl(campaign) ? (
-                                            <video
-                                                src={getVideoUrl(campaign)}
-                                                muted
-                                                loop
-                                                playsInline
-                                                className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
-                                                onMouseEnter={(e) => e.currentTarget.play()}
-                                                onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
-                                            />
+                                            <>
+                                                <video
+                                                    src={getVideoUrl(campaign)}
+                                                    muted
+                                                    loop
+                                                    playsInline
+                                                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
+                                                    onMouseEnter={(e) => e.currentTarget.play()}
+                                                    onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+                                                />
+                                                {/* Play button overlay */}
+                                                <div className="absolute inset-0 flex items-center justify-center bg-foreground/20 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
+                                                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                                                        <Play className="h-5 w-5 text-primary-foreground ml-0.5" fill="currentColor" />
+                                                    </div>
+                                                </div>
+                                            </>
                                         ) : getThumbnail(campaign) ? (
                                             <img src={getThumbnail(campaign)} alt="" className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
                                         ) : (
