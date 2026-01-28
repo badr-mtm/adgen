@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,10 @@ import {
     List as ListIcon,
     Signal,
     Calendar,
-    ArrowUpRight
+    ArrowUpRight,
+    Pencil,
+    Check,
+    X
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -51,6 +54,39 @@ const Campaigns = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editValue, setEditValue] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const handleStartEdit = (e: React.MouseEvent, campaign: Campaign) => {
+        e.stopPropagation();
+        setEditingId(campaign.id);
+        setEditValue(campaign.title);
+        setTimeout(() => inputRef.current?.focus(), 0);
+    };
+
+    const handleSaveEdit = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!editingId || !editValue.trim()) return;
+
+        const { error } = await supabase
+            .from("campaigns")
+            .update({ title: editValue.trim() })
+            .eq("id", editingId);
+
+        if (error) {
+            toast({ title: "Error", description: "Failed to rename campaign", variant: "destructive" });
+        } else {
+            setCampaigns(prev => prev.map(c => c.id === editingId ? { ...c, title: editValue.trim() } : c));
+            toast({ title: "Renamed", description: "Campaign name updated" });
+        }
+        setEditingId(null);
+    };
+
+    const handleCancelEdit = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setEditingId(null);
+    };
 
     useEffect(() => {
         const fetchCampaigns = async () => {
@@ -226,14 +262,45 @@ const Campaigns = () => {
                                     {/* Content */}
                                     <div className={`flex-1 ${viewMode === 'grid' ? 'p-5' : ''}`}>
                                         <div className="flex justify-between items-start mb-2">
-                                            <div>
-                                                <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors line-clamp-1 mb-1">{campaign.title}</h3>
+                                            <div className="flex-1 min-w-0">
+                                                {editingId === campaign.id ? (
+                                                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                                        <Input
+                                                            ref={inputRef}
+                                                            value={editValue}
+                                                            onChange={(e) => setEditValue(e.target.value)}
+                                                            className="h-8 text-base font-semibold"
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === "Enter") handleSaveEdit(e as any);
+                                                                if (e.key === "Escape") handleCancelEdit(e as any);
+                                                            }}
+                                                        />
+                                                        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={handleSaveEdit}>
+                                                            <Check className="h-4 w-4 text-green-500" />
+                                                        </Button>
+                                                        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={handleCancelEdit}>
+                                                            <X className="h-4 w-4 text-muted-foreground" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 group/title">
+                                                        <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors line-clamp-1 mb-1">{campaign.title}</h3>
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-6 w-6 opacity-0 group-hover/title:opacity-100 transition-opacity shrink-0"
+                                                            onClick={(e) => handleStartEdit(e, campaign)}
+                                                        >
+                                                            <Pencil className="h-3 w-3 text-muted-foreground" />
+                                                        </Button>
+                                                    </div>
+                                                )}
                                                 <div className="text-xs text-muted-foreground flex items-center gap-2">
                                                     <Calendar className="h-3 w-3" />
                                                     {new Date(campaign.created_at).toLocaleDateString()}
                                                 </div>
                                             </div>
-                                            {viewMode === 'grid' && (
+                                            {viewMode === 'grid' && editingId !== campaign.id && (
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                                                 </Button>
