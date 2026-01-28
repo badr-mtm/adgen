@@ -15,6 +15,7 @@ import VideoPreviewModal from "@/components/campaign/VideoPreviewModal";
 import { StrategyPanel } from "@/components/storyboard/StrategyPanel";
 import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 import { useGenerationResume } from "@/hooks/useGenerationResume";
+import InlineEditField from "@/components/storyboard/InlineEditField";
 import {
   ArrowLeft,
   Play,
@@ -160,6 +161,22 @@ const CampaignDetails = () => {
     );
   };
 
+  const handleUpdateCampaignName = async (newName: string) => {
+    if (!id || !newName.trim()) return;
+    
+    const { error } = await supabase
+      .from("campaigns")
+      .update({ title: newName.trim() })
+      .eq("id", id);
+    
+    if (error) {
+      toast({ title: "Error", description: "Failed to update campaign name", variant: "destructive" });
+      return;
+    }
+    
+    setCampaign((prev: any) => ({ ...prev, title: newName.trim() }));
+    toast({ title: "Updated", description: "Campaign name saved" });
+  };
 
   const handleEditVideo = () => {
     if (campaign.status === "concept" || !getVideoUrl()) {
@@ -250,7 +267,13 @@ const CampaignDetails = () => {
 
                 <div className="mb-2 space-y-1">
                   <div className="flex items-center gap-3">
-                    <h1 className="text-4xl font-bold text-white tracking-tight drop-shadow-md">{campaign.title}</h1>
+                    <div className="group/title">
+                      <InlineEditField 
+                        value={campaign.title} 
+                        onSave={handleUpdateCampaignName}
+                        className="[&_p]:text-4xl [&_p]:font-bold [&_p]:text-white [&_p]:tracking-tight [&_p]:drop-shadow-md [&_input]:text-3xl [&_input]:font-bold [&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_button]:text-white/60 [&_button]:hover:text-white [&_button]:hover:bg-white/10"
+                      />
+                    </div>
                     <Badge className={`uppercase tracking-widest text-[10px] py-1 px-2 border-white/20 backdrop-blur-md ${campaign.status === 'active' ? 'bg-green-500/80 text-white' : 'bg-white/10 text-white'}`}>
                       {campaign.status || 'Draft'}
                     </Badge>
