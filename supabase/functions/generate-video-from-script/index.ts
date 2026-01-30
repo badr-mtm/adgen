@@ -180,6 +180,7 @@ serve(async (req) => {
             .from('campaigns')
             .update({ 
                 storyboard: storyboardData,
+                title: script.title || 'Untitled Campaign',
                 status: 'video_generated',
                 updated_at: new Date().toISOString(),
                 generation_progress: { status: 'completed', mode: 'full' }

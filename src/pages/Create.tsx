@@ -11,7 +11,7 @@ import { ArrowRight, Sparkles, Tv, Globe, Zap, Upload, X, FileVideo } from "luci
 import { CreatePageSkeleton } from "@/components/skeletons/CreatePageSkeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 const Create = () => {
   const navigate = useNavigate();
   const {
@@ -21,7 +21,6 @@ const Create = () => {
   const [modalStep, setModalStep] = useState<"closed" | "goal" | "audience">("closed");
 
   // Flow state - collect all inputs before proceeding
-  const [campaignName, setCampaignName] = useState("");
   const [concept, setConcept] = useState("");
   const [selectedDuration, setSelectedDuration] = useState("30s");
   const [selectedGoal, setSelectedGoal] = useState("");
@@ -114,8 +113,8 @@ const Create = () => {
         brandId = newBrand.id;
       }
 
-      // Create the campaign record with all collected data
-      const campaignTitle = campaignName.trim() || `Campaign ${new Date().toLocaleDateString('en-US', {
+      // Create the campaign record - title will be updated when user selects a script
+      const campaignTitle = `Draft ${new Date().toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
@@ -218,20 +217,6 @@ const Create = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
             <div className="relative bg-background/40 rounded-2xl p-4 transition-colors group-hover:bg-background/50 space-y-4">
-              {/* Campaign Name Input */}
-              <div className="px-4 pt-2">
-                <Label htmlFor="campaign-name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">
-                  Campaign Name (optional)
-                </Label>
-                <Input
-                  id="campaign-name"
-                  value={campaignName}
-                  onChange={e => setCampaignName(e.target.value)}
-                  placeholder="My Awesome Campaign"
-                  className="bg-transparent border-border/50 focus-visible:ring-primary/30 text-lg h-12"
-                />
-              </div>
-              
               <Textarea value={concept} onChange={e => setConcept(e.target.value)} placeholder="e.g. A new energy drink for athletes. Show intense workout moments, the refreshing taste, and the boost it provides. Target: fitness enthusiasts 18-35..." className="min-h-[140px] text-lg md:text-xl bg-transparent border-none focus-visible:ring-0 placeholder:text-muted-foreground/50 resize-none leading-relaxed p-4" />
 
               {/* Uploads Preview Row */}
