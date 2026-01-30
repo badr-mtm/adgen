@@ -266,11 +266,12 @@ serve(async (req) => {
             lastBatchGeneration: new Date().toISOString()
         };
 
-        // Clear progress and update storyboard
+        // Clear progress and update storyboard with campaign title from script
         await supabase
             .from('campaigns')
             .update({ 
-                storyboard: updatedStoryboard, 
+                storyboard: updatedStoryboard,
+                title: script.title || 'Untitled Campaign',
                 updated_at: new Date().toISOString(),
                 generation_progress: {
                     current: scenes.length,
