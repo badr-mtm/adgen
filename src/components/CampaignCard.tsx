@@ -41,7 +41,7 @@ const CampaignCard = ({ image, title, description, status, adType, onClick, onEd
   
   return (
     <Card 
-      className="bg-card border-border shadow-card cursor-pointer overflow-hidden group transition-all duration-300 ease-out hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+      className="bg-card border-border shadow-card cursor-pointer overflow-hidden group transition-all duration-300 ease-out hover:-translate-y-1 hover:border-primary"
       onClick={onClick}
     >
       <div className="relative overflow-hidden">
