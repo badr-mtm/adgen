@@ -36,8 +36,8 @@ const mainNavItems = [
   { title: "AI Strategy", url: "/ai-suggestions", icon: Brain, badge: 3 },
   { title: "Campaigns", url: "/ad-operations", icon: FolderOpen },
   { title: "Broadcast Schedule", url: "/campaign-schedules", icon: CalendarDays },
-  { title: "Assets", url: "/assets", icon: Image },
   { title: "Creatives", url: "/creatives", icon: Sparkles },
+  { title: "Assets", url: "/assets", icon: Image },
   { title: "Performance", url: "/reports", icon: BarChart3 },
 ];
 
