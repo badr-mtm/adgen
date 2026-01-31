@@ -10,19 +10,16 @@ import { useToast } from "@/hooks/use-toast";
 import {
     Search,
     Film,
-    Image as ImageIcon,
     Play,
     Download,
     ExternalLink,
     ChevronRight,
-    Filter,
     PlusCircle,
     Maximize2,
     Copy,
     Check,
     Grid,
     List as ListIcon,
-    Trash2,
     Share2,
     Eye,
     Sparkles,
@@ -46,14 +43,15 @@ interface CreativeAsset {
     id: string;
     campaignId: string;
     campaignTitle: string;
-    sceneIndex: number;
-    type: "video" | "image";
+    sceneIndex: number | null; // null for full videos
+    type: "video";
     url: string;
     thumbnail?: string;
     hook: string;
     body: string;
     visualPrompt: string;
     createdAt: string;
+    isFullVideo?: boolean;
 }
 
 const Creatives = () => {
@@ -62,7 +60,6 @@ const Creatives = () => {
     const [loading, setLoading] = useState(true);
     const [assets, setAssets] = useState<CreativeAsset[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
-    const [typeFilter, setTypeFilter] = useState<"all" | "video" | "image">("all");
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [selectedAsset, setSelectedAsset] = useState<CreativeAsset | null>(null);
@@ -90,25 +87,48 @@ const Creatives = () => {
             const flattenedAssets: CreativeAsset[] = [];
             campaigns?.forEach((campaign) => {
                 const storyboard = campaign.storyboard as any;
+                
+                // Check for full video URL first
+                const fullVideoUrl = storyboard?.selectedScript?.generatedVideoUrl || 
+                                     storyboard?.generatedVideoUrl || 
+                                     storyboard?.videoUrl;
+                
+                if (fullVideoUrl) {
+                    flattenedAssets.push({
+                        id: `${campaign.id}-full`,
+                        campaignId: campaign.id,
+                        campaignTitle: campaign.title,
+                        sceneIndex: null,
+                        type: "video",
+                        url: fullVideoUrl,
+                        thumbnail: storyboard?.scenes?.[0]?.visualUrl || storyboard?.scenes?.[0]?.thumbnail,
+                        hook: campaign.title || "Full Video",
+                        body: storyboard?.selectedScript?.script || "",
+                        visualPrompt: "",
+                        createdAt: campaign.created_at,
+                        isFullVideo: true
+                    });
+                }
+                
+                // Then add individual scene videos
                 if (storyboard?.scenes) {
                     storyboard.scenes.forEach((scene: any, index: number) => {
-                        // Support multiple scene property names used across the app
-                        const assetUrl = scene.url || scene.mediaUrl || scene.visualUrl || scene.imageUrl;
-                        const thumbUrl = scene.thumbnail || scene.thumb || assetUrl;
-
-                        if (assetUrl) {
+                        const videoUrl = scene.videoUrl;
+                        
+                        if (videoUrl) {
                             flattenedAssets.push({
                                 id: `${campaign.id}-scene-${index}`,
                                 campaignId: campaign.id,
                                 campaignTitle: campaign.title,
                                 sceneIndex: index,
-                                type: (assetUrl.toLowerCase().includes(".mp4") || assetUrl.toLowerCase().includes(".mov")) ? "video" : "image",
-                                url: assetUrl,
-                                thumbnail: thumbUrl,
+                                type: "video",
+                                url: videoUrl,
+                                thumbnail: scene.visualUrl || scene.thumbnail || scene.imageUrl,
                                 hook: scene.hook || scene.name || `Scene ${index + 1}`,
                                 body: scene.body || scene.description || "",
                                 visualPrompt: scene.visualPrompt || "",
-                                createdAt: campaign.created_at
+                                createdAt: campaign.created_at,
+                                isFullVideo: false
                             });
                         }
                     });
@@ -129,11 +149,9 @@ const Creatives = () => {
                 asset.hook.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 asset.body.toLowerCase().includes(searchQuery.toLowerCase());
 
-            const matchesType = typeFilter === "all" || asset.type === typeFilter;
-
-            return matchesSearch && matchesType;
+            return matchesSearch;
         });
-    }, [assets, searchQuery, typeFilter]);
+    }, [assets, searchQuery]);
 
     const handleCopyLink = (url: string, id: string) => {
         navigator.clipboard.writeText(url);
@@ -193,28 +211,11 @@ const Creatives = () => {
 
                         <div className="flex bg-card/40 border border-white/5 p-1 rounded-xl backdrop-blur-md">
                             <Button
-                                variant={typeFilter === 'all' ? 'secondary' : 'ghost'}
+                                variant="secondary"
                                 size="sm"
-                                onClick={() => setTypeFilter('all')}
-                                className="h-9 px-4 text-xs font-bold rounded-lg transition-all"
-                            >
-                                All
-                            </Button>
-                            <Button
-                                variant={typeFilter === 'video' ? 'secondary' : 'ghost'}
-                                size="sm"
-                                onClick={() => setTypeFilter('video')}
                                 className="h-9 px-4 text-xs font-bold gap-2 rounded-lg transition-all"
                             >
                                 <Film className="h-3.5 w-3.5" /> Videos
-                            </Button>
-                            <Button
-                                variant={typeFilter === 'image' ? 'secondary' : 'ghost'}
-                                size="sm"
-                                onClick={() => setTypeFilter('image')}
-                                className="h-9 px-4 text-xs font-bold gap-2 rounded-lg transition-all"
-                            >
-                                <ImageIcon className="h-3.5 w-3.5" /> Images
                             </Button>
                         </div>
 
@@ -259,8 +260,8 @@ const Creatives = () => {
 
                                         {/* Status & Type Badges */}
                                         <div className="absolute top-3 left-3 flex gap-2">
-                                            <Badge className="bg-black/60 backdrop-blur-md border-white/10 uppercase tracking-widest text-[9px] py-1 px-2.5 font-bold">
-                                                {asset.type}
+                                            <Badge className={`backdrop-blur-md border-white/10 uppercase tracking-widest text-[9px] py-1 px-2.5 font-bold ${asset.isFullVideo ? 'bg-primary/80 text-primary-foreground' : 'bg-black/60'}`}>
+                                                {asset.isFullVideo ? 'Full Video' : 'Scene'}
                                             </Badge>
                                         </div>
 
@@ -285,7 +286,7 @@ const Creatives = () => {
                                                             {copiedId === asset.id ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                                                             Copy URL
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleDownload(asset.url, `${asset.campaignTitle}-scene-${asset.sceneIndex + 1}`)} className="gap-2 cursor-pointer focus:bg-primary/10">
+                                                        <DropdownMenuItem onClick={() => handleDownload(asset.url, `${asset.campaignTitle}${asset.sceneIndex !== null ? `-scene-${asset.sceneIndex + 1}` : ''}`)} className="gap-2 cursor-pointer focus:bg-primary/10">
                                                             <Download className="h-4 w-4" />
                                                             Download
                                                         </DropdownMenuItem>
@@ -310,9 +311,11 @@ const Creatives = () => {
                                                     {asset.hook || "Cinematic Masterpiece"}
                                                 </h3>
                                             </div>
-                                            <div className="h-8 w-8 rounded-full bg-muted/30 flex items-center justify-center text-[10px] font-black text-muted-foreground border border-white/5">
-                                                S{asset.sceneIndex + 1}
-                                            </div>
+                                            {asset.sceneIndex !== null && (
+                                                <div className="h-8 w-8 rounded-full bg-muted/30 flex items-center justify-center text-[10px] font-black text-muted-foreground border border-white/5">
+                                                    S{asset.sceneIndex + 1}
+                                                </div>
+                                            )}
                                         </div>
 
                                         <p className="text-xs text-muted-foreground/80 line-clamp-2 leading-relaxed h-[36px]">
@@ -365,12 +368,14 @@ const Creatives = () => {
                                             </td>
                                             <td className="p-4">
                                                 <div>
-                                                    <p className="font-bold text-sm text-foreground">{asset.hook || "Scene " + (asset.sceneIndex + 1)}</p>
+                                                    <p className="font-bold text-sm text-foreground">{asset.hook || (asset.isFullVideo ? "Full Video" : `Scene ${(asset.sceneIndex ?? 0) + 1}`)}</p>
                                                     <p className="text-xs text-muted-foreground/60">{asset.campaignTitle}</p>
                                                 </div>
                                             </td>
                                             <td className="p-4">
-                                                <Badge variant="outline" className="border-white/10 uppercase text-[9px] font-black">{asset.type}</Badge>
+                                                <Badge variant="outline" className={`border-white/10 uppercase text-[9px] font-black ${asset.isFullVideo ? 'bg-primary/20 text-primary border-primary/30' : ''}`}>
+                                                    {asset.isFullVideo ? 'Full Video' : 'Scene'}
+                                                </Badge>
                                             </td>
                                             <td className="p-4 text-xs text-muted-foreground font-mono">
                                                 {new Date(asset.createdAt).toLocaleDateString()}
