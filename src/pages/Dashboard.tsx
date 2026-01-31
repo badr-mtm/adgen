@@ -326,7 +326,7 @@ const Dashboard = () => {
                         initial={{ opacity: 0, x: -20 }} 
                         animate={{ opacity: 1, x: 0 }} 
                         transition={{ delay: 0.3 + i * 0.1 }} 
-                        className="group bg-background/50 hover:bg-accent/50 border border-border/50 hover:border-primary/30 rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer" 
+                        className="group bg-background/50 border border-border/50 hover:border-primary rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer" 
                         onClick={() => navigate(getCampaignRoute(campaign as any))}
                       >
                         <div 
