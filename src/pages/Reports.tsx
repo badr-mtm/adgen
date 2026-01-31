@@ -63,7 +63,7 @@ const Reports = () => {
                 </button>
               ))}
             </div>
-            <Button variant="outline" className="gap-2 border-white/10 bg-white/5 hover:bg-white/10 text-white">
+            <Button variant="outline" className="gap-2 border-border hover:border-primary text-foreground">
               <Download className="h-4 w-4" /> Export CSV
             </Button>
           </div>

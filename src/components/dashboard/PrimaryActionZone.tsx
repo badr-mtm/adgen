@@ -76,7 +76,7 @@ export function PrimaryActionZone({ recommendations }: PrimaryActionZoneProps) {
               <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
                 <Button
                   variant="outline"
-                  className="h-24 w-full flex-col gap-3 border-primary/30 bg-primary/5 hover:bg-primary/15 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group"
+                  className="h-24 w-full flex-col gap-3 border-border bg-card hover:border-primary transition-all duration-300 group"
                   onClick={() => navigate("/create?type=video")}
                 >
                   <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/30 transition-all duration-300">
@@ -88,7 +88,7 @@ export function PrimaryActionZone({ recommendations }: PrimaryActionZoneProps) {
               <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
                 <Button
                   variant="outline"
-                  className="h-24 w-full flex-col gap-3 border-primary/30 bg-primary/5 hover:bg-primary/15 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group"
+                  className="h-24 w-full flex-col gap-3 border-border bg-card hover:border-primary transition-all duration-300 group"
                   onClick={() => navigate("/create?type=image")}
                 >
                   <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/30 transition-all duration-300">
@@ -101,7 +101,7 @@ export function PrimaryActionZone({ recommendations }: PrimaryActionZoneProps) {
             <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
                 variant="ghost"
-                className="w-full text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
+                className="w-full text-muted-foreground hover:text-foreground transition-all duration-200"
                 onClick={() => setProductUrlDialogOpen(true)}
               >
                 <Link2 className="h-4 w-4 mr-2" />
@@ -145,7 +145,7 @@ export function PrimaryActionZone({ recommendations }: PrimaryActionZoneProps) {
                   transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
                   whileHover={{ scale: 1.01, x: 4 }}
                   whileTap={{ scale: 0.99 }}
-                  className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 border border-transparent hover:border-primary/20 hover:shadow-md transition-all duration-300 cursor-pointer group"
+                  className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-transparent hover:border-primary transition-all duration-300 cursor-pointer group"
                   onClick={() => navigate("/ai-suggestions")}
                 >
                   <div className="flex items-center gap-4">

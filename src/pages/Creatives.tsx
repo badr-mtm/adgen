@@ -250,7 +250,7 @@ const Creatives = () => {
                     viewMode === 'grid' ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {filteredAssets.map((asset) => (
-                                <Card key={asset.id} className="group overflow-hidden border-white/5 bg-card/30 backdrop-blur-sm hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_rgba(var(--primary-rgb),0.15)] rounded-2xl">
+                                <Card key={asset.id} className="group overflow-hidden border-border bg-card backdrop-blur-sm hover:border-primary transition-all duration-300 rounded-2xl">
                                     <div className="aspect-video relative overflow-hidden bg-black">
                                         <img
                                             src={asset.thumbnail || asset.url}

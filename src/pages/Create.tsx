@@ -244,7 +244,7 @@ const Create = () => {
                     </motion.div>)}
                 </AnimatePresence>
 
-                <button onClick={() => document.getElementById('file-upload')?.click()} className="w-16 h-16 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all">
+                <button onClick={() => document.getElementById('file-upload')?.click()} className="w-16 h-16 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary hover:border-primary transition-all">
                   <Upload className="h-4 w-4" />
                   <span className="text-[9px] uppercase font-bold">Reference</span>
                 </button>

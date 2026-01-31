@@ -467,7 +467,7 @@ const IntegrationCard = ({
       whileHover={{ y: -2 }}
       className={`relative group bg-card border rounded-xl overflow-hidden transition-all duration-300 ${integration.connected
           ? "border-primary/40 shadow-[0_0_20px_-10px_hsl(var(--primary)/0.3)]"
-          : "border-border hover:border-primary/20 hover:shadow-lg"
+          : "border-border hover:border-primary"
         }`}
     >
       {/* Top Banner Status */}
