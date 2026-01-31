@@ -218,7 +218,7 @@ const Campaigns = () => {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     transition={{ duration: 0.2, delay: i * 0.05 }}
-                                    className={`group relative bg-card hover:bg-card/80 border border-border/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 ${viewMode === 'list' ? 'flex items-center p-4 gap-6' : ''}`}
+                                    className={`group relative bg-card border border-border rounded-2xl overflow-hidden transition-all duration-300 hover:border-primary ${viewMode === 'list' ? 'flex items-center p-4 gap-6' : ''}`}
                                     onClick={() => navigate(getCampaignRoute(campaign))}
                                 >
                                     {/* Thumbnail / Video Preview */}

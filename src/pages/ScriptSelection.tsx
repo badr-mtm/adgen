@@ -864,7 +864,7 @@ export default function ScriptSelection() {
                             className={`group relative p-4 rounded-xl border transition-all cursor-pointer overflow-hidden ${
                               selected 
                                 ? "bg-card border-primary ring-1 ring-primary" 
-                                : "bg-card/50 border-border hover:border-primary/50 hover:bg-card"
+                                : "bg-card/50 border-border hover:border-primary"
                             }`}
                           >
                             <div className="flex justify-between items-start mb-2">

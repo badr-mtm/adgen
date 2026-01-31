@@ -80,7 +80,7 @@ const AISuggestions = () => {
                   key={insight.id}
                   layoutId={insight.id}
                   onClick={() => setSelectedInsight(insight.id)}
-                  className={`relative overflow-hidden rounded-2xl border bg-card/30 p-6 cursor-pointer group transition-all duration-300 ${selectedInsight === insight.id ? 'border-primary/50 bg-primary/5 shadow-2xl shadow-primary/10 ring-1 ring-primary/50' : 'border-white/10 hover:border-white/20 hover:bg-white/5'}`}
+                  className={`relative overflow-hidden rounded-2xl border bg-card/30 p-6 cursor-pointer group transition-all duration-300 ${selectedInsight === insight.id ? 'border-primary bg-primary/5 shadow-2xl shadow-primary/10 ring-1 ring-primary/50' : 'border-border hover:border-primary'}`}
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">

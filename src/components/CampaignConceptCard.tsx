@@ -29,7 +29,7 @@ const CampaignConceptCard = ({
   }[predictedEngagement] || "bg-muted text-muted-foreground";
 
   return (
-    <Card className="bg-card border-border cursor-pointer group overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10">
+    <Card className="bg-card border-border cursor-pointer group overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1 hover:border-primary">
       <div className="p-6 space-y-4">
         {/* Header */}
         <div className="space-y-2">
@@ -69,7 +69,7 @@ const CampaignConceptCard = ({
         {/* Action Button */}
         <Button 
           onClick={onClick}
-          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 group-hover:shadow-lg active:scale-[0.98]"
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 active:scale-[0.98]"
         >
           Expand Concept
           <ArrowRight className="h-4 w-4 ml-2 transition-transform duration-200 group-hover:translate-x-1" />

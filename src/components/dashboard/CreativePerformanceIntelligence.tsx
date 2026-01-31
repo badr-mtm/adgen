@@ -148,10 +148,9 @@ export function CreativePerformanceIntelligence({
         whileTap={{ scale: 0.98 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
-        {/* Glow effect on hover */}
-        <div className={`absolute -inset-0.5 ${accentColor} rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500`} />
+        {/* Border highlight on hover */}
         
-        <div className="relative p-4 rounded-xl bg-gradient-to-br from-card via-card to-muted/30 border border-border/50 backdrop-blur-sm overflow-hidden">
+        <div className="relative p-4 rounded-xl bg-gradient-to-br from-card via-card to-muted/30 border border-border group-hover:border-primary backdrop-blur-sm overflow-hidden transition-colors duration-300">
           {/* Subtle gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
           

@@ -75,7 +75,7 @@ export function ActiveCampaignsSnapshot({ campaigns }: ActiveCampaignsSnapshotPr
                   transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
                   whileHover={{ scale: 1.01, x: 4 }}
                   whileTap={{ scale: 0.99 }}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 border border-transparent hover:border-primary/20 hover:shadow-sm transition-all duration-300 cursor-pointer group"
+                  className="flex items-center justify-between p-3 rounded-lg border border-transparent hover:border-primary transition-all duration-300 cursor-pointer group"
                   onClick={() => handleCampaignClick(campaign)}
                 >
                 <div className="flex items-center gap-4">

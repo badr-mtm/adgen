@@ -102,8 +102,8 @@ export function BrandSystemReadiness({ brandProfile }: BrandSystemReadinessProps
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.5 + index * 0.05 }}
                 whileHover={{ scale: 1.02, x: 2 }}
-                className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                  item.complete ? 'bg-primary/5 hover:bg-primary/10' : 'bg-muted/30 hover:bg-muted/50'
+                className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all duration-200 border border-transparent ${
+                  item.complete ? 'bg-primary/5 hover:border-primary' : 'bg-muted/30 hover:border-primary'
                 }`}
               >
                 {item.complete ? (
@@ -157,7 +157,7 @@ export function BrandSystemReadiness({ brandProfile }: BrandSystemReadinessProps
                 transition={{ duration: 0.3, delay: 0.6 + index * 0.05 }}
                 whileHover={{ scale: 1.02, x: 4 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 cursor-pointer transition-all duration-200"
+                className="flex items-center justify-between p-2 rounded-lg bg-muted/30 border border-transparent hover:border-primary cursor-pointer transition-all duration-200"
               >
                 <div className="flex items-center gap-3">
                   <motion.div 

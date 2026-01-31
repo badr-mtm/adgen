@@ -80,7 +80,7 @@ export function BroadcastScheduleWidget({ spots }: BroadcastScheduleWidgetProps)
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 + index * 0.05 }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border hover:border-primary/20 transition-all"
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border hover:border-primary transition-all"
                 >
                   <div className="flex items-center gap-4">
                     <div className="flex flex-col items-center justify-center w-12 h-12 rounded-lg bg-secondary">

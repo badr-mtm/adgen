@@ -371,7 +371,7 @@ const Assets = () => {
             {filteredAssets.map((asset) => (
               <Card
                 key={asset.id}
-                className="bg-card border-border overflow-hidden group hover:border-primary/50 transition-all"
+                className="bg-card border-border overflow-hidden group hover:border-primary transition-all"
               >
                 <div className="aspect-square relative overflow-hidden bg-muted">
                   {asset.type === "image" ? (
