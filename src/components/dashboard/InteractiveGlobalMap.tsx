@@ -1,49 +1,31 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, X, Activity, Radio } from "lucide-react";
+import { MapPin, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-interface Campaign {
-  id: string;
-  title: string;
-  status: string;
-  target_audience?: {
-    locations?: string[];
-    demographics?: string[];
-  } | null;
-  predicted_ctr?: number;
-}
-
-interface RegionConfig {
+interface Region {
   id: string;
   name: string;
   label: string;
   position: { top: string; left: string };
-  keywords: string[];
+  campaigns: number;
+  reach: string;
+  status: "active" | "high-volume" | "growing" | "new";
 }
 
-const REGION_CONFIGS: RegionConfig[] = [
-  { id: "na", name: "North America", label: "NA", position: { top: "35%", left: "22%" }, keywords: ["north america", "usa", "us", "united states", "canada", "new york", "los angeles", "chicago", "california", "texas", "florida"] },
-  { id: "eu", name: "Europe", label: "EU", position: { top: "28%", left: "52%" }, keywords: ["europe", "uk", "germany", "france", "spain", "italy", "london", "paris", "berlin"] },
-  { id: "apac", name: "Asia Pacific", label: "APAC", position: { top: "45%", left: "75%" }, keywords: ["asia", "pacific", "japan", "china", "australia", "india", "tokyo", "singapore", "sydney"] },
-  { id: "latam", name: "Latin America", label: "LATAM", position: { top: "60%", left: "30%" }, keywords: ["latin america", "brazil", "mexico", "argentina", "south america"] },
+const REGIONS: Region[] = [
+  { id: "na", name: "North America", label: "NA", position: { top: "35%", left: "22%" }, campaigns: 12, reach: "18.2M", status: "active" },
+  { id: "eu", name: "Europe", label: "EU", position: { top: "28%", left: "52%" }, campaigns: 8, reach: "14.5M", status: "high-volume" },
+  { id: "apac", name: "Asia Pacific", label: "APAC", position: { top: "45%", left: "75%" }, campaigns: 5, reach: "8.1M", status: "growing" },
+  { id: "latam", name: "Latin America", label: "LATAM", position: { top: "60%", left: "30%" }, campaigns: 3, reach: "2.0M", status: "new" },
 ];
 
-const getStatusFromCampaignCount = (count: number): "dormant" | "new" | "growing" | "active" | "high-volume" => {
-  if (count === 0) return "dormant";
-  if (count === 1) return "new";
-  if (count <= 3) return "growing";
-  if (count <= 7) return "active";
-  return "high-volume";
-};
-
-const statusColors: Record<string, { bg: string; text: string; glow: string; pulse: boolean }> = {
-  dormant: { bg: "bg-muted", text: "text-muted-foreground", glow: "hsl(var(--muted))", pulse: false },
-  new: { bg: "bg-emerald-500", text: "text-emerald-500", glow: "#10b981", pulse: true },
-  growing: { bg: "bg-amber-500", text: "text-amber-500", glow: "#f59e0b", pulse: true },
-  active: { bg: "bg-primary", text: "text-primary", glow: "hsl(var(--primary))", pulse: true },
-  "high-volume": { bg: "bg-indigo-500", text: "text-indigo-500", glow: "#6366f1", pulse: true },
+const statusColors: Record<string, { bg: string; text: string; glow: string }> = {
+  active: { bg: "bg-primary", text: "text-primary", glow: "hsl(var(--primary))" },
+  "high-volume": { bg: "bg-indigo-500", text: "text-indigo-500", glow: "#6366f1" },
+  growing: { bg: "bg-amber-500", text: "text-amber-500", glow: "#f59e0b" },
+  new: { bg: "bg-emerald-500", text: "text-emerald-500", glow: "#10b981" },
 };
 
 interface Props {
@@ -53,7 +35,6 @@ interface Props {
   activeNetworks: number;
   avgCpm: string;
   liveSpots: number;
-  campaigns?: Campaign[];
 }
 
 export function InteractiveGlobalMap({ 
@@ -62,40 +43,11 @@ export function InteractiveGlobalMap({
   totalHouseholds,
   activeNetworks,
   avgCpm,
-  liveSpots,
-  campaigns = []
+  liveSpots
 }: Props) {
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
 
-  // Calculate dynamic region data from campaigns
-  const regionData = useMemo(() => {
-    return REGION_CONFIGS.map(config => {
-      // Find campaigns that match this region
-      const matchingCampaigns = campaigns.filter(campaign => {
-        const audience = campaign.target_audience;
-        if (!audience) return false;
-        const audienceStr = JSON.stringify(audience).toLowerCase();
-        return config.keywords.some(keyword => audienceStr.includes(keyword));
-      });
-
-      const activeCampaigns = matchingCampaigns.filter(c => c.status === 'active' || c.status === 'live');
-      const totalReach = matchingCampaigns.length * 2.1; // ~2.1M per campaign
-      const avgCtr = matchingCampaigns.reduce((acc, c) => acc + (c.predicted_ctr || 0), 0) / (matchingCampaigns.length || 1);
-
-      return {
-        ...config,
-        campaigns: matchingCampaigns.length,
-        activeCampaigns: activeCampaigns.length,
-        reach: totalReach > 0 ? `${totalReach.toFixed(1)}M` : "0",
-        avgCtr: (avgCtr * 100).toFixed(1),
-        status: getStatusFromCampaignCount(matchingCampaigns.length),
-        isLive: activeCampaigns.length > 0,
-      };
-    });
-  }, [campaigns]);
-
-  const selectedRegionData = regionData.find(r => r.id === selectedRegion);
-  const totalActiveCampaigns = regionData.reduce((acc, r) => acc + r.activeCampaigns, 0);
+  const selectedRegionData = REGIONS.find(r => r.id === selectedRegion);
 
   return (
     <div className="relative w-full h-[300px] lg:h-[400px] rounded-3xl overflow-hidden border border-border bg-card backdrop-blur-xl group">
@@ -119,22 +71,11 @@ export function InteractiveGlobalMap({
 
       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-      {/* Live Status Indicator */}
-      {totalActiveCampaigns > 0 && (
-        <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-md border border-primary/30">
-          <Activity className="h-3 w-3 text-primary animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
-            {totalActiveCampaigns} Live Region{totalActiveCampaigns > 1 ? 's' : ''}
-          </span>
-        </div>
-      )}
-
       {/* Interactive Region Beacons */}
-      {regionData.map((region, idx) => {
+      {REGIONS.map((region) => {
         const colors = statusColors[region.status];
         const isSelected = selectedRegion === region.id;
         const isHovered = hoveredRegion === region.id;
-        const hasActivity = region.campaigns > 0;
 
         return (
           <motion.button
@@ -144,52 +85,22 @@ export function InteractiveGlobalMap({
             onClick={() => onRegionSelect(isSelected ? null : region.id)}
             onMouseEnter={() => setHoveredRegion(region.id)}
             onMouseLeave={() => setHoveredRegion(null)}
-            whileHover={{ scale: 1.15 }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: idx * 0.1, type: "spring", stiffness: 200 }}
           >
             <div className="relative">
-              {/* Outer ring for active regions */}
-              {hasActivity && (
-                <motion.div 
-                  className={`absolute -inset-3 rounded-full border-2 ${colors.bg.replace('bg-', 'border-')}/40`}
-                  animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                />
-              )}
-              
-              {/* Ping animation for live regions */}
-              {region.isLive && (
-                <div 
-                  className={`absolute -inset-4 rounded-full animate-ping ${colors.bg}/30`}
-                  style={{ animationDelay: `${idx * 200}ms`, animationDuration: '2s' }}
-                />
-              )}
-              
-              {/* Main beacon - size varies with campaign count */}
-              <motion.div 
-                className={`relative ${colors.bg} rounded-full transition-all duration-300 flex items-center justify-center ${isSelected ? 'ring-4 ring-offset-2 ring-offset-background ring-primary' : ''}`}
+              {/* Ping animation */}
+              <div 
+                className={`absolute -inset-4 rounded-full animate-ping ${colors.bg}/30`}
+                style={{ animationDelay: `${REGIONS.indexOf(region) * 200}ms` }}
+              />
+              {/* Main beacon */}
+              <div 
+                className={`h-4 w-4 ${colors.bg} rounded-full transition-all duration-300 ${isSelected ? 'ring-4 ring-offset-2 ring-offset-background ring-primary' : ''}`}
                 style={{ 
-                  width: hasActivity ? Math.min(24, 12 + region.campaigns * 2) : 12,
-                  height: hasActivity ? Math.min(24, 12 + region.campaigns * 2) : 12,
-                  boxShadow: hasActivity ? `0 0 ${isSelected || isHovered ? '30px' : '20px'} ${colors.glow}` : 'none'
+                  boxShadow: `0 0 ${isSelected || isHovered ? '25px' : '15px'} ${colors.glow}`
                 }}
-                animate={colors.pulse ? { scale: [1, 1.05, 1] } : {}}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              >
-                {region.isLive && (
-                  <Radio className="h-2.5 w-2.5 text-white" />
-                )}
-              </motion.div>
-
-              {/* Campaign count badge */}
-              {region.campaigns > 0 && (
-                <div className="absolute -top-1 -right-1 h-4 min-w-4 rounded-full bg-foreground text-background text-[9px] font-bold flex items-center justify-center px-1">
-                  {region.campaigns}
-                </div>
-              )}
+              />
               
               {/* Hover/Selected tooltip */}
               <AnimatePresence>
@@ -198,29 +109,16 @@ export function InteractiveGlobalMap({
                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                    className="absolute top-8 left-1/2 -translate-x-1/2 z-20"
+                    className="absolute top-6 left-1/2 -translate-x-1/2 z-20"
                   >
-                    <div className="bg-popover text-popover-foreground text-xs font-medium px-4 py-3 rounded-xl border border-border shadow-xl whitespace-nowrap min-w-[160px]">
-                      <div className="font-bold text-sm mb-2">{region.name}</div>
-                      <div className="space-y-1.5 text-muted-foreground">
-                        <div className="flex justify-between">
-                          <span>Campaigns</span>
-                          <span className="font-semibold text-foreground">{region.campaigns}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Reach</span>
-                          <span className="font-semibold text-foreground">{region.reach}</span>
-                        </div>
-                        {region.campaigns > 0 && (
-                          <div className="flex justify-between">
-                            <span>Avg CTR</span>
-                            <span className="font-semibold text-foreground">{region.avgCtr}%</span>
-                          </div>
-                        )}
+                    <div className="bg-popover text-popover-foreground text-xs font-medium px-3 py-2 rounded-lg border border-border shadow-lg whitespace-nowrap">
+                      <div className="font-bold">{region.name}</div>
+                      <div className="text-muted-foreground mt-1">
+                        {region.campaigns} campaigns · {region.reach} reach
                       </div>
                       <Badge 
                         variant="outline" 
-                        className={`mt-2 ${colors.text} border-current/30 text-[10px] uppercase w-full justify-center`}
+                        className={`mt-1 ${colors.text} border-current/30 text-[10px] uppercase`}
                       >
                         {region.status.replace("-", " ")}
                       </Badge>
@@ -240,23 +138,25 @@ export function InteractiveGlobalMap({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-30"
+            className="absolute top-4 left-4 right-4 z-10"
           >
-            <div className="bg-popover/95 backdrop-blur-md border border-border rounded-xl px-4 py-2.5 flex items-center gap-3 shadow-lg">
-              <div className={`h-3 w-3 rounded-full ${statusColors[selectedRegionData.status].bg}`} />
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-foreground">{selectedRegionData.name}</span>
-                <span className="text-muted-foreground text-sm">
-                  {selectedRegionData.campaigns} campaign{selectedRegionData.campaigns !== 1 ? 's' : ''}
-                </span>
+            <div className="bg-popover/95 backdrop-blur-md border border-border rounded-xl p-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <MapPin className={`h-5 w-5 ${statusColors[selectedRegionData.status].text}`} />
+                <div>
+                  <span className="font-bold text-foreground">{selectedRegionData.name}</span>
+                  <span className="text-muted-foreground ml-2 text-sm">
+                    Filtering {selectedRegionData.campaigns} campaigns
+                  </span>
+                </div>
               </div>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-6 w-6 ml-2"
+                className="h-8 w-8"
                 onClick={() => onRegionSelect(null)}
               >
-                <X className="h-3 w-3" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
           </motion.div>
@@ -288,11 +188,11 @@ export function InteractiveGlobalMap({
       </div>
 
       {/* Region Legend */}
-      <div className="absolute top-4 right-4 hidden lg:flex gap-3">
-        {Object.entries(statusColors).filter(([key]) => key !== 'dormant').map(([status, colors]) => (
+      <div className="absolute top-4 right-4 hidden lg:flex gap-2">
+        {Object.entries(statusColors).map(([status, colors]) => (
           <div key={status} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <div className={`h-2.5 w-2.5 rounded-full ${colors.bg}`} />
-            <span className="capitalize text-[10px]">{status.replace("-", " ")}</span>
+            <div className={`h-2 w-2 rounded-full ${colors.bg}`} />
+            <span className="capitalize">{status.replace("-", " ")}</span>
           </div>
         ))}
       </div>
