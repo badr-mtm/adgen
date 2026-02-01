@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2, ArrowLeft, Mail, ShieldCheck, Tv, Zap } from "lucide-react";
 import adgenLogo from "@/assets/adgen-logo.jpeg";
-import tvLifestyleHero from "@/assets/tv-lifestyle-hero.jpg";
+import tvFamilyHero from "@/assets/tv-family-hero.png";
 
 type AuthMode = "login" | "signup" | "forgot-password" | "reset-sent";
 
@@ -325,14 +325,14 @@ export default function Auth() {
           {(authMode === "login" || authMode === "signup") && (
             <>
               {/* Social / SSO Login */}
-              <div className="space-y-3">
+              <div className="flex gap-3">
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-medium"
+                  className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-medium"
                   onClick={handleGoogleAuth}
                 >
-                  <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
+                  <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
@@ -350,22 +350,22 @@ export default function Auth() {
                       fill="#EA4335"
                     />
                   </svg>
-                  Continue with Google
+                  Google
                 </Button>
 
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-medium"
+                  className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-medium"
                   onClick={handleMicrosoftAuth}
                 >
-                  <svg className="mr-3 h-5 w-5" viewBox="0 0 21 21">
+                  <svg className="mr-2 h-5 w-5" viewBox="0 0 21 21">
                     <rect x="1" y="1" width="9" height="9" fill="#f25022" />
                     <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
                     <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
                     <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
                   </svg>
-                  Continue with Microsoft
+                  Microsoft
                 </Button>
               </div>
 
@@ -505,8 +505,8 @@ export default function Auth() {
       <div className="hidden lg:flex flex-1 relative overflow-hidden">
         {/* Immersive Image with Ken Burns Effect */}
         <motion.img
-          src={tvLifestyleHero}
-          alt="Premium TV viewing experience"
+          src={tvFamilyHero}
+          alt="Family watching TV advertisement"
           className="absolute inset-0 w-full h-full object-cover"
           initial={{ scale: 1 }}
           animate={{ scale: 1.05 }}
