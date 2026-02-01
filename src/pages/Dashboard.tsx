@@ -506,14 +506,14 @@ const QuickAction = ({
   label,
   desc,
   onClick
-}: any) => <button onClick={onClick} className="flex items-center gap-4 p-3 rounded-xl bg-background/80 hover:bg-accent border border-border/50 hover:border-primary/30 transition-all text-left group w-full">
-    <div className="h-10 w-10 rounded-lg bg-card flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors border border-border shadow-sm">
+}: any) => <button onClick={onClick} className="flex items-center gap-4 p-3 rounded-xl bg-background/80 hover:bg-accent border border-border/50 hover:border-primary transition-all duration-300 ease-out text-left group w-full hover:-translate-y-1">
+    <div className="h-10 w-10 rounded-lg bg-card flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors border border-border shadow-sm group-hover:scale-110 group-hover:border-primary/50">
       {icon}
     </div>
     <div>
       <h4 className="font-semibold text-sm group-hover:text-primary transition-colors text-foreground">{label}</h4>
       <p className="text-xs text-muted-foreground">{desc}</p>
     </div>
-    <ArrowUpRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 transition-all" />
+    <ArrowUpRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
   </button>;
 export default Dashboard;
