@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { MapRegionBeacons } from "@/components/dashboard/MapRegionBeacons";
+import { InteractiveGlobalMap } from "@/components/dashboard/InteractiveGlobalMap";
 import { getCampaignRoute, getCampaignStageLabel, isCampaignComplete } from "@/lib/campaignNavigation";
 import { Plus, Tv, Globe, Activity, Zap, BarChart3, ArrowUpRight, Clock, MapPin, TrendingUp, Signal, CheckCircle2, FileText, Play } from "lucide-react";
 
@@ -34,7 +34,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
   useEffect(() => {
     const initializeDashboard = async () => {
@@ -183,21 +182,47 @@ const Dashboard = () => {
             }} zoomControl={false} attributionControl={false}>
                 <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png" noWrap={false} />
 
-                {campaignLocations.map((loc: any, idx: number) => <CircleMarker key={`${loc.name}-${idx}`} center={[loc.lat, loc.lng]} radius={15} pathOptions={{
-                fillColor: 'hsl(var(--primary))',
-                fillOpacity: 0.4,
-                color: 'hsl(var(--primary))',
-                weight: 1,
-                className: 'animate-pulse'
-              }}>
-                    <Popup>
-                      <div className="p-1">
-                        <p className="font-bold text-xs uppercase tracking-widest text-primary mb-1">Live Delivery</p>
-                        <p className="font-bold text-sm text-foreground">{loc.campaignTitle}</p>
-                        <p className="text-xs text-muted-foreground">{loc.name}</p>
-                      </div>
-                    </Popup>
-                  </CircleMarker>)}
+                {campaignLocations.map((loc: any, idx: number) => (
+                  <>
+                    {/* Outer pulsing ring for active spots */}
+                    <CircleMarker 
+                      key={`pulse-${loc.name}-${idx}`} 
+                      center={[loc.lat, loc.lng]} 
+                      radius={25} 
+                      pathOptions={{
+                        fillColor: 'hsl(var(--primary))',
+                        fillOpacity: 0.15,
+                        color: 'hsl(var(--primary))',
+                        weight: 2,
+                        className: 'animate-ping'
+                      }}
+                    />
+                    {/* Main active spot marker */}
+                    <CircleMarker 
+                      key={`${loc.name}-${idx}`} 
+                      center={[loc.lat, loc.lng]} 
+                      radius={12} 
+                      pathOptions={{
+                        fillColor: 'hsl(var(--primary))',
+                        fillOpacity: 0.7,
+                        color: 'hsl(var(--background))',
+                        weight: 3,
+                        className: 'animate-pulse'
+                      }}
+                    >
+                      <Popup>
+                        <div className="p-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                            <p className="font-bold text-[10px] uppercase tracking-widest text-primary">Live Broadcast</p>
+                          </div>
+                          <p className="font-bold text-sm text-foreground">{loc.campaignTitle}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{loc.name}</p>
+                        </div>
+                      </Popup>
+                    </CircleMarker>
+                  </>
+                ))}
 
                 {/* Always show a few global beacons for depth if no active campaigns */}
                 {campaignLocations.length === 0 && <>
@@ -238,15 +263,6 @@ const Dashboard = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
             <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/60 to-transparent z-10 pointer-events-none" />
 
-            {/* Interactive Region Beacons */}
-            <MapRegionBeacons
-              campaigns={allCampaigns}
-              selectedRegion={selectedRegion}
-              onRegionSelect={setSelectedRegion}
-              hoveredRegion={hoveredRegion}
-              onHoverRegion={setHoveredRegion}
-            />
-
             {/* Live Data HUD */}
             <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-md border border-border">
@@ -256,6 +272,9 @@ const Dashboard = () => {
               {activeCampaigns.length > 0 && <div className="px-3 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-tighter">
                   Streaming to {activeCampaigns.length} Active Nodes
                 </div>}
+              {selectedRegion && <Badge variant="outline" className="bg-primary/10 border-primary/20 text-primary uppercase text-[10px]">
+                  Region: {selectedRegion}
+                </Badge>}
             </div>
 
             {/* Hero Metrics Overlay */}
@@ -270,16 +289,20 @@ const Dashboard = () => {
               </div>
               <div className="flex gap-8 text-right bg-card/80 backdrop-blur-md p-6 rounded-2xl border border-border">
                 <div>
-                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Nodes</p>
-                  <p className="text-2xl font-black text-foreground">{activeCampaigns.length}</p>
+                  <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Active Spots</p>
+                  <p className="text-2xl font-black text-foreground">{campaignLocations.length}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Network Load</p>
-                  <p className="text-2xl font-black text-primary">High</p>
+                  <p className={`text-2xl font-black ${activeCampaigns.length > 3 ? 'text-red-500' : activeCampaigns.length > 1 ? 'text-amber-500' : activeCampaigns.length > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {activeCampaigns.length > 3 ? 'Critical' : activeCampaigns.length > 1 ? 'High' : activeCampaigns.length > 0 ? 'Normal' : 'Idle'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Latency</p>
-                  <p className="text-2xl font-black text-foreground">12ms</p>
+                  <p className={`text-2xl font-black ${activeCampaigns.length > 2 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                    {Math.max(8, 8 + activeCampaigns.length * 4)}ms
+                  </p>
                 </div>
               </div>
             </div>
