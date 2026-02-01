@@ -14,7 +14,7 @@ import {
   Tv,
   Sparkles,
 } from "lucide-react";
-import adgenLogo from "@/assets/adgen-logo.jpeg";
+import tvAdsLogo from "@/assets/tv-ads-logo.png";
 import {
   Sidebar,
   SidebarContent,
@@ -64,12 +64,14 @@ export function AppSidebar() {
     <Sidebar className="border-r border-sidebar-border">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div
-          className="flex items-center gap-2 cursor-pointer"
+          className="flex items-center gap-2.5 cursor-pointer"
           onClick={() => navigate("/dashboard")}
         >
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-            <Tv className="w-5 h-5 text-primary" />
-          </div>
+          <img 
+            src={tvAdsLogo} 
+            alt="TV Ads AI" 
+            className="w-9 h-9 rounded-lg object-contain"
+          />
           <span className="font-bold text-xl text-sidebar-foreground">TV Ads AI</span>
         </div>
       </SidebarHeader>
