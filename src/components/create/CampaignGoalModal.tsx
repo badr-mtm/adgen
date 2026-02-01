@@ -2,17 +2,15 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Megaphone,
   TrendingUp,
   Sparkles,
   ShoppingCart,
   Users,
-  Smartphone,
   ArrowLeft,
   ArrowRight,
-  Check,
   Loader2,
   Target
 } from "lucide-react";
@@ -56,29 +54,29 @@ export function CampaignGoalModal({
               <p className="text-muted-foreground text-sm mt-1">What defines success?</p>
             </div>
 
-            <div className="space-y-2 flex-1 overflow-y-auto">
+            <RadioGroup value={selectedGoal} onValueChange={setSelectedGoal} className="space-y-2 flex-1 overflow-y-auto">
               {GOALS.map((goal) => {
                 const Icon = goal.icon;
                 const isSelected = selectedGoal === goal.id;
                 return (
-                  <button
+                  <label
                     key={goal.id}
-                    onClick={() => setSelectedGoal(goal.id)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 group hover:-translate-y-0.5 ${isSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-[0_0_20px_hsl(var(--primary)/0.4)]"
-                        : "bg-white/5 border-transparent hover:border-primary text-muted-foreground hover:text-white"
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 cursor-pointer group hover:-translate-y-0.5 ${isSelected
+                        ? "border-primary bg-primary/5 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
+                        : "border-border/50 hover:border-primary bg-white/5"
                       }`}
                   >
-                    <div className={`p-2 rounded-lg transition-all duration-200 ${isSelected ? "bg-white/20" : "bg-black/20 group-hover:bg-primary/20 group-hover:scale-110"}`}>
-                      <Icon className={`h-5 w-5 transition-colors ${isSelected ? "" : "group-hover:text-primary"}`} />
+                    <RadioGroupItem value={goal.id} id={goal.id} className="shrink-0" />
+                    <div className={`p-2 rounded-lg transition-all duration-200 ${isSelected ? "bg-primary/20" : "bg-black/20 group-hover:bg-primary/20 group-hover:scale-110"}`}>
+                      <Icon className={`h-5 w-5 transition-colors ${isSelected ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} />
                     </div>
                     <div>
-                      <div className="font-bold text-sm">{goal.label}</div>
+                      <div className={`font-bold text-sm ${isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"}`}>{goal.label}</div>
                     </div>
-                  </button>
+                  </label>
                 )
               })}
-            </div>
+            </RadioGroup>
           </div>
 
           {/* Right Content: Visualization & Confirmation */}
