@@ -278,7 +278,7 @@ export default function Auth() {
               </div>
               <Button
                 onClick={() => setAuthMode("login")}
-                className="w-full h-11 font-semibold bg-white text-black hover:bg-white/90"
+                className="w-full h-11 font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Return to Login
               </Button>
@@ -305,7 +305,7 @@ export default function Auth() {
 
               <Button
                 type="submit"
-                className="w-full h-12 font-semibold bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-900/30"
+                className="w-full h-12 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/30"
                 size="lg"
                 disabled={loading}
               >
@@ -455,7 +455,7 @@ export default function Auth() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 font-semibold bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-900/30"
+                  className="w-full h-12 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/30"
                   size="lg"
                   disabled={loading}
                 >

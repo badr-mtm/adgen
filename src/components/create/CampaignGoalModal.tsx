@@ -64,13 +64,13 @@ export function CampaignGoalModal({
                   <button
                     key={goal.id}
                     onClick={() => setSelectedGoal(goal.id)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 group ${isSelected
-                        ? "bg-primary text-white border-primary shadow-[0_0_20px_hsl(var(--primary)/0.4)]"
-                        : "bg-white/5 border-transparent hover:bg-white/10 text-muted-foreground hover:text-white"
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 group hover:-translate-y-0.5 ${isSelected
+                        ? "bg-primary text-primary-foreground border-primary shadow-[0_0_20px_hsl(var(--primary)/0.4)]"
+                        : "bg-white/5 border-transparent hover:border-primary text-muted-foreground hover:text-white"
                       }`}
                   >
-                    <div className={`p-2 rounded-lg ${isSelected ? "bg-white/20" : "bg-black/20 group-hover:bg-black/40"}`}>
-                      <Icon className="h-5 w-5" />
+                    <div className={`p-2 rounded-lg transition-all duration-200 ${isSelected ? "bg-white/20" : "bg-black/20 group-hover:bg-primary/20 group-hover:scale-110"}`}>
+                      <Icon className={`h-5 w-5 transition-colors ${isSelected ? "" : "group-hover:text-primary"}`} />
                     </div>
                     <div>
                       <div className="font-bold text-sm">{goal.label}</div>
@@ -119,7 +119,7 @@ export function CampaignGoalModal({
                     size="lg"
                     onClick={() => onGenerate(selectedGoal)}
                     disabled={isGenerating}
-                    className="h-14 px-8 text-lg bg-white text-black hover:bg-white/90 hover:scale-105 transition-all w-full max-w-xs shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                    className="h-14 px-8 text-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 transition-all w-full max-w-xs shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
                   >
                     {isGenerating ? (
                       <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Configuring AI...</>
