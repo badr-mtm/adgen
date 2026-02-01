@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { InteractiveGlobalMap } from "@/components/dashboard/InteractiveGlobalMap";
+import { MapRegionBeacons } from "@/components/dashboard/MapRegionBeacons";
 import { getCampaignRoute, getCampaignStageLabel, isCampaignComplete } from "@/lib/campaignNavigation";
 import { Plus, Tv, Globe, Activity, Zap, BarChart3, ArrowUpRight, Clock, MapPin, TrendingUp, Signal, CheckCircle2, FileText, Play } from "lucide-react";
 
@@ -34,6 +34,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
   useEffect(() => {
     const initializeDashboard = async () => {
@@ -237,6 +238,15 @@ const Dashboard = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
             <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/60 to-transparent z-10 pointer-events-none" />
 
+            {/* Interactive Region Beacons */}
+            <MapRegionBeacons
+              campaigns={allCampaigns}
+              selectedRegion={selectedRegion}
+              onRegionSelect={setSelectedRegion}
+              hoveredRegion={hoveredRegion}
+              onHoverRegion={setHoveredRegion}
+            />
+
             {/* Live Data HUD */}
             <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-md border border-border">
@@ -246,9 +256,6 @@ const Dashboard = () => {
               {activeCampaigns.length > 0 && <div className="px-3 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-tighter">
                   Streaming to {activeCampaigns.length} Active Nodes
                 </div>}
-              {selectedRegion && <Badge variant="outline" className="bg-primary/10 border-primary/20 text-primary uppercase text-[10px]">
-                  Region: {selectedRegion}
-                </Badge>}
             </div>
 
             {/* Hero Metrics Overlay */}
