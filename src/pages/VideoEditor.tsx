@@ -17,6 +17,7 @@ import VideoEditorHeader from "@/components/video-editor/VideoEditorHeader";
 import { searchPexelsVideos } from "@/utils/pexels";
 import { isEdgeFunctionNetworkError, pollForCampaignSceneVideoUrl } from "@/lib/campaignVideoPolling";
 import { useGenerationResume } from "@/hooks/useGenerationResume";
+import { MOCK_VIDEO_GENERATION, mockGenerateScene } from "@/lib/mockVideoGeneration";
 
 export default function VideoEditor() {
   const { id } = useParams();
@@ -537,21 +538,27 @@ export default function VideoEditor() {
         // If direct fails, fall back to edge function
       }
 
-      toast({ title: "Generating video clip...", description: "This may take a minute or two. Please wait." });
-      const { data, error } = await supabase.functions.invoke('generate-video-scene', {
-        body: {
-          campaignId: id,
-          sceneNumber: scenes[currentSceneIndex].sceneNumber,
-          model,
-          customPrompt,
-          ...(duration && { duration }),
-          ...(aspectRatio && { aspectRatio }),
-          ...(language && { language }),
-          ...(cameraMovement && { cameraMovement })
-        }
-      });
+      toast({ title: "Generating video clip...", description: "This may take a moment. Please wait." });
 
-      if (error) throw error;
+      let data: any;
+      if (MOCK_VIDEO_GENERATION) {
+        data = await mockGenerateScene(scenes[currentSceneIndex].sceneNumber);
+      } else {
+        const res = await supabase.functions.invoke('generate-video-scene', {
+          body: {
+            campaignId: id,
+            sceneNumber: scenes[currentSceneIndex].sceneNumber,
+            model,
+            customPrompt,
+            ...(duration && { duration }),
+            ...(aspectRatio && { aspectRatio }),
+            ...(language && { language }),
+            ...(cameraMovement && { cameraMovement })
+          }
+        });
+        if (res.error) throw res.error;
+        data = res.data;
+      }
 
       if (data.videoUrl) {
         saveToHistory(scenes, overlaySettings);

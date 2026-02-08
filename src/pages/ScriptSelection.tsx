@@ -55,6 +55,12 @@ import {
   pollForCampaignSceneVideoUrl,
 } from "@/lib/campaignVideoPolling";
 import { useGenerationResume } from "@/hooks/useGenerationResume";
+import {
+  MOCK_VIDEO_GENERATION,
+  mockGenerateFullVideo,
+  mockGenerateScenesBatch,
+  mockGenerateScene,
+} from "@/lib/mockVideoGeneration";
 
 interface Script {
   id: string;
@@ -455,18 +461,23 @@ export default function ScriptSelection() {
           duration: 120000
         });
 
-        const { data: result, error } = await supabase.functions.invoke('generate-scenes-batch', {
-          body: {
-            campaignId,
-            script: scriptToUse,
-            duration: durationToUse,
-            aspectRatio: aspectRatioToUse,
-            language: voiceoverLanguage,
-            cameraMovement: cameraMovement
-          }
-        });
-
-        if (error) throw error;
+        let result: any;
+        if (MOCK_VIDEO_GENERATION) {
+          result = await mockGenerateScenesBatch(scriptToUse);
+        } else {
+          const { data, error } = await supabase.functions.invoke('generate-scenes-batch', {
+            body: {
+              campaignId,
+              script: scriptToUse,
+              duration: durationToUse,
+              aspectRatio: aspectRatioToUse,
+              language: voiceoverLanguage,
+              cameraMovement: cameraMovement
+            }
+          });
+          if (error) throw error;
+          result = data;
+        }
 
         if (result?.sceneVideos) {
           const completedScenes = result.sceneVideos.filter((s: any) => s.status === 'completed');
@@ -512,18 +523,23 @@ export default function ScriptSelection() {
           duration: 60000
         });
 
-        const { data: result, error } = await supabase.functions.invoke('generate-video-from-script', {
-          body: {
-            campaignId,
-            script: scriptToUse,
-            duration: durationToUse,
-            aspectRatio: aspectRatioToUse,
-            language: voiceoverLanguage,
-            cameraMovement: cameraMovement
-          }
-        });
-
-        if (error) throw error;
+        let result: any;
+        if (MOCK_VIDEO_GENERATION) {
+          result = await mockGenerateFullVideo(scriptToUse);
+        } else {
+          const { data, error } = await supabase.functions.invoke('generate-video-from-script', {
+            body: {
+              campaignId,
+              script: scriptToUse,
+              duration: durationToUse,
+              aspectRatio: aspectRatioToUse,
+              language: voiceoverLanguage,
+              cameraMovement: cameraMovement
+            }
+          });
+          if (error) throw error;
+          result = data;
+        }
 
         if (result?.videoUrl) {
           const thumbnailUrl = await generateVideoThumbnail(result.videoUrl);
@@ -661,18 +677,23 @@ export default function ScriptSelection() {
         duration: 60000
       });
 
-      const { data: result, error } = await supabase.functions.invoke('generate-video-scene', {
-        body: {
-          campaignId,
-          sceneNumber,
-          duration: videoDuration,
-          aspectRatio: videoAspectRatio,
-          language: voiceoverLanguage,
-          cameraMovement: cameraMovement
-        }
-      });
-
-      if (error) throw error;
+      let result: any;
+      if (MOCK_VIDEO_GENERATION) {
+        result = await mockGenerateScene(sceneNumber);
+      } else {
+        const { data, error } = await supabase.functions.invoke('generate-video-scene', {
+          body: {
+            campaignId,
+            sceneNumber,
+            duration: videoDuration,
+            aspectRatio: videoAspectRatio,
+            language: voiceoverLanguage,
+            cameraMovement: cameraMovement
+          }
+        });
+        if (error) throw error;
+        result = data;
+      }
 
       if (result?.videoUrl) {
         // Update the video version with the new scene video
