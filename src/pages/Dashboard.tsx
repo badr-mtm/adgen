@@ -246,72 +246,29 @@ const Dashboard = () => {
                   </>
                 ))}
 
-                {/* Simulation beacons when no active campaigns - 2 US spots */}
-                {campaignLocations.length === 0 && <>
-                    {/* California spot */}
-                    <CircleMarker center={[36.7783, -119.4179]} radius={25} pathOptions={{
-                      fillColor: 'hsl(var(--primary))',
-                      fillOpacity: 0.15,
-                      color: 'hsl(var(--primary))',
-                      weight: 2,
-                      className: 'animate-ping'
-                    }} />
-                    <CircleMarker center={[36.7783, -119.4179]} radius={12} pathOptions={{
-                      fillColor: 'hsl(var(--primary))',
-                      fillOpacity: 0.7,
-                      color: 'hsl(var(--background))',
-                      weight: 3,
-                      className: 'animate-pulse'
-                    }}>
-                      <Popup>
-                        <div className="p-2">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                            <p className="font-bold text-[10px] uppercase tracking-widest text-primary">Live Broadcast</p>
-                          </div>
-                          <p className="font-bold text-sm text-foreground">Demo Campaign</p>
-                          <p className="text-xs text-muted-foreground mt-1">California, US</p>
-                        </div>
-                      </Popup>
-                    </CircleMarker>
-                    {/* New York spot */}
-                    <CircleMarker center={[40.7128, -74.0060]} radius={25} pathOptions={{
-                      fillColor: 'hsl(var(--primary))',
-                      fillOpacity: 0.15,
-                      color: 'hsl(var(--primary))',
-                      weight: 2,
-                      className: 'animate-ping'
-                    }} />
-                    <CircleMarker center={[40.7128, -74.0060]} radius={12} pathOptions={{
-                      fillColor: 'hsl(var(--primary))',
-                      fillOpacity: 0.7,
-                      color: 'hsl(var(--background))',
-                      weight: 3,
-                      className: 'animate-pulse'
-                    }}>
-                      <Popup>
-                        <div className="p-2">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                            <p className="font-bold text-[10px] uppercase tracking-widest text-primary">Live Broadcast</p>
-                          </div>
-                          <p className="font-bold text-sm text-foreground">Demo Campaign</p>
-                          <p className="text-xs text-muted-foreground mt-1">New York, US</p>
-                        </div>
-                      </Popup>
-                    </CircleMarker>
-                  </>}
-
                 <LeafletGeoJSON data={usStatesData as any} style={feature => {
                 const isActive = activeStateNames.has(feature?.properties?.name);
                 return {
                   fillColor: isActive ? 'hsl(var(--primary))' : 'transparent',
-                  weight: isActive ? 1.5 : 0.5,
+                  weight: isActive ? 2 : 0,
                   opacity: 1,
-                  color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--border))',
-                  dashArray: isActive ? '' : '3',
-                  fillOpacity: isActive ? 0.3 : 0
+                  color: isActive ? 'hsl(var(--primary))' : 'transparent',
+                  fillOpacity: isActive ? 0.35 : 0
                 };
+              }} onEachFeature={(feature, layer) => {
+                const isActive = activeStateNames.has(feature?.properties?.name);
+                if (isActive) {
+                  layer.bindPopup(`
+                    <div style="padding: 8px;">
+                      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <div style="height: 8px; width: 8px; border-radius: 50%; background: hsl(var(--primary));"></div>
+                        <p style="font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: hsl(var(--primary));">Live Broadcast</p>
+                      </div>
+                      <p style="font-weight: 700; font-size: 14px;">Demo Campaign</p>
+                      <p style="font-size: 12px; color: #888; margin-top: 4px;">${feature.properties.name}, US</p>
+                    </div>
+                  `);
+                }
               }} />
               </MapContainer>
             </div>
