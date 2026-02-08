@@ -467,7 +467,18 @@ const Dashboard = () => {
               </div>
 
               {/* Budget Status */}
-              <div className="pb-4 border-b border-border/30">
+              {/* Total Spend Highlight */}
+              <div className="text-center py-3 pb-4 border-b border-border/30">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Total Spend</p>
+                <p className="text-4xl font-black tracking-tight text-foreground">$24,850</p>
+                <div className="flex items-center justify-center gap-1.5 mt-1">
+                  <TrendingUp className="h-3 w-3 text-emerald-500" />
+                  <span className="text-xs font-bold text-emerald-500">+12.4%</span>
+                  <span className="text-xs text-muted-foreground">vs last month</span>
+                </div>
+              </div>
+
+              <div className="pt-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Budget Used</span>
                   <span className="text-xs font-bold text-foreground">78%</span>
@@ -478,17 +489,6 @@ const Dashboard = () => {
                 <div className="flex justify-between mt-2 text-xs text-muted-foreground">
                   <span>$24,850 spent</span>
                   <span>$31,850 budget</span>
-                </div>
-              </div>
-
-              {/* Total Spend Highlight */}
-              <div className="text-center py-3">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Total Spend</p>
-                <p className="text-4xl font-black tracking-tight text-foreground">$24,850</p>
-                <div className="flex items-center justify-center gap-1.5 mt-1">
-                  <TrendingUp className="h-3 w-3 text-emerald-500" />
-                  <span className="text-xs font-bold text-emerald-500">+12.4%</span>
-                  <span className="text-xs text-muted-foreground">vs last month</span>
                 </div>
               </div>
 
