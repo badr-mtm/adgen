@@ -175,7 +175,7 @@ const Dashboard = () => {
 
             {/* Live Map Foundation - Seamless Tiling */}
             <div className="absolute inset-0 z-0">
-              <MapContainer center={[20, 0]} zoom={2} minZoom={2} maxZoom={6} worldCopyJump={true} style={{
+              <MapContainer center={[39.5, -98.35]} zoom={4} minZoom={2} maxZoom={6} worldCopyJump={true} style={{
               height: "100%",
               width: "100%",
               background: 'hsl(var(--card))'
