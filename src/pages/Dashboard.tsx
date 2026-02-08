@@ -114,7 +114,7 @@ const Dashboard = () => {
 
     // Simulated default active states when no real campaign data
     if (stateNames.size === 0) {
-      ["California", "Texas", "New York", "Florida", "Illinois", "Georgia", "Ohio"].forEach(s => stateNames.add(s));
+      ["California", "New York"].forEach(s => stateNames.add(s));
     }
 
     return stateNames;
