@@ -496,16 +496,16 @@ const StatCard = ({
   color
 }: any) => <Card className="border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden relative group hover:border-primary/30 transition-all">
     <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
-    <CardContent className="p-4 relative">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-medium text-muted-foreground">{title}</p>
-        <div className="p-1.5 bg-background/80 rounded-md border border-border shadow-sm">
+    <CardContent className="px-3 py-2.5 relative">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[11px] font-medium text-muted-foreground">{title}</p>
+        <div className="p-1 bg-background/80 rounded-md border border-border shadow-sm [&>svg]:h-4 [&>svg]:w-4">
           {icon}
         </div>
       </div>
-      <h4 className="text-2xl font-bold tracking-tight text-foreground">{value}</h4>
-      <div className="flex items-center gap-1.5 mt-1.5">
-        <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+      <h4 className="text-xl font-bold tracking-tight text-foreground">{value}</h4>
+      <div className="flex items-center gap-1.5 mt-1">
+        <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1 py-0.5 rounded border border-emerald-500/20">
           {trend}
         </div>
         <span className="text-[10px] text-muted-foreground">vs 30d</span>
