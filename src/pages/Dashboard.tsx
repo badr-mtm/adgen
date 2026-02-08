@@ -466,6 +466,21 @@ const Dashboard = () => {
                 <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-primary/30 text-primary">This Month</Badge>
               </div>
 
+              {/* Budget Status */}
+              <div className="pb-4 border-b border-border/30">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Budget Used</span>
+                  <span className="text-xs font-bold text-foreground">78%</span>
+                </div>
+                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: '78%' }} />
+                </div>
+                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                  <span>$24,850 spent</span>
+                  <span>$31,850 budget</span>
+                </div>
+              </div>
+
               {/* Total Spend Highlight */}
               <div className="text-center py-3">
                 <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Total Spend</p>
@@ -483,21 +498,6 @@ const Dashboard = () => {
                 <SpendRow label="Production" amount="$6,400" percentage={26} color="bg-blue-500" />
                 <SpendRow label="Distribution" amount="$3,100" percentage={12} color="bg-amber-500" />
                 <SpendRow label="Analytics" amount="$1,150" percentage={5} color="bg-purple-500" />
-              </div>
-
-              {/* Budget Status */}
-              <div className="pt-4 border-t border-border/30">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Budget Used</span>
-                  <span className="text-xs font-bold text-foreground">78%</span>
-                </div>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: '78%' }} />
-                </div>
-                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                  <span>$24,850 spent</span>
-                  <span>$31,850 budget</span>
-                </div>
               </div>
             </div>
           </ScrollReveal>
