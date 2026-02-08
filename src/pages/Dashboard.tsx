@@ -436,32 +436,45 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Quick Actions Panel */}
+          {/* Spendings Panel */}
           <ScrollReveal direction="left" duration={0.5} delay={0.4}>
-            <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-6 backdrop-blur-sm">
-              <h3 className="font-bold text-lg">Quick Actions</h3>
-
-              <div className="grid gap-3">
-                <QuickAction icon={<Tv className="h-5 w-5" />} label="Generate New Ad" desc="Create a new TV advertisement" onClick={() => navigate("/create")} />
-                <QuickAction icon={<BarChart3 className="h-5 w-5" />} label="Check Attribution" desc="Analyze pixel performance" onClick={() => navigate("/integrations")} />
-                <QuickAction icon={<Globe className="h-5 w-5" />} label="Global Inventory" desc="View real-time network availability" onClick={() => navigate("/campaigns")} />
+            <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-5 backdrop-blur-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg">Spendings</h3>
+                <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-primary/30 text-primary">This Month</Badge>
               </div>
 
+              {/* Total Spend Highlight */}
+              <div className="text-center py-3">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Total Spend</p>
+                <p className="text-4xl font-black tracking-tight text-foreground">$24,850</p>
+                <div className="flex items-center justify-center gap-1.5 mt-1">
+                  <TrendingUp className="h-3 w-3 text-emerald-500" />
+                  <span className="text-xs font-bold text-emerald-500">+12.4%</span>
+                  <span className="text-xs text-muted-foreground">vs last month</span>
+                </div>
+              </div>
+
+              {/* Spend Breakdown */}
+              <div className="space-y-3">
+                <SpendRow label="Media Buying" amount="$14,200" percentage={57} color="bg-primary" />
+                <SpendRow label="Production" amount="$6,400" percentage={26} color="bg-blue-500" />
+                <SpendRow label="Distribution" amount="$3,100" percentage={12} color="bg-amber-500" />
+                <SpendRow label="Analytics" amount="$1,150" percentage={5} color="bg-purple-500" />
+              </div>
+
+              {/* Budget Status */}
               <div className="pt-4 border-t border-border/30">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">System Status</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-green-500" /> API Gateway</span>
-                    <span className="text-green-500 font-mono">99.9%</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-green-500" /> Rendering Engine</span>
-                    <span className="text-green-500 font-mono">Idle</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-yellow-500" /> DSP Connection</span>
-                    <span className="text-yellow-500 font-mono">Syncing</span>
-                  </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Budget Used</span>
+                  <span className="text-xs font-bold text-foreground">78%</span>
+                </div>
+                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: '78%' }} />
+                </div>
+                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                  <span>$24,850 spent</span>
+                  <span>$31,850 budget</span>
                 </div>
               </div>
             </div>
@@ -483,37 +496,33 @@ const StatCard = ({
   color
 }: any) => <Card className="border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden relative group hover:border-primary/30 transition-all">
     <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
-    <CardContent className="p-6 relative">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <h4 className="text-3xl font-bold mt-1 tracking-tight text-foreground">{value}</h4>
-        </div>
-        <div className="p-2 bg-background/80 rounded-lg border border-border shadow-sm">
+    <CardContent className="p-4 relative">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-medium text-muted-foreground">{title}</p>
+        <div className="p-1.5 bg-background/80 rounded-md border border-border shadow-sm">
           {icon}
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+      <h4 className="text-2xl font-bold tracking-tight text-foreground">{value}</h4>
+      <div className="flex items-center gap-1.5 mt-1.5">
+        <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
           {trend}
         </div>
-        <span className="text-xs text-muted-foreground">vs last 30 days</span>
+        <span className="text-[10px] text-muted-foreground">vs 30d</span>
       </div>
     </CardContent>
   </Card>;
-const QuickAction = ({
-  icon,
-  label,
-  desc,
-  onClick
-}: any) => <button onClick={onClick} className="flex items-center gap-4 p-3 rounded-xl bg-background/80 hover:bg-accent border border-border/50 hover:border-primary transition-all duration-300 ease-out text-left group w-full hover:-translate-y-1">
-    <div className="h-10 w-10 rounded-lg bg-card flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors border border-border shadow-sm group-hover:scale-110 group-hover:border-primary/50">
-      {icon}
+
+const SpendRow = ({ label, amount, percentage, color }: { label: string; amount: string; percentage: number; color: string }) => (
+  <div className="space-y-1.5">
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold text-foreground">{amount}</span>
     </div>
-    <div>
-      <h4 className="font-semibold text-sm group-hover:text-primary transition-colors text-foreground">{label}</h4>
-      <p className="text-xs text-muted-foreground">{desc}</p>
+    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+      <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${percentage}%` }} />
     </div>
-    <ArrowUpRight className="h-4 w-4 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
-  </button>;
+  </div>
+);
+
 export default Dashboard;
