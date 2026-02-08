@@ -2,78 +2,84 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { 
   TrendingUp, 
-  Radio, 
+  Eye, 
   Users, 
   Target, 
   CheckCircle2, 
   BarChart3,
-  ArrowUpRight,
-  Activity
+  Activity,
+  Film,
+  Popcorn,
+  Swords,
+  Laugh,
+  BookOpen,
+  Sparkles
 } from "lucide-react";
 
-interface NetworkPerformance {
-  network: string;
-  spots: number;
-  grp: number;
+interface GenrePerformance {
+  genre: string;
+  icon: React.ElementType;
+  impressions: string;
+  vcr: string;
   reach: string;
-  cpp: string;
-  status: "on-air" | "scheduled" | "completed";
+  cpm: string;
+}
+
+interface AudienceSegment {
+  cohort: string;
+  reach: string;
+  index: number;
+  trend: "up" | "down" | "flat";
 }
 
 interface CampaignPerformancePanelProps {
-  totalGRP: number;
-  reachPercent: number;
+  totalImpressions: string;
+  vcr: number;
+  uniqueReach: string;
   avgFrequency: number;
-  costPerPoint: string;
-  spotCompletion: number;
-  attributionLift: string;
-  networks: NetworkPerformance[];
+  cpm: string;
+  brandLift: string;
+  genres: GenrePerformance[];
+  audiences: AudienceSegment[];
 }
 
-const defaultNetworks: NetworkPerformance[] = [
-  { network: "Hulu", spots: 342, grp: 48.2, reach: "18.4%", cpp: "$1,240", status: "on-air" },
-  { network: "Roku Channel", spots: 218, grp: 32.6, reach: "12.1%", cpp: "$980", status: "on-air" },
-  { network: "Samsung TV Plus", spots: 186, grp: 28.4, reach: "10.8%", cpp: "$860", status: "on-air" },
-  { network: "Peacock", spots: 154, grp: 22.1, reach: "8.6%", cpp: "$1,120", status: "scheduled" },
-  { network: "Amazon Fire TV", spots: 128, grp: 18.7, reach: "7.2%", cpp: "$1,380", status: "completed" },
+const defaultGenres: GenrePerformance[] = [
+  { genre: "Drama", icon: Film, impressions: "4.2M", vcr: "94.8%", reach: "18.6%", cpm: "$28.40" },
+  { genre: "Action", icon: Swords, impressions: "3.8M", vcr: "91.2%", reach: "16.1%", cpm: "$32.10" },
+  { genre: "Comedy", icon: Laugh, impressions: "2.9M", vcr: "96.4%", reach: "12.8%", cpm: "$24.60" },
+  { genre: "Documentary", icon: BookOpen, impressions: "1.6M", vcr: "97.1%", reach: "7.4%", cpm: "$22.80" },
+  { genre: "Reality", icon: Sparkles, impressions: "2.1M", vcr: "89.6%", reach: "9.2%", cpm: "$19.40" },
+];
+
+const defaultAudiences: AudienceSegment[] = [
+  { cohort: "18–24", reach: "22.4%", index: 142, trend: "up" },
+  { cohort: "25–34", reach: "31.8%", index: 128, trend: "up" },
+  { cohort: "35–49", reach: "26.2%", index: 108, trend: "flat" },
+  { cohort: "50+", reach: "14.6%", index: 86, trend: "down" },
 ];
 
 const defaultProps: CampaignPerformancePanelProps = {
-  totalGRP: 150.0,
-  reachPercent: 57.1,
-  avgFrequency: 3.8,
-  costPerPoint: "$1,096",
-  spotCompletion: 94.2,
-  attributionLift: "+12.4%",
-  networks: defaultNetworks,
+  totalImpressions: "14.6M",
+  vcr: 93.4,
+  uniqueReach: "8.2M",
+  avgFrequency: 3.4,
+  cpm: "$26.80",
+  brandLift: "+8.6%",
+  genres: defaultGenres,
+  audiences: defaultAudiences,
 };
 
 export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanelProps>) {
   const data = { ...defaultProps, ...props };
 
   const kpis = [
-    { label: "Total GRP", value: data.totalGRP.toFixed(1), icon: BarChart3, color: "text-primary" },
-    { label: "Reach", value: `${data.reachPercent}%`, icon: Users, color: "text-blue-500" },
-    { label: "Avg Frequency", value: data.avgFrequency.toFixed(1), icon: Radio, color: "text-amber-500" },
-    { label: "CPP", value: data.costPerPoint, icon: Target, color: "text-purple-500" },
-    { label: "Spot Completion", value: `${data.spotCompletion}%`, icon: CheckCircle2, color: "text-emerald-500" },
-    { label: "Attribution Lift", value: data.attributionLift, icon: TrendingUp, color: "text-indigo-500" },
+    { label: "Impressions", value: data.totalImpressions, icon: Eye, color: "text-primary" },
+    { label: "VCR", value: `${data.vcr}%`, icon: CheckCircle2, color: "text-emerald-500" },
+    { label: "Unique Reach", value: data.uniqueReach, icon: Users, color: "text-blue-500" },
+    { label: "Avg Frequency", value: data.avgFrequency.toFixed(1), icon: Target, color: "text-amber-500" },
+    { label: "CPM", value: data.cpm, icon: BarChart3, color: "text-purple-500" },
+    { label: "Brand Lift", value: data.brandLift, icon: TrendingUp, color: "text-indigo-500" },
   ];
-
-  const statusConfig: Record<string, { label: string; className: string }> = {
-    "on-air": { 
-      label: "On-Air", 
-      className: "text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10" 
-    },
-    "scheduled": { 
-      label: "Scheduled", 
-      className: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10" 
-    },
-    "completed": { 
-      label: "Completed", 
-      className: "text-muted-foreground border-border bg-muted/50" 
-    },
-  };
 
   return (
     <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-5 backdrop-blur-sm">
@@ -107,53 +113,70 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
         ))}
       </div>
 
-      {/* Network Performance Table */}
+      {/* Content Genre Performance Table */}
       <div className="space-y-2">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Performance by Network</h4>
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Performance by Content Genre</h4>
         
         {/* Table Header */}
-        <div className="grid grid-cols-[1.5fr_0.7fr_0.7fr_0.7fr_0.8fr_0.8fr] gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50">
-          <span>Network</span>
-          <span className="text-right">Spots</span>
-          <span className="text-right">GRP</span>
+        <div className="grid grid-cols-[1.5fr_0.8fr_0.6fr_0.7fr_0.7fr] gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50">
+          <span>Genre</span>
+          <span className="text-right">Impressions</span>
+          <span className="text-right">VCR</span>
           <span className="text-right">Reach</span>
-          <span className="text-right">CPP</span>
-          <span className="text-right">Status</span>
+          <span className="text-right">CPM</span>
         </div>
 
         {/* Table Rows */}
-        {data.networks.map((network, i) => (
-          <motion.div
-            key={network.network}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 + i * 0.06 }}
-            className="grid grid-cols-[1.5fr_0.7fr_0.7fr_0.7fr_0.8fr_0.8fr] gap-2 px-3 py-2.5 rounded-lg hover:bg-accent/50 transition-colors group items-center"
-          >
-            <div className="flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${network.status === 'on-air' ? 'bg-emerald-500 animate-pulse' : network.status === 'scheduled' ? 'bg-amber-500' : 'bg-muted-foreground/40'}`} />
-              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{network.network}</span>
-            </div>
-            <span className="text-sm text-right text-foreground font-medium tabular-nums">{network.spots}</span>
-            <span className="text-sm text-right text-foreground font-medium tabular-nums">{network.grp}</span>
-            <span className="text-sm text-right text-foreground font-medium tabular-nums">{network.reach}</span>
-            <span className="text-sm text-right text-foreground font-medium tabular-nums">{network.cpp}</span>
-            <div className="flex justify-end">
-              <Badge 
-                variant="outline" 
-                className={`text-[9px] h-5 ${statusConfig[network.status]?.className || ''}`}
-              >
-                {network.status === 'on-air' && (
-                  <span className="mr-1 relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+        {data.genres.map((genre, i) => {
+          const GenreIcon = genre.icon;
+          return (
+            <motion.div
+              key={genre.genre}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 + i * 0.06 }}
+              className="grid grid-cols-[1.5fr_0.8fr_0.6fr_0.7fr_0.7fr] gap-2 px-3 py-2.5 rounded-lg hover:bg-accent/50 transition-colors group items-center"
+            >
+              <div className="flex items-center gap-2">
+                <GenreIcon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{genre.genre}</span>
+              </div>
+              <span className="text-sm text-right text-foreground font-medium tabular-nums">{genre.impressions}</span>
+              <span className="text-sm text-right text-foreground font-medium tabular-nums">{genre.vcr}</span>
+              <span className="text-sm text-right text-foreground font-medium tabular-nums">{genre.reach}</span>
+              <span className="text-sm text-right text-foreground font-medium tabular-nums">{genre.cpm}</span>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Audience Segments */}
+      <div className="space-y-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Audience Segments</h4>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {data.audiences.map((seg, i) => (
+            <motion.div
+              key={seg.cohort}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 + i * 0.06 }}
+              className="bg-background/60 border border-border/50 rounded-xl p-3 hover:border-primary/30 transition-all"
+            >
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">{seg.cohort}</p>
+              <div className="flex items-baseline justify-between">
+                <span className="text-base font-black text-foreground">{seg.reach}</span>
+                <div className="flex items-center gap-1">
+                  <span className={`text-[10px] font-bold ${seg.index >= 110 ? 'text-emerald-500' : seg.index >= 95 ? 'text-muted-foreground' : 'text-amber-500'}`}>
+                    {seg.index}
                   </span>
-                )}
-                {statusConfig[network.status]?.label}
-              </Badge>
-            </div>
-          </motion.div>
-        ))}
+                  {seg.trend === "up" && <TrendingUp className="h-3 w-3 text-emerald-500" />}
+                  {seg.trend === "down" && <TrendingUp className="h-3 w-3 text-amber-500 rotate-180" />}
+                </div>
+              </div>
+              <p className="text-[9px] text-muted-foreground mt-0.5">engagement idx</p>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );
