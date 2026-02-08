@@ -89,14 +89,36 @@ const Dashboard = () => {
     });
   }, [activeCampaigns]);
 
-  // Derive active regions (names) from campaigns for GeoJSON highlighting
-  const activeRegions = useMemo(() => {
-    const locations = activeCampaigns.flatMap(c => {
+  // Derive active US state names from campaigns for GeoJSON highlighting
+  const activeStateNames = useMemo(() => {
+    const allLocations = allCampaigns.flatMap(c => {
       const audience = c.target_audience as any;
       return audience?.locations || [];
     });
-    return new Set(locations); // Set for fast lookup
-  }, [activeCampaigns]);
+
+    // Extract state names: "California, US" → "California", "New York, US" → "New York"
+    const stateNames = new Set<string>();
+    allLocations.forEach((loc: string) => {
+      // If location is "United States" → all states are active
+      if (loc.toLowerCase() === "united states") {
+        // Add all US states from GeoJSON
+        (usStatesData as any).features?.forEach((f: any) => stateNames.add(f.properties.name));
+        return;
+      }
+      // Extract state name before comma: "California, US" → "California"
+      const parts = loc.split(",");
+      if (parts.length >= 2 && parts[1].trim().toUpperCase() === "US") {
+        stateNames.add(parts[0].trim());
+      }
+    });
+
+    // Simulated default active states when no real campaign data
+    if (stateNames.size === 0) {
+      ["California", "Texas", "New York", "Florida", "Illinois", "Georgia", "Ohio"].forEach(s => stateNames.add(s));
+    }
+
+    return stateNames;
+  }, [allCampaigns]);
 
   // Calculate real KPI stats from campaigns
   const kpiStats = useMemo(() => {
@@ -247,14 +269,14 @@ const Dashboard = () => {
                   </>}
 
                 <LeafletGeoJSON data={usStatesData as any} style={feature => {
-                const isActive = activeRegions.has(feature?.properties?.name);
+                const isActive = activeStateNames.has(feature?.properties?.name);
                 return {
                   fillColor: isActive ? 'hsl(var(--primary))' : 'transparent',
-                  weight: isActive ? 1 : 0.5,
+                  weight: isActive ? 1.5 : 0.5,
                   opacity: 1,
                   color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--border))',
                   dashArray: isActive ? '' : '3',
-                  fillOpacity: isActive ? 0.25 : 0
+                  fillOpacity: isActive ? 0.3 : 0
                 };
               }} />
               </MapContainer>
