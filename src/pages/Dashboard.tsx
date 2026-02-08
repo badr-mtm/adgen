@@ -116,7 +116,6 @@ const Dashboard = () => {
     if (stateNames.size === 0) {
       ["California", "New York"].forEach(s => stateNames.add(s));
     }
-
     return stateNames;
   }, [allCampaigns]);
 
@@ -204,34 +203,23 @@ const Dashboard = () => {
             }} zoomControl={false} attributionControl={false}>
                 <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png" noWrap={false} />
 
-                {campaignLocations.map((loc: any, idx: number) => (
-                  <>
+                {campaignLocations.map((loc: any, idx: number) => <>
                     {/* Outer pulsing ring for active spots */}
-                    <CircleMarker 
-                      key={`pulse-${loc.name}-${idx}`} 
-                      center={[loc.lat, loc.lng]} 
-                      radius={25} 
-                      pathOptions={{
-                        fillColor: 'hsl(var(--primary))',
-                        fillOpacity: 0.15,
-                        color: 'hsl(var(--primary))',
-                        weight: 2,
-                        className: 'animate-ping'
-                      }}
-                    />
+                    <CircleMarker key={`pulse-${loc.name}-${idx}`} center={[loc.lat, loc.lng]} radius={25} pathOptions={{
+                  fillColor: 'hsl(var(--primary))',
+                  fillOpacity: 0.15,
+                  color: 'hsl(var(--primary))',
+                  weight: 2,
+                  className: 'animate-ping'
+                }} />
                     {/* Main active spot marker */}
-                    <CircleMarker 
-                      key={`${loc.name}-${idx}`} 
-                      center={[loc.lat, loc.lng]} 
-                      radius={12} 
-                      pathOptions={{
-                        fillColor: 'hsl(var(--primary))',
-                        fillOpacity: 0.7,
-                        color: 'hsl(var(--background))',
-                        weight: 3,
-                        className: 'animate-pulse'
-                      }}
-                    >
+                    <CircleMarker key={`${loc.name}-${idx}`} center={[loc.lat, loc.lng]} radius={12} pathOptions={{
+                  fillColor: 'hsl(var(--primary))',
+                  fillOpacity: 0.7,
+                  color: 'hsl(var(--background))',
+                  weight: 3,
+                  className: 'animate-pulse'
+                }}>
                       <Popup>
                         <div className="p-2">
                           <div className="flex items-center gap-2 mb-2">
@@ -243,8 +231,7 @@ const Dashboard = () => {
                         </div>
                       </Popup>
                     </CircleMarker>
-                  </>
-                ))}
+                  </>)}
 
                 <LeafletGeoJSON data={usStatesData as any} style={feature => {
                 const isActive = activeStateNames.has(feature?.properties?.name);
@@ -357,62 +344,43 @@ const Dashboard = () => {
                         Create your first campaign
                       </Button>}
                   </div> : filteredCampaigns.map((campaign, i) => {
-                    // Extract video URL from storyboard
-                    const storyboard = campaign.storyboard as any;
-                    const videoUrl = storyboard?.selectedScript?.generatedVideoUrl || 
-                                     storyboard?.generatedVideoUrl || 
-                                     storyboard?.videoUrl || null;
-                    
-                    return (
-                      <motion.div 
-                        key={campaign.id} 
-                        initial={{ opacity: 0, x: -20 }} 
-                        animate={{ opacity: 1, x: 0 }} 
-                        transition={{ delay: 0.3 + i * 0.1 }} 
-                        className="group bg-background/50 border border-border/50 hover:border-primary rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer" 
-                        onClick={() => navigate(getCampaignRoute(campaign as any))}
-                      >
-                        <div 
-                          className="relative h-16 w-28 rounded-lg overflow-hidden bg-muted flex items-center justify-center"
-                          onMouseEnter={(e) => {
-                            const video = e.currentTarget.querySelector('video');
-                            if (video) video.play();
-                          }}
-                          onMouseLeave={(e) => {
-                            const video = e.currentTarget.querySelector('video');
-                            if (video) {
-                              video.pause();
-                              video.currentTime = 0;
-                            }
-                          }}
-                        >
-                          {videoUrl ? (
-                            <>
-                              <video 
-                                src={videoUrl} 
-                                className="absolute inset-0 w-full h-full object-cover"
-                                muted
-                                loop
-                                playsInline
-                                preload="metadata"
-                              />
+                // Extract video URL from storyboard
+                const storyboard = campaign.storyboard as any;
+                const videoUrl = storyboard?.selectedScript?.generatedVideoUrl || storyboard?.generatedVideoUrl || storyboard?.videoUrl || null;
+                return <motion.div key={campaign.id} initial={{
+                  opacity: 0,
+                  x: -20
+                }} animate={{
+                  opacity: 1,
+                  x: 0
+                }} transition={{
+                  delay: 0.3 + i * 0.1
+                }} className="group bg-background/50 border border-border/50 hover:border-primary rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer" onClick={() => navigate(getCampaignRoute(campaign as any))}>
+                        <div className="relative h-16 w-28 rounded-lg overflow-hidden bg-muted flex items-center justify-center" onMouseEnter={e => {
+                    const video = e.currentTarget.querySelector('video');
+                    if (video) video.play();
+                  }} onMouseLeave={e => {
+                    const video = e.currentTarget.querySelector('video');
+                    if (video) {
+                      video.pause();
+                      video.currentTime = 0;
+                    }
+                  }}>
+                          {videoUrl ? <>
+                              <video src={videoUrl} className="absolute inset-0 w-full h-full object-cover" muted loop playsInline preload="metadata" />
                               <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity">
                                 <div className="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center">
                                   <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-foreground border-b-[5px] border-b-transparent ml-0.5" />
                                 </div>
                               </div>
-                            </>
-                          ) : (
-                            <Tv className="h-6 w-6 text-muted-foreground" />
-                          )}
+                            </> : <Tv className="h-6 w-6 text-muted-foreground" />}
                           <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent pointer-events-none" />
                         </div>
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors text-foreground">{campaign.title}</h3>
-                            {isCampaignComplete(campaign as any) ? (
-                              <Badge variant="outline" className={`
+                            {isCampaignComplete(campaign as any) ? <Badge variant="outline" className={`
                                 ${campaign.status === 'live' ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : ''}
                                 ${campaign.status === 'scheduled' ? 'text-amber-600 dark:text-amber-400 border-amber-500/30' : ''}
                                 ${campaign.status === 'concept' ? 'text-blue-600 dark:text-blue-400 border-blue-500/30' : ''}
@@ -422,13 +390,10 @@ const Dashboard = () => {
                               `}>
                                 {campaign.status === 'live' && <span className="mr-1.5 relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span>}
                                 {campaign.status || 'draft'}
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 uppercase text-[10px] h-5 gap-1">
+                              </Badge> : <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 uppercase text-[10px] h-5 gap-1">
                                 <FileText className="h-3 w-3" />
                                 {getCampaignStageLabel(campaign as any)}
-                              </Badge>
-                            )}
+                              </Badge>}
                           </div>
                           <div className="flex items-center gap-4 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {getNetworkForCampaign(i)}</span>
@@ -442,9 +407,8 @@ const Dashboard = () => {
                             <ArrowUpRight className="h-5 w-5" />
                           </Button>
                         </div>
-                      </motion.div>
-                    );
-                  })}
+                      </motion.div>;
+              })}
               </div>
             </div>
           </div>
@@ -459,15 +423,7 @@ const Dashboard = () => {
 
               {/* Budget Status */}
               {/* Total Spend Highlight */}
-              <div className="text-center py-3 pb-4 border-b border-border/30">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Total Spend</p>
-                <p className="text-4xl font-black tracking-tight text-foreground">$24,850</p>
-                <div className="flex items-center justify-center gap-1.5 mt-1">
-                  <TrendingUp className="h-3 w-3 text-emerald-500" />
-                  <span className="text-xs font-bold text-emerald-500">+12.4%</span>
-                  <span className="text-xs text-muted-foreground">vs last month</span>
-                </div>
-              </div>
+              
 
               <div className="pt-4">
                 <div className="flex justify-between items-center mb-2">
@@ -475,7 +431,9 @@ const Dashboard = () => {
                   <span className="text-xs font-bold text-foreground">78%</span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: '78%' }} />
+                  <div className="h-full bg-primary rounded-full transition-all" style={{
+                  width: '78%'
+                }} />
                 </div>
                 <div className="flex justify-between mt-2 text-xs text-muted-foreground">
                   <span>$24,850 spent</span>
@@ -525,17 +483,25 @@ const StatCard = ({
       </div>
     </CardContent>
   </Card>;
-
-const SpendRow = ({ label, amount, percentage, color }: { label: string; amount: string; percentage: number; color: string }) => (
-  <div className="space-y-1.5">
+const SpendRow = ({
+  label,
+  amount,
+  percentage,
+  color
+}: {
+  label: string;
+  amount: string;
+  percentage: number;
+  color: string;
+}) => <div className="space-y-1.5">
     <div className="flex items-center justify-between text-sm">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-semibold text-foreground">{amount}</span>
     </div>
     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-      <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${percentage}%` }} />
+      <div className={`h-full ${color} rounded-full transition-all`} style={{
+      width: `${percentage}%`
+    }} />
     </div>
-  </div>
-);
-
+  </div>;
 export default Dashboard;
