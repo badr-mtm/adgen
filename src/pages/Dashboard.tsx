@@ -3,26 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { InteractiveGlobalMap } from "@/components/dashboard/InteractiveGlobalMap";
-import { getCampaignRoute, getCampaignStageLabel, isCampaignComplete } from "@/lib/campaignNavigation";
-import { Plus, Tv, Globe, Activity, Zap, BarChart3, ArrowUpRight, Clock, MapPin, TrendingUp, Signal, CheckCircle2, FileText, Play } from "lucide-react";
+import { Plus, Tv, Globe, Zap, BarChart3, Clock, TrendingUp, Signal, CheckCircle2 } from "lucide-react";
+import { CampaignPerformancePanel } from "@/components/dashboard/CampaignPerformancePanel";
+import { SpendIntelligencePanel } from "@/components/dashboard/SpendIntelligencePanel";
 
-// Network mapping for display
-const NETWORKS = ["Hulu", "Roku", "Samsung TV", "Apple TV+", "Amazon Fire"];
-const getNetworkForCampaign = (index: number) => NETWORKS[index % NETWORKS.length];
 
-// Region mapping for campaigns
-const REGION_MAPPING: Record<string, string[]> = {
-  na: ["north america", "usa", "us", "united states", "canada"],
-  eu: ["europe", "uk", "germany", "france", "spain", "italy"],
-  apac: ["asia", "pacific", "japan", "china", "australia", "india"],
-  latam: ["latin america", "brazil", "mexico", "argentina"]
-};
+
 
 // Leaflet
 import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON as LeafletGeoJSON } from 'react-leaflet';
@@ -146,17 +136,8 @@ const Dashboard = () => {
     };
   }, [allCampaigns]);
 
-  // Filter campaigns by selected region
-  const filteredCampaigns = useMemo(() => {
-    if (!selectedRegion) return allCampaigns.slice(0, 5);
-    const regionKeywords = REGION_MAPPING[selectedRegion] || [];
-    return allCampaigns.filter(campaign => {
-      const targetAudience = campaign.target_audience as any;
-      if (!targetAudience) return false;
-      const audienceStr = JSON.stringify(targetAudience).toLowerCase();
-      return regionKeywords.some(keyword => audienceStr.includes(keyword));
-    }).slice(0, 5);
-  }, [allCampaigns, selectedRegion]);
+
+
   if (loading) return <DashboardLayout>
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -320,136 +301,20 @@ const Dashboard = () => {
         </ScrollReveal>
 
         {/* On-Air Status & Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-          {/* Active Campaigns List */}
-          <div className="lg:col-span-2">
-            <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-4 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  On-Air Status
-                </h2>
-                <Button variant="link" className="text-muted-foreground" onClick={() => navigate("/campaigns")}>View All</Button>
-              </div>
-              <div className="space-y-3">
-                {filteredCampaigns.length === 0 ? <div className="text-center py-8 text-muted-foreground">
-                    <Tv className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                    <p className="text-sm">
-                      {selectedRegion ? `No campaigns in this region` : `No campaigns yet`}
-                    </p>
-                    {selectedRegion ? <Button variant="link" className="mt-2" onClick={() => setSelectedRegion(null)}>
-                        Clear filter
-                      </Button> : <Button variant="link" className="mt-2" onClick={() => navigate("/create")}>
-                        Create your first campaign
-                      </Button>}
-                  </div> : filteredCampaigns.map((campaign, i) => {
-                // Extract video URL from storyboard
-                const storyboard = campaign.storyboard as any;
-                const videoUrl = storyboard?.selectedScript?.generatedVideoUrl || storyboard?.generatedVideoUrl || storyboard?.videoUrl || null;
-                return <motion.div key={campaign.id} initial={{
-                  opacity: 0,
-                  x: -20
-                }} animate={{
-                  opacity: 1,
-                  x: 0
-                }} transition={{
-                  delay: 0.3 + i * 0.1
-                }} className="group bg-background/50 border border-border/50 hover:border-primary rounded-xl p-3 flex items-center gap-4 transition-all cursor-pointer" onClick={() => navigate(getCampaignRoute(campaign as any))}>
-                        <div className="relative h-16 w-28 rounded-lg overflow-hidden bg-muted flex items-center justify-center" onMouseEnter={e => {
-                    const video = e.currentTarget.querySelector('video');
-                    if (video) video.play();
-                  }} onMouseLeave={e => {
-                    const video = e.currentTarget.querySelector('video');
-                    if (video) {
-                      video.pause();
-                      video.currentTime = 0;
-                    }
-                  }}>
-                          {videoUrl ? <>
-                              <video src={videoUrl} className="absolute inset-0 w-full h-full object-cover" muted loop playsInline preload="metadata" />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity">
-                                <div className="w-6 h-6 rounded-full bg-white/90 flex items-center justify-center">
-                                  <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-foreground border-b-[5px] border-b-transparent ml-0.5" />
-                                </div>
-                              </div>
-                            </> : <Tv className="h-6 w-6 text-muted-foreground" />}
-                          <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent pointer-events-none" />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors text-foreground">{campaign.title}</h3>
-                            {isCampaignComplete(campaign as any) ? <Badge variant="outline" className={`
-                                ${campaign.status === 'live' ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : ''}
-                                ${campaign.status === 'scheduled' ? 'text-amber-600 dark:text-amber-400 border-amber-500/30' : ''}
-                                ${campaign.status === 'concept' ? 'text-blue-600 dark:text-blue-400 border-blue-500/30' : ''}
-                                ${campaign.status === 'paused' || campaign.status === 'draft' ? 'text-muted-foreground border-border' : ''}
-                                ${campaign.status === 'video_generated' ? 'text-primary border-primary/30' : ''}
-                                uppercase text-[10px] h-5
-                              `}>
-                                {campaign.status === 'live' && <span className="mr-1.5 relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span>}
-                                {campaign.status || 'draft'}
-                              </Badge> : <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 uppercase text-[10px] h-5 gap-1">
-                                <FileText className="h-3 w-3" />
-                                {getCampaignStageLabel(campaign as any)}
-                              </Badge>}
-                          </div>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {getNetworkForCampaign(i)}</span>
-                            <span className="flex items-center gap-1 capitalize"><Activity className="h-3 w-3" /> {campaign.ad_type}</span>
-                            <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> {campaign.goal}</span>
-                          </div>
-                        </div>
-
-                        <div className="px-4">
-                          <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity text-foreground">
-                            <ArrowUpRight className="h-5 w-5" />
-                          </Button>
-                        </div>
-                      </motion.div>;
-              })}
-              </div>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Campaign Performance - 60% */}
+          <div className="lg:col-span-3">
+            <ScrollReveal direction="up" duration={0.5} delay={0.3}>
+              <CampaignPerformancePanel />
+            </ScrollReveal>
           </div>
 
-          {/* Spendings Panel */}
-          <ScrollReveal direction="left" duration={0.5} delay={0.4}>
-            <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-5 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg">Spendings</h3>
-                <Badge variant="outline" className="text-[10px] uppercase tracking-wider border-primary/30 text-primary">This Month</Badge>
-              </div>
-
-              {/* Budget Status */}
-              {/* Total Spend Highlight */}
-              
-
-              <div className="pt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Budget Used</span>
-                  <span className="text-xs font-bold text-foreground">78%</span>
-                </div>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all" style={{
-                  width: '78%'
-                }} />
-                </div>
-                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                  <span>$24,850 spent</span>
-                  <span>$31,850 budget</span>
-                </div>
-              </div>
-
-              {/* Spend Breakdown */}
-              <div className="space-y-3">
-                <SpendRow label="Media Buying" amount="$14,200" percentage={57} color="bg-primary" />
-                <SpendRow label="Production" amount="$6,400" percentage={26} color="bg-blue-500" />
-                <SpendRow label="Distribution" amount="$3,100" percentage={12} color="bg-amber-500" />
-                <SpendRow label="Analytics" amount="$1,150" percentage={5} color="bg-purple-500" />
-              </div>
-            </div>
-          </ScrollReveal>
+          {/* Spend Intelligence - 40% */}
+          <div className="lg:col-span-2">
+            <ScrollReveal direction="left" duration={0.5} delay={0.4}>
+              <SpendIntelligencePanel />
+            </ScrollReveal>
+          </div>
         </div>
 
 
@@ -483,25 +348,4 @@ const StatCard = ({
       </div>
     </CardContent>
   </Card>;
-const SpendRow = ({
-  label,
-  amount,
-  percentage,
-  color
-}: {
-  label: string;
-  amount: string;
-  percentage: number;
-  color: string;
-}) => <div className="space-y-1.5">
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-semibold text-foreground">{amount}</span>
-    </div>
-    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-      <div className={`h-full ${color} rounded-full transition-all`} style={{
-      width: `${percentage}%`
-    }} />
-    </div>
-  </div>;
 export default Dashboard;
