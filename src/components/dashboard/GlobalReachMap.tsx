@@ -319,13 +319,7 @@ const GlobalReachMap = ({
           <div className="h-2.5 w-5 rounded-sm bg-primary/25 border border-primary/40" />
           <span className="text-[10px] text-foreground/80">Coverage Area</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary text-[7px] font-bold text-primary-foreground">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
-            LIVE
-          </div>
-          <span className="text-[10px] text-foreground/80">Broadcasting</span>
-        </div>
+        
       </div>
 
       {/* Bottom metrics bar */}
