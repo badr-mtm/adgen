@@ -11,9 +11,6 @@ import { Plus, Tv, Globe, Zap, BarChart3, Clock, TrendingUp, Signal, CheckCircle
 import { CampaignPerformancePanel } from "@/components/dashboard/CampaignPerformancePanel";
 import { SpendIntelligencePanel } from "@/components/dashboard/SpendIntelligencePanel";
 
-
-
-
 // Leaflet
 import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON as LeafletGeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -135,9 +132,6 @@ const Dashboard = () => {
       liveSpots: liveCampaigns * 170 + 10
     };
   }, [allCampaigns]);
-
-
-
   if (loading) return <DashboardLayout>
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -292,12 +286,7 @@ const Dashboard = () => {
 
         {/* Key Performance Indicators - Real Data */}
         <ScrollReveal direction="up" duration={0.5} delay={0.2}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="Total Ad Spend" value={kpiStats.totalSpend} trend={kpiStats.spendTrend} icon={<Zap className="h-5 w-5 text-amber-500" />} color="from-amber-500/10 to-transparent" />
-            <StatCard title="Completed Views" value={kpiStats.completedViews} trend={kpiStats.viewsTrend} icon={<Tv className="h-5 w-5 text-primary" />} color="from-primary/10 to-transparent" />
-            <StatCard title="Avg. Lift Rate" value={kpiStats.liftRate} trend={kpiStats.liftTrend} icon={<TrendingUp className="h-5 w-5 text-indigo-500" />} color="from-indigo-500/10 to-transparent" />
-            <StatCard title="Compliance Score" value={kpiStats.complianceScore} trend={kpiStats.complianceTrend} icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />} color="from-emerald-500/10 to-transparent" />
-          </div>
+          
         </ScrollReveal>
 
         {/* On-Air Status & Quick Actions */}
