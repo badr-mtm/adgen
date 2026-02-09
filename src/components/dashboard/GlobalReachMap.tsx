@@ -315,10 +315,7 @@ const GlobalReachMap = ({
           <div className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.5)]" />
           <span className="text-[10px] text-foreground/80">Active Spot</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="h-2.5 w-5 rounded-sm bg-primary/25 border border-primary/40" />
-          <span className="text-[10px] text-foreground/80">Coverage Area</span>
-        </div>
+        
         
       </div>
 
