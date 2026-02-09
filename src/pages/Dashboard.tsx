@@ -286,7 +286,7 @@ const Dashboard = () => {
 
         {/* Key Performance Indicators - Real Data */}
         <ScrollReveal direction="up" duration={0.5} delay={0.2}>
-          
+          <div />
         </ScrollReveal>
 
         {/* On-Air Status & Quick Actions */}
