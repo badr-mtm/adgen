@@ -1,10 +1,110 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Globe, Radio } from "lucide-react";
-import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON as LeafletGeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON as LeafletGeoJSON, Marker } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LOCATION_DATA } from "@/lib/locations";
 import usStatesData from "@/lib/us-states.json";
+
+/* Animated LIVE badge as a Leaflet DivIcon */
+const createLiveIcon = () => L.divIcon({
+  className: '',
+  iconSize: [52, 24],
+  iconAnchor: [26, 12],
+  html: `
+    <div style="
+      display: flex; align-items: center; gap: 4px;
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      padding: 3px 10px 3px 7px;
+      border-radius: 9999px;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      box-shadow: 0 0 12px hsl(var(--primary) / 0.5), 0 2px 8px rgba(0,0,0,0.25);
+      white-space: nowrap;
+      pointer-events: none;
+      animation: liveBadgePulse 2s ease-in-out infinite;
+    ">
+      <span style="
+        display: inline-block;
+        height: 6px; width: 6px;
+        border-radius: 50%;
+        background: hsl(var(--primary-foreground));
+        animation: liveDot 1.5s ease-in-out infinite;
+      "></span>
+      LIVE
+    </div>
+    <style>
+      @keyframes liveBadgePulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.08); opacity: 0.9; }
+      }
+      @keyframes liveDot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+    </style>
+  `
+});
+
+/* Approximate US state centroids for LIVE badge placement */
+const STATE_CENTROIDS: Record<string, [number, number]> = {
+  "Alabama": [32.806671, -86.791130],
+  "Alaska": [61.370716, -152.404419],
+  "Arizona": [33.729759, -111.431221],
+  "Arkansas": [34.969704, -92.373123],
+  "California": [36.116203, -119.681564],
+  "Colorado": [39.059811, -105.311104],
+  "Connecticut": [41.597782, -72.755371],
+  "Delaware": [39.318523, -75.507141],
+  "Florida": [27.766279, -81.686783],
+  "Georgia": [33.040619, -83.643074],
+  "Hawaii": [21.094318, -157.498337],
+  "Idaho": [44.240459, -114.478828],
+  "Illinois": [40.349457, -88.986137],
+  "Indiana": [39.849426, -86.258278],
+  "Iowa": [42.011539, -93.210526],
+  "Kansas": [38.526600, -96.726486],
+  "Kentucky": [37.668140, -84.670067],
+  "Louisiana": [31.169546, -91.867805],
+  "Maine": [44.693947, -69.381927],
+  "Maryland": [39.063946, -76.802101],
+  "Massachusetts": [42.230171, -71.530106],
+  "Michigan": [43.326618, -84.536095],
+  "Minnesota": [45.694454, -93.900192],
+  "Mississippi": [32.741646, -89.678696],
+  "Missouri": [38.456085, -92.288368],
+  "Montana": [46.921925, -110.454353],
+  "Nebraska": [41.125370, -98.268082],
+  "Nevada": [38.313515, -117.055374],
+  "New Hampshire": [43.452492, -71.563896],
+  "New Jersey": [40.298904, -74.521011],
+  "New Mexico": [34.840515, -106.248482],
+  "New York": [42.165726, -74.948051],
+  "North Carolina": [35.630066, -79.806419],
+  "North Dakota": [47.528912, -99.784012],
+  "Ohio": [40.388783, -82.764915],
+  "Oklahoma": [35.565342, -96.928917],
+  "Oregon": [44.572021, -122.070938],
+  "Pennsylvania": [40.590752, -77.209755],
+  "Rhode Island": [41.680893, -71.511780],
+  "South Carolina": [33.856892, -80.945007],
+  "South Dakota": [44.299782, -99.438828],
+  "Tennessee": [35.747845, -86.692345],
+  "Texas": [31.054487, -97.563461],
+  "Utah": [40.150032, -111.862434],
+  "Vermont": [44.045876, -72.710686],
+  "Virginia": [37.769337, -78.169968],
+  "Washington": [47.400902, -121.490494],
+  "West Virginia": [38.491226, -80.954456],
+  "Wisconsin": [44.268543, -89.616508],
+  "Wyoming": [42.755966, -107.302490],
+  "District of Columbia": [38.897438, -77.026817],
+};
 
 interface CampaignLocation {
   lat: number;
@@ -46,25 +146,64 @@ const GlobalReachMap = ({ activeCampaigns, allCampaigns, kpiStats }: GlobalReach
       map[`${name.toLowerCase()}, us`] = name;
     });
     // City-to-state mappings
-    map["new york city"] = "New York";
-    map["new york city, us"] = "New York";
-    map["los angeles"] = "California";
-    map["los angeles, us"] = "California";
-    map["chicago"] = "Illinois";
-    map["chicago, us"] = "Illinois";
-    map["houston"] = "Texas";
-    map["houston, us"] = "Texas";
-    map["dallas"] = "Texas";
-    map["dallas, us"] = "Texas";
-    map["miami"] = "Florida";
-    map["miami, us"] = "Florida";
-    map["atlanta"] = "Georgia";
-    map["atlanta, us"] = "Georgia";
+    const cityToState: Record<string, string> = {
+      "new york city": "New York",
+      "los angeles": "California",
+      "san francisco": "California",
+      "san diego": "California",
+      "sacramento": "California",
+      "san jose": "California",
+      "chicago": "Illinois",
+      "houston": "Texas",
+      "dallas": "Texas",
+      "san antonio": "Texas",
+      "austin": "Texas",
+      "fort worth": "Texas",
+      "el paso": "Texas",
+      "miami": "Florida",
+      "orlando": "Florida",
+      "tampa": "Florida",
+      "jacksonville": "Florida",
+      "atlanta": "Georgia",
+      "phoenix": "Arizona",
+      "tucson": "Arizona",
+      "seattle": "Washington",
+      "spokane": "Washington",
+      "denver": "Colorado",
+      "colorado springs": "Colorado",
+      "boston": "Massachusetts",
+      "philadelphia": "Pennsylvania",
+      "pittsburgh": "Pennsylvania",
+      "detroit": "Michigan",
+      "minneapolis": "Minnesota",
+      "st. paul": "Minnesota",
+      "portland": "Oregon",
+      "las vegas": "Nevada",
+      "nashville": "Tennessee",
+      "memphis": "Tennessee",
+      "charlotte": "North Carolina",
+      "raleigh": "North Carolina",
+      "indianapolis": "Indiana",
+      "columbus": "Ohio",
+      "cleveland": "Ohio",
+      "cincinnati": "Ohio",
+      "kansas city": "Missouri",
+      "st. louis": "Missouri",
+      "new orleans": "Louisiana",
+      "salt lake city": "Utah",
+      "milwaukee": "Wisconsin",
+      "baltimore": "Maryland",
+      "washington dc": "District of Columbia",
+      "washington d.c.": "District of Columbia",
+    };
+    Object.entries(cityToState).forEach(([city, state]) => {
+      map[city] = state;
+      map[`${city}, us`] = state;
+    });
     return map;
   }, []);
 
   const activeStateNames = useMemo(() => {
-    // Only highlight states from active campaigns — no fallbacks
     const activeLocations = activeCampaigns.flatMap(c => {
       const audience = c.target_audience as any;
       return audience?.locations || [];
@@ -73,21 +212,27 @@ const GlobalReachMap = ({ activeCampaigns, allCampaigns, kpiStats }: GlobalReach
     const stateNames = new Set<string>();
     activeLocations.forEach((loc: string) => {
       const key = loc.toLowerCase().trim();
-      // "United States" → highlight all states
       if (key === "united states") {
         (usStatesData as any).features?.forEach((f: any) => stateNames.add(f.properties.name));
         return;
       }
-      // Direct match from location-to-state map
       const mapped = locationToStateMap[key];
       if (mapped) {
         stateNames.add(mapped);
       }
     });
 
-    // No fallback — if no active campaigns, nothing is highlighted
     return stateNames;
   }, [activeCampaigns, locationToStateMap]);
+
+  // Compute LIVE icon positions from active state centroids
+  const liveIconPositions = useMemo(() => {
+    return Array.from(activeStateNames)
+      .map(name => ({ name, center: STATE_CENTROIDS[name] }))
+      .filter(s => s.center !== undefined) as { name: string; center: [number, number] }[];
+  }, [activeStateNames]);
+
+  const liveIcon = useMemo(() => createLiveIcon(), []);
 
   return (
     <div className="relative w-full h-[400px] lg:h-[500px] rounded-3xl overflow-hidden border border-border bg-card backdrop-blur-xl group">
@@ -155,6 +300,16 @@ const GlobalReachMap = ({ activeCampaigns, allCampaigns, kpiStats }: GlobalReach
           {campaignLocations.map((loc: CampaignLocation, idx: number) => (
             <MarkerCluster key={`marker-${loc.name}-${idx}`} loc={loc} />
           ))}
+
+          {/* Animated LIVE badges on active state centroids */}
+          {liveIconPositions.map(({ name, center }) => (
+            <Marker
+              key={`live-${name}`}
+              position={center}
+              icon={liveIcon}
+              interactive={false}
+            />
+          ))}
         </MapContainer>
       </div>
 
@@ -193,6 +348,13 @@ const GlobalReachMap = ({ activeCampaigns, allCampaigns, kpiStats }: GlobalReach
         <div className="flex items-center gap-2">
           <div className="h-2.5 w-5 rounded-sm bg-primary/25 border border-primary/40" />
           <span className="text-[10px] text-foreground/80">Coverage Area</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary text-[7px] font-bold text-primary-foreground">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
+            LIVE
+          </div>
+          <span className="text-[10px] text-foreground/80">Broadcasting</span>
         </div>
       </div>
 
