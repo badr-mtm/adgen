@@ -30,7 +30,7 @@ const Dashboard = () => {
       // Fetch active campaigns for telemetry
       const {
         data: campaigns
-      } = await supabase.from('campaigns').select('*').eq('user_id', session.user.id).eq('status', 'active');
+      } = await supabase.from('campaigns').select('*').eq('user_id', session.user.id).in('status', ['active', 'live', 'video_generated', 'published']);
       if (campaigns) setActiveCampaigns(campaigns);
       setLoading(false);
     };
