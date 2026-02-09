@@ -36,29 +36,58 @@ const GlobalReachMap = ({ activeCampaigns, allCampaigns, kpiStats }: GlobalReach
     });
   }, [activeCampaigns]);
 
+  // Map of plain location names to their corresponding US state names in GeoJSON
+  const locationToStateMap: Record<string, string> = useMemo(() => {
+    const map: Record<string, string> = {};
+    const features = (usStatesData as any).features || [];
+    features.forEach((f: any) => {
+      const name = f.properties.name as string;
+      map[name.toLowerCase()] = name;
+      map[`${name.toLowerCase()}, us`] = name;
+    });
+    // City-to-state mappings
+    map["new york city"] = "New York";
+    map["new york city, us"] = "New York";
+    map["los angeles"] = "California";
+    map["los angeles, us"] = "California";
+    map["chicago"] = "Illinois";
+    map["chicago, us"] = "Illinois";
+    map["houston"] = "Texas";
+    map["houston, us"] = "Texas";
+    map["dallas"] = "Texas";
+    map["dallas, us"] = "Texas";
+    map["miami"] = "Florida";
+    map["miami, us"] = "Florida";
+    map["atlanta"] = "Georgia";
+    map["atlanta, us"] = "Georgia";
+    return map;
+  }, []);
+
   const activeStateNames = useMemo(() => {
-    const allLocations = allCampaigns.flatMap(c => {
+    // Only highlight states from active campaigns — no fallbacks
+    const activeLocations = activeCampaigns.flatMap(c => {
       const audience = c.target_audience as any;
       return audience?.locations || [];
     });
 
     const stateNames = new Set<string>();
-    allLocations.forEach((loc: string) => {
-      if (loc.toLowerCase() === "united states") {
+    activeLocations.forEach((loc: string) => {
+      const key = loc.toLowerCase().trim();
+      // "United States" → highlight all states
+      if (key === "united states") {
         (usStatesData as any).features?.forEach((f: any) => stateNames.add(f.properties.name));
         return;
       }
-      const parts = loc.split(",");
-      if (parts.length >= 2 && parts[1].trim().toUpperCase() === "US") {
-        stateNames.add(parts[0].trim());
+      // Direct match from location-to-state map
+      const mapped = locationToStateMap[key];
+      if (mapped) {
+        stateNames.add(mapped);
       }
     });
 
-    if (stateNames.size === 0) {
-      ["California", "New York"].forEach(s => stateNames.add(s));
-    }
+    // No fallback — if no active campaigns, nothing is highlighted
     return stateNames;
-  }, [allCampaigns]);
+  }, [activeCampaigns, locationToStateMap]);
 
   return (
     <div className="relative w-full h-[400px] lg:h-[500px] rounded-3xl overflow-hidden border border-border bg-card backdrop-blur-xl group">
