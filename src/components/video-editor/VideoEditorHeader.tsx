@@ -3,54 +3,33 @@ import { ArrowLeft, RotateCcw, RotateCw, Search, Bell, Wifi, Activity } from "lu
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
-
 interface VideoEditorHeaderProps {
-    title: string;
-    onUndo: () => void;
-    onRedo: () => void;
-    canUndo: boolean;
-    canRedo: boolean;
+  title: string;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
-
 export default function VideoEditorHeader({
-    title,
-    onUndo,
-    onRedo,
-    canUndo,
-    canRedo
+  title,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo
 }: VideoEditorHeaderProps) {
-    const navigate = useNavigate();
-
-    return (
-        <div className="h-14 border-b border-white/10 bg-black/40 backdrop-blur-md flex items-center justify-between px-4 z-20 transition-colors duration-300">
+  const navigate = useNavigate();
+  return <div className="h-14 border-b border-white/10 bg-black/40 backdrop-blur-md flex items-center justify-between px-4 z-20 transition-colors duration-300">
             <div className="flex items-center gap-6">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate(-1)}
-                    className="text-white/60 hover:text-white hover:bg-white/5 gap-2"
-                >
+                <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="text-white/60 hover:text-white hover:bg-white/5 gap-2">
                     <ArrowLeft className="h-4 w-4" />
                     Back
                 </Button>
 
                 <div className="flex items-center gap-1 border-l pl-6 border-white/10">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={onUndo}
-                        disabled={!canUndo}
-                        className="h-8 w-8 text-white/50 hover:text-white hover:bg-white/5 disabled:opacity-30"
-                    >
+                    <Button variant="ghost" size="icon" onClick={onUndo} disabled={!canUndo} className="h-8 w-8 text-white/50 hover:text-white hover:bg-white/5 disabled:opacity-30">
                         <RotateCcw className="h-4 w-4" />
                     </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={onRedo}
-                        disabled={!canRedo}
-                        className="h-8 w-8 text-white/50 hover:text-white hover:bg-white/5 disabled:opacity-30"
-                    >
+                    <Button variant="ghost" size="icon" onClick={onRedo} disabled={!canRedo} className="h-8 w-8 text-white/50 hover:text-white hover:bg-white/5 disabled:opacity-30">
                         <RotateCw className="h-4 w-4" />
                     </Button>
                 </div>
@@ -84,8 +63,7 @@ export default function VideoEditorHeader({
                     <Bell className="w-4 h-4" />
                 </Button>
 
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 border border-white/10 shadow-inner" />
+                
             </div>
-        </div>
-    );
+        </div>;
 }
