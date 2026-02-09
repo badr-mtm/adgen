@@ -13,7 +13,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
-  
   const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
   useEffect(() => {
     const initializeDashboard = async () => {
@@ -62,7 +61,6 @@ const Dashboard = () => {
     const liveCampaigns = allCampaigns.filter(c => c.status === 'live').length;
     const completedCampaigns = allCampaigns.filter(c => c.status === 'completed').length;
     const avgCtr = allCampaigns.reduce((acc, c) => acc + (c.predicted_ctr || 0), 0) / (totalCampaigns || 1);
-
     const estimatedSpend = totalCampaigns * 2450;
     const completedViews = totalCampaigns * 168420;
     const complianceScore = totalCampaigns > 0 ? 100 : 0;
@@ -81,13 +79,11 @@ const Dashboard = () => {
       liveSpots: liveCampaigns * 170 + 10
     };
   }, [allCampaigns]);
-
   if (loading) return <DashboardLayout>
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     </DashboardLayout>;
-
   return <DashboardLayout>
       <div className="min-h-screen bg-background text-foreground p-6 space-y-8 max-w-[1600px] mx-auto">
 
@@ -100,10 +96,10 @@ const Dashboard = () => {
                 <span className="text-xs font-bold uppercase tracking-widest">System Operational</span>
               </div>
               <h1 className="text-4xl font-black tracking-tight lg:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
-                Command Center
+                ​Main Dashboard     
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl">
-                US movie advertising delivery status and real-time performance monitoring.
+                Global TV delivery status and real-time performance monitoring.
               </p>
             </div>
             <div className="flex gap-3">
@@ -117,11 +113,7 @@ const Dashboard = () => {
 
         {/* Global Reach Hero - Interactive Map */}
         <ScrollReveal direction="up" duration={0.5} delay={0.1}>
-          <GlobalReachMap
-            activeCampaigns={activeCampaigns}
-            allCampaigns={allCampaigns}
-            kpiStats={kpiStats}
-          />
+          <GlobalReachMap activeCampaigns={activeCampaigns} allCampaigns={allCampaigns} kpiStats={kpiStats} />
         </ScrollReveal>
 
         {/* Key Performance Indicators - Real Data */}
@@ -150,5 +142,4 @@ const Dashboard = () => {
       </div>
     </DashboardLayout>;
 };
-
 export default Dashboard;
