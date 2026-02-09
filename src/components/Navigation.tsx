@@ -11,7 +11,7 @@ const Navigation = () => {
     toast
   } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const isEditor = location.pathname === "/editor";
+  const isEditor = location.pathname.startsWith("/editor");
   useEffect(() => {
     const checkAuth = async () => {
       const {
@@ -40,7 +40,7 @@ const Navigation = () => {
   };
   return <nav className="h-14 border-b border-border bg-card flex items-center justify-between px-4">
       <div className="flex items-center gap-3">
-        {isEditor && <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="transition-smooth hover:bg-muted">
+        {isEditor && <Button variant="ghost" size="icon" onClick={() => navigate(-1 as any)} className="transition-smooth hover:bg-muted">
             <ArrowLeft className="h-5 w-5" />
           </Button>}
         <span className="font-bold text-2xl">AdGenius  </span>

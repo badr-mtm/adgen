@@ -139,7 +139,7 @@ const CampaignDetails = () => {
   const getGenerationStatusBadge = () => {
     if (generationStatus === "generating") {
       return (
-        <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 gap-1.5 animate-pulse">
+        <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1.5 animate-pulse">
           <Loader2 className="h-3 w-3 animate-spin" />
           Generating
         </Badge>
@@ -147,7 +147,7 @@ const CampaignDetails = () => {
     }
     if (videoUrl) {
       return (
-        <Badge className="bg-green-500/20 text-green-400 border-green-500/30 gap-1.5">
+        <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30 gap-1.5">
           <CheckCircle2 className="h-3 w-3" />
           Video Ready
         </Badge>
@@ -179,7 +179,9 @@ const CampaignDetails = () => {
   };
 
   const handleEditVideo = () => {
-    if (campaign.status === "concept" || !getVideoUrl()) {
+    if (campaign.ad_type === 'image') {
+      navigate(`/editor/${id}`);
+    } else if (campaign.status === "concept" || !getVideoUrl()) {
       navigate(`/storyboard/${id}`);
     } else {
       navigate(`/video-editor/${id}`);
@@ -338,10 +340,10 @@ const CampaignDetails = () => {
                             <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000}k`} />
-                        <Tooltip contentStyle={{ backgroundColor: '#111', border: '1px solid #333' }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000}k`} />
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--popover-foreground))' }} />
                         <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -355,11 +357,11 @@ const CampaignDetails = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                      <h4 className="font-bold text-green-400 text-sm mb-1">Scale Opportunity</h4>
+                      <h4 className="font-bold text-green-600 dark:text-green-400 text-sm mb-1">Scale Opportunity</h4>
                       <p className="text-xs text-muted-foreground">CTR is 40% above benchmark on Roku. Recommend increasing bid cap by $2.00.</p>
                     </div>
                     <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                      <h4 className="font-bold text-blue-400 text-sm mb-1">Creative Fatigue</h4>
+                      <h4 className="font-bold text-blue-600 dark:text-blue-400 text-sm mb-1">Creative Fatigue</h4>
                       <p className="text-xs text-muted-foreground">Scene 3 drop-off increased by 5%. Consider swapping with "Lifestyle" variant.</p>
                     </div>
                   </CardContent>
@@ -406,7 +408,7 @@ const CampaignDetails = () => {
                     <div className="p-4">
                       <div className="flex justify-between mb-2">
                         <span className="font-bold">Variant {String.fromCharCode(64 + i)}</span>
-                        <Badge variant="outline" className="text-green-400 border-green-400/30">Strong Win</Badge>
+                        <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-500/30">Strong Win</Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                         <div>Attention: <span className="text-foreground">High</span></div>
@@ -448,11 +450,11 @@ const KpiCard = ({ title, value, trend, warning, icon }: any) => (
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <h3 className="text-3xl font-bold mt-1 tracking-tight">{value}</h3>
         </div>
-        <div className="p-2 bg-background/50 rounded-lg border border-white/5">{icon}</div>
+        <div className="p-2 bg-muted/50 rounded-lg border border-border/50">{icon}</div>
       </div>
       <div>
-        {trend && <span className="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-full">{trend} vs batch</span>}
-        {warning && <span className="text-xs font-bold text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-full">{warning}</span>}
+        {trend && <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-1 rounded-full">{trend} vs batch</span>}
+        {warning && <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 px-2 py-1 rounded-full">{warning}</span>}
       </div>
     </CardContent>
   </Card>

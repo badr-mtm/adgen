@@ -377,7 +377,7 @@ const Editor = () => {
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       <Navigation />
       
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <div className="flex-1 flex overflow-hidden min-h-0 border-t border-border">
         {generating ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex flex-col items-center gap-6 text-center p-8">
@@ -408,7 +408,7 @@ const Editor = () => {
               imageUrl={adData.image}
               onRecreate={(customPrompt) => campaignId && generateImageAd(campaignId, customPrompt)}
               onDownload={handleDownload}
-              onClose={() => navigate("/")}
+              onClose={() => navigate(-1 as any)}
               onAIAction={handleAIAction}
               onGenerateVariants={handleGenerateVariants}
               onImageSwap={handleImageSwap}
