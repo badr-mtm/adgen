@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { 
-  TrendingUp, 
-  Eye, 
-  Users, 
-  Target, 
-  CheckCircle2, 
+import {
+  TrendingUp,
+  Eye,
+  Users,
+  Target,
+  CheckCircle2,
   BarChart3,
   Activity
 } from "lucide-react";
@@ -121,7 +121,7 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-background/60 border border-border/50 rounded-xl p-3 hover:border-primary/30 transition-all group"
+            className="bg-background border border-border/50 rounded-xl p-3 hover:border-primary/30 transition-all group"
           >
             <div className="flex items-center gap-1.5 mb-1.5">
               <kpi.icon className={`h-3.5 w-3.5 ${kpi.color} group-hover:scale-110 transition-transform`} />
