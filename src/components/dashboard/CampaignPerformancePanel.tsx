@@ -140,15 +140,15 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
         className="space-y-3"
       >
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Reach per Day</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">US Reach per Day</h4>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
-              <span className="text-[10px] text-muted-foreground font-medium">Spot 1 — Pre-Roll</span>
+              <span className="text-[10px] text-muted-foreground font-medium">Spot 1 — Pre-Show</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="h-2.5 w-2.5 rounded-sm bg-primary/40" />
-              <span className="text-[10px] text-muted-foreground font-medium">Spot 2 — Mid-Roll</span>
+              <span className="text-[10px] text-muted-foreground font-medium">Spot 2 — In-Stream</span>
             </div>
           </div>
         </div>
@@ -173,14 +173,14 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--accent))", opacity: 0.3, radius: 6 }} />
               <Bar
                 dataKey="spot1"
-                name="Spot 1 — Pre-Roll"
+                name="Spot 1 — Pre-Show"
                 fill="hsl(var(--primary))"
                 radius={[6, 6, 0, 0]}
                 maxBarSize={32}
               />
               <Bar
                 dataKey="spot2"
-                name="Spot 2 — Mid-Roll"
+                name="Spot 2 — In-Stream"
                 fill="hsl(var(--primary) / 0.4)"
                 radius={[6, 6, 0, 0]}
                 maxBarSize={32}

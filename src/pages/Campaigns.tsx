@@ -204,7 +204,7 @@ const Campaigns = () => {
                             <Tv className="h-8 w-8 text-muted-foreground" />
                         </div>
                         <h3 className="text-lg font-semibold">No campaigns found</h3>
-                        <p className="text-muted-foreground max-w-sm mx-auto mt-2 mb-6">Create your first TV ad campaign to reach millions of households.</p>
+                        <p className="text-muted-foreground max-w-sm mx-auto mt-2 mb-6">Create your first movie ad campaign to reach millions of US households.</p>
                         <Button onClick={() => navigate("/create")}>Create Campaign</Button>
                     </div>
                 ) : (

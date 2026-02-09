@@ -24,21 +24,21 @@ interface SpendIntelligencePanelProps {
   topTitles: TopTitle[];
 }
 const defaultAdFormats: AdFormatSpend[] = [{
-  format: "Pre-Roll",
+  format: "Pre-Show Trailers",
   icon: SkipForward,
   amount: 9840,
   percentage: 38,
   cpm: "$31.20",
   cpmTrend: "down"
 }, {
-  format: "Mid-Roll",
+  format: "In-Stream Spots",
   icon: Play,
   amount: 8620,
   percentage: 33,
   cpm: "$28.60",
   cpmTrend: "down"
 }, {
-  format: "Pause Ads",
+  format: "Interstitial Ads",
   icon: Pause,
   amount: 4280,
   percentage: 16,
@@ -53,19 +53,19 @@ const defaultAdFormats: AdFormatSpend[] = [{
   cpmTrend: "flat"
 }];
 const defaultTopTitles: TopTitle[] = [{
-  title: "Stranger Things S5",
+  title: "Mission: Impossible 8",
   vcr: "97.2%",
   impressions: "2.4M"
 }, {
-  title: "Wednesday S2",
+  title: "Avatar: Fire & Ash",
   vcr: "96.8%",
   impressions: "1.9M"
 }, {
-  title: "Squid Game S3",
+  title: "Jurassic World: Rebirth",
   vcr: "95.4%",
   impressions: "2.1M"
 }, {
-  title: "The Night Agent S3",
+  title: "Captain America: New World",
   vcr: "94.1%",
   impressions: "1.2M"
 }];
@@ -174,7 +174,7 @@ export function SpendIntelligencePanel(props: Partial<SpendIntelligencePanelProp
       <div className="space-y-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
           <Trophy className="h-3.5 w-3.5 text-amber-500" />
-          Top Performing Titles
+          Top Performing Movies
         </h4>
         {data.topTitles.map((title, i) => <motion.div key={title.title} initial={{
         opacity: 0

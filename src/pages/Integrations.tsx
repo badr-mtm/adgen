@@ -83,7 +83,7 @@ const integrationData: Integration[] = [
   {
     id: "samsung-tv",
     name: "Samsung TV Plus",
-    description: "Reach audiences on Samsung Smart TVs globally.",
+    description: "Reach audiences on Samsung Smart TVs across the US.",
     icon: <MonitorPlay className="h-6 w-6 text-[#1428A0]" />,
     category: "dsp",
     connected: false,
@@ -127,11 +127,11 @@ const integrationData: Integration[] = [
   {
     id: "the-trade-desk",
     name: "The Trade Desk",
-    description: "Global omnichannel DSP for open internet CTV buying.",
+    description: "Leading US omnichannel DSP for open internet CTV buying.",
     icon: <Globe className="h-6 w-6 text-[#1F3A52]" />,
     category: "dsp",
     connected: false,
-    features: ["Global Reach", "Unified ID 2.0", "Cross-Device Retargeting"],
+    features: ["US-Wide Reach", "Unified ID 2.0", "Cross-Device Retargeting"],
     fields: [
       { key: "partner_id", label: "Partner ID", placeholder: "e.g. TTD-8899", type: "text" },
       { key: "api_token", label: "API Token", placeholder: "Paste your API Token", type: "password" }
@@ -167,7 +167,7 @@ const integrationData: Integration[] = [
   {
     id: "tvsquared",
     name: "TVSquared by Innovid",
-    description: "Global converged TV measurement platform.",
+    description: "US converged TV measurement platform.",
     icon: <Database className="h-6 w-6 text-[#FF0055]" />,
     category: "analytics",
     connected: false,
@@ -276,8 +276,8 @@ const Integrations = () => {
               <h1 className="text-3xl font-bold tracking-tight text-foreground">Connectivity Hub</h1>
             </div>
             <p className="text-muted-foreground text-lg max-w-3xl">
-              Manage your seamless connections to major TV Networks, DSPs, and Attribution partners.
-              All integrations are verified for automated creative delivery.
+              Manage your seamless connections to US TV Networks, DSPs, and Attribution partners.
+              All integrations are verified for automated movie ad delivery.
             </p>
           </div>
 
