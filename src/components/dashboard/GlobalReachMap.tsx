@@ -171,11 +171,11 @@ const GlobalReachMap = ({ activeCampaigns, allCampaigns, kpiStats }: GlobalReach
       <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 flex flex-col md:flex-row justify-between items-end gap-6 z-20">
         <div className="space-y-1">
           <h3 className="text-primary font-bold uppercase tracking-widest text-[10px] flex items-center gap-2">
-            <Globe className="h-3.5 w-3.5" /> Global Audience Impact
+            <Globe className="h-3.5 w-3.5" /> US Audience Reach
           </h3>
           <div className="text-4xl lg:text-5xl font-black tabular-nums tracking-tighter text-foreground">
             {kpiStats.totalHouseholds}
-            <span className="text-xl text-muted-foreground font-normal ml-2">Million HH Reach</span>
+            <span className="text-xl text-muted-foreground font-normal ml-2">Million US Households</span>
           </div>
         </div>
 

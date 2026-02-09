@@ -103,7 +103,7 @@ const Dashboard = () => {
                 Command Center
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl">
-                Global TV delivery status and real-time performance monitoring.
+                US movie advertising delivery status and real-time performance monitoring.
               </p>
             </div>
             <div className="flex gap-3">
