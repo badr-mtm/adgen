@@ -59,9 +59,7 @@ export default function VideoEditorHeader({
                     </div>
                 </div>
 
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/5">
-                    <Bell className="w-4 h-4" />
-                </Button>
+                
 
                 
             </div>
