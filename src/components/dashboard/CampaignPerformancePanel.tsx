@@ -101,7 +101,7 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
   ];
 
   return (
-    <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-5 backdrop-blur-sm">
+    <div className="bg-card border border-border rounded-2xl p-6 h-full space-y-5 shadow-card">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold flex items-center gap-2">
