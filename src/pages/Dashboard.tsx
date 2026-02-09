@@ -80,66 +80,62 @@ const Dashboard = () => {
     };
   }, [allCampaigns]);
   if (loading) return <DashboardLayout>
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    </DashboardLayout>;
+    <div className="flex items-center justify-center h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+    </div>
+  </DashboardLayout>;
   return <DashboardLayout>
-      <div className="min-h-screen bg-background text-foreground p-6 space-y-8 max-w-[1600px] mx-auto">
+    <div className="min-h-screen bg-background text-foreground p-6 space-y-8 max-w-[1600px] mx-auto">
 
-        {/* Header Section */}
-        <ScrollReveal direction="down" duration={0.4}>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-primary">
-                <Signal className="h-4 w-4 animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-widest">System Operational</span>
-              </div>
-              <h1 className="text-4xl font-black tracking-tight lg:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
-                ​Main Dashboard     
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl">
-                Global TV delivery status and real-time performance monitoring.
-              </p>
+      {/* Header Section */}
+      <ScrollReveal direction="down" duration={0.4}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-primary">
+              <Signal className="h-4 w-4 animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-widest">System Operational</span>
             </div>
-            <div className="flex gap-3">
-              <Button size="lg" className="h-12 bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_hsl(var(--primary)/0.3)]" onClick={() => navigate("/create")}>
-                <Plus className="h-5 w-5 mr-2" />
-                New Campaign
-              </Button>
-            </div>
+            <h1 className="text-4xl font-black tracking-tight lg:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
+              Main Dashboard
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl">
+              Global TV delivery status and real-time performance monitoring.
+            </p>
           </div>
-        </ScrollReveal>
-
-        {/* Global Reach Hero - Interactive Map */}
-        <ScrollReveal direction="up" duration={0.5} delay={0.1}>
-          <GlobalReachMap activeCampaigns={activeCampaigns} allCampaigns={allCampaigns} kpiStats={kpiStats} />
-        </ScrollReveal>
-
-        {/* Key Performance Indicators - Real Data */}
-        <ScrollReveal direction="up" duration={0.5} delay={0.2}>
-          <div />
-        </ScrollReveal>
-
-        {/* On-Air Status & Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Campaign Performance - 60% */}
-          <div className="lg:col-span-3">
-            <ScrollReveal direction="up" duration={0.5} delay={0.3}>
-              <CampaignPerformancePanel />
-            </ScrollReveal>
-          </div>
-
-          {/* Spend Intelligence - 40% */}
-          <div className="lg:col-span-2">
-            <ScrollReveal direction="left" duration={0.5} delay={0.4}>
-              <SpendIntelligencePanel />
-            </ScrollReveal>
+          <div className="flex gap-3">
+            <Button size="lg" className="h-12 bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_hsl(var(--primary)/0.3)]" onClick={() => navigate("/create")}>
+              <Plus className="h-5 w-5 mr-2" />
+              New Campaign
+            </Button>
           </div>
         </div>
+      </ScrollReveal>
 
+      {/* Global Reach Hero - Interactive Map */}
+      <ScrollReveal direction="up" duration={0.5} delay={0.1}>
+        <GlobalReachMap activeCampaigns={activeCampaigns} allCampaigns={allCampaigns} kpiStats={kpiStats} />
+      </ScrollReveal>
 
+      {/* Key Performance Indicators - Real Data */}
+      <ScrollReveal direction="up" duration={0.5} delay={0.2}>
+        <div />
+      </ScrollReveal>
+
+      {/* On-Air Status & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Campaign Performance - 60% */}
+        <div className="lg:col-span-3">
+          <CampaignPerformancePanel />
+        </div>
+
+        {/* Spend Intelligence - 40% */}
+        <div className="lg:col-span-2">
+          <SpendIntelligencePanel />
+        </div>
       </div>
-    </DashboardLayout>;
+
+
+    </div>
+  </DashboardLayout>;
 };
 export default Dashboard;

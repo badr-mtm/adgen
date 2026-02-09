@@ -210,10 +210,10 @@ const GlobalReachMap = ({
     const stateNames = new Set<string>();
     activeLocations.forEach((loc: string) => {
       const key = loc.toLowerCase().trim();
-      if (key === "united states") {
+      /* if (key === "united states") {
         (usStatesData as any).features?.forEach((f: any) => stateNames.add(f.properties.name));
         return;
-      }
+      } */
       const mapped = locationToStateMap[key];
       if (mapped) {
         stateNames.add(mapped);
