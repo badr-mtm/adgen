@@ -47,6 +47,7 @@ interface Campaign {
     goal: string;
     created_at: string;
     storyboard: any;
+    brand_id: string;
 }
 
 const Campaigns = () => {
@@ -89,6 +90,62 @@ const Campaigns = () => {
     const handleCancelEdit = (e: React.MouseEvent) => {
         e.stopPropagation();
         setEditingId(null);
+    };
+
+    const handleDuplicate = async (campaign: Campaign) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const { data, error } = await supabase
+            .from("campaigns")
+            .insert({
+                title: `${campaign.title} (Copy)`,
+                description: campaign.description,
+                ad_type: campaign.ad_type,
+                goal: campaign.goal,
+                status: "concept",
+                storyboard: campaign.storyboard,
+                user_id: session.user.id,
+                brand_id: campaigns.find(c => c.id === campaign.id)?.brand_id || "",
+            } as any)
+            .select()
+            .single();
+
+        if (error) {
+            toast({ title: "Error", description: "Failed to duplicate campaign", variant: "destructive" });
+        } else if (data) {
+            setCampaigns(prev => [data, ...prev]);
+            toast({ title: "Duplicated", description: "Campaign duplicated successfully" });
+        }
+    };
+
+    const handleToggleStatus = async (campaign: Campaign) => {
+        const newStatus = campaign.status === "paused" ? "active" : "paused";
+        const { error } = await supabase
+            .from("campaigns")
+            .update({ status: newStatus })
+            .eq("id", campaign.id);
+
+        if (error) {
+            toast({ title: "Error", description: "Failed to update status", variant: "destructive" });
+        } else {
+            setCampaigns(prev => prev.map(c => c.id === campaign.id ? { ...c, status: newStatus } : c));
+            toast({ title: "Updated", description: `Campaign ${newStatus === "paused" ? "paused" : "resumed"}` });
+        }
+    };
+
+    const handleDelete = async (campaign: Campaign) => {
+        const { error } = await supabase
+            .from("campaigns")
+            .delete()
+            .eq("id", campaign.id);
+
+        if (error) {
+            toast({ title: "Error", description: "Failed to delete campaign", variant: "destructive" });
+        } else {
+            setCampaigns(prev => prev.filter(c => c.id !== campaign.id));
+            toast({ title: "Deleted", description: "Campaign deleted" });
+        }
     };
 
     useEffect(() => {
@@ -342,8 +399,30 @@ const Campaigns = () => {
                                                 <div className="text-xs text-muted-foreground">Daily Budget</div>
                                                 <div className="font-bold">$100.00</div>
                                             </div>
-                                            <Button variant="outline" size="sm">Manage</Button>
-                                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                                            <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(getCampaignRoute(campaign)); }}>Manage</Button>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                    <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleStartEdit(e as any, campaign); }}>
+                                                        <Pencil className="h-4 w-4 mr-2" /> Rename
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDuplicate(campaign); }}>
+                                                        <Layers className="h-4 w-4 mr-2" /> Duplicate
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleToggleStatus(campaign); }}>
+                                                        {campaign.status === 'paused' ? <Play className="h-4 w-4 mr-2" /> : <Pause className="h-4 w-4 mr-2" />}
+                                                        {campaign.status === 'paused' ? 'Resume' : 'Pause'}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="text-destructive focus:text-destructive"
+                                                        onClick={(e) => { e.stopPropagation(); handleDelete(campaign); }}
+                                                    >
+                                                        <X className="h-4 w-4 mr-2" /> Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                     )}
                                 </motion.div>
