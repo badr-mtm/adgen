@@ -7,29 +7,30 @@ import {
   Target, 
   CheckCircle2, 
   BarChart3,
-  Activity,
-  Film,
-  Popcorn,
-  Swords,
-  Laugh,
-  BookOpen,
-  Sparkles
+  Activity
 } from "lucide-react";
-
-interface GenrePerformance {
-  genre: string;
-  icon: React.ElementType;
-  impressions: string;
-  vcr: string;
-  reach: string;
-  cpm: string;
-}
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 interface AudienceSegment {
   cohort: string;
   reach: string;
   index: number;
   trend: "up" | "down" | "flat";
+}
+
+interface DailyReach {
+  day: string;
+  spot1: number;
+  spot2: number;
 }
 
 interface CampaignPerformancePanelProps {
@@ -39,16 +40,18 @@ interface CampaignPerformancePanelProps {
   avgFrequency: number;
   cpm: string;
   brandLift: string;
-  genres: GenrePerformance[];
+  dailyReach: DailyReach[];
   audiences: AudienceSegment[];
 }
 
-const defaultGenres: GenrePerformance[] = [
-  { genre: "Drama", icon: Film, impressions: "4.2M", vcr: "94.8%", reach: "18.6%", cpm: "$28.40" },
-  { genre: "Action", icon: Swords, impressions: "3.8M", vcr: "91.2%", reach: "16.1%", cpm: "$32.10" },
-  { genre: "Comedy", icon: Laugh, impressions: "2.9M", vcr: "96.4%", reach: "12.8%", cpm: "$24.60" },
-  { genre: "Documentary", icon: BookOpen, impressions: "1.6M", vcr: "97.1%", reach: "7.4%", cpm: "$22.80" },
-  { genre: "Reality", icon: Sparkles, impressions: "2.1M", vcr: "89.6%", reach: "9.2%", cpm: "$19.40" },
+const defaultDailyReach: DailyReach[] = [
+  { day: "Mon", spot1: 1.8, spot2: 1.2 },
+  { day: "Tue", spot1: 2.1, spot2: 1.5 },
+  { day: "Wed", spot1: 2.4, spot2: 1.9 },
+  { day: "Thu", spot1: 2.0, spot2: 2.2 },
+  { day: "Fri", spot1: 2.8, spot2: 2.6 },
+  { day: "Sat", spot1: 3.2, spot2: 3.0 },
+  { day: "Sun", spot1: 3.6, spot2: 2.8 },
 ];
 
 const defaultAudiences: AudienceSegment[] = [
@@ -65,8 +68,24 @@ const defaultProps: CampaignPerformancePanelProps = {
   avgFrequency: 3.4,
   cpm: "$26.80",
   brandLift: "+8.6%",
-  genres: defaultGenres,
+  dailyReach: defaultDailyReach,
   audiences: defaultAudiences,
+};
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border border-border/60 rounded-xl px-4 py-3 shadow-xl backdrop-blur-md">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">{label}</p>
+      {payload.map((entry: any, i: number) => (
+        <div key={i} className="flex items-center gap-2 mb-1 last:mb-0">
+          <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
+          <span className="text-xs text-muted-foreground">{entry.name}:</span>
+          <span className="text-xs font-bold text-foreground">{entry.value}M</span>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanelProps>) {
@@ -113,42 +132,63 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
         ))}
       </div>
 
-      {/* Content Genre Performance Table */}
-      <div className="space-y-2">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Performance by Content Genre</h4>
-        
-        {/* Table Header */}
-        <div className="grid grid-cols-[1.5fr_0.8fr_0.6fr_0.7fr_0.7fr] gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50">
-          <span>Genre</span>
-          <span className="text-right">Impressions</span>
-          <span className="text-right">VCR</span>
-          <span className="text-right">Reach</span>
-          <span className="text-right">CPM</span>
+      {/* Reach per Day Bar Chart */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="space-y-3"
+      >
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Reach per Day</h4>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
+              <span className="text-[10px] text-muted-foreground font-medium">Spot 1 — Pre-Roll</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="h-2.5 w-2.5 rounded-sm bg-primary/40" />
+              <span className="text-[10px] text-muted-foreground font-medium">Spot 2 — Mid-Roll</span>
+            </div>
+          </div>
         </div>
 
-        {/* Table Rows */}
-        {data.genres.map((genre, i) => {
-          const GenreIcon = genre.icon;
-          return (
-            <motion.div
-              key={genre.genre}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + i * 0.06 }}
-              className="grid grid-cols-[1.5fr_0.8fr_0.6fr_0.7fr_0.7fr] gap-2 px-3 py-2.5 rounded-lg hover:bg-accent/50 transition-colors group items-center"
-            >
-              <div className="flex items-center gap-2">
-                <GenreIcon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{genre.genre}</span>
-              </div>
-              <span className="text-sm text-right text-foreground font-medium tabular-nums">{genre.impressions}</span>
-              <span className="text-sm text-right text-foreground font-medium tabular-nums">{genre.vcr}</span>
-              <span className="text-sm text-right text-foreground font-medium tabular-nums">{genre.reach}</span>
-              <span className="text-sm text-right text-foreground font-medium tabular-nums">{genre.cpm}</span>
-            </motion.div>
-          );
-        })}
-      </div>
+        <div className="h-[200px] w-full bg-background/40 rounded-xl border border-border/40 p-3 pr-1">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.dailyReach} barGap={3} barCategoryGap="20%">
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.4} vertical={false} />
+              <XAxis
+                dataKey="day"
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", fontWeight: 600 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `${v}M`}
+                width={40}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--accent))", opacity: 0.3, radius: 6 }} />
+              <Bar
+                dataKey="spot1"
+                name="Spot 1 — Pre-Roll"
+                fill="hsl(var(--primary))"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={32}
+              />
+              <Bar
+                dataKey="spot2"
+                name="Spot 2 — Mid-Roll"
+                fill="hsl(var(--primary) / 0.4)"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={32}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
 
       {/* Audience Segments */}
       <div className="space-y-3">
