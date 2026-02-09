@@ -11,7 +11,6 @@ import { ArrowRight, Sparkles, Tv, Globe, Zap, Upload, X, FileVideo } from "luci
 import { CreatePageSkeleton } from "@/components/skeletons/CreatePageSkeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-
 const Create = () => {
   const navigate = useNavigate();
   const {
@@ -120,7 +119,6 @@ const Create = () => {
         hour: '2-digit',
         minute: '2-digit'
       })}`;
-      
       const {
         data,
         error
@@ -184,7 +182,7 @@ const Create = () => {
       }} transition={{
         duration: 0.8,
         ease: [0.22, 1, 0.36, 1]
-      }} className="relative z-10 w-full max-w-4xl space-y-8">
+      }} className="relative z-10 w-full max-w-4xl space-y-8 bg-white">
 
           {/* Hero Header */}
           <div className="text-center space-y-6">
