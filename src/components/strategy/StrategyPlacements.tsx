@@ -18,8 +18,8 @@ interface StrategyPlacementsProps {
 
 type ChannelData = {
     name: string;
-    audience: string; // e.g. "131.6M"
-    logoColor: string; // Tailwind color class for demo
+    audience: string;
+    logoColor: string;
 };
 
 const CHANNELS_DATA: Record<string, ChannelData[]> = {
@@ -36,13 +36,13 @@ const CHANNELS_DATA: Record<string, ChannelData[]> = {
         { name: "MSNBC", audience: "95.2M", logoColor: "bg-blue-500" },
         { name: "Fox News", audience: "120.1M", logoColor: "bg-blue-800" },
         { name: "BBC World", audience: "88.4M", logoColor: "bg-red-700" },
-        { name: "Bloomberg", audience: "45.2M", logoColor: "bg-black" }
+        { name: "Bloomberg", audience: "45.2M", logoColor: "bg-foreground" }
     ],
     "Entertainment": [
         { name: "TNT", audience: "145.2M", logoColor: "bg-yellow-500" },
         { name: "TBS", audience: "138.9M", logoColor: "bg-blue-400" },
-        { name: "USA Network", audience: "122.5M", logoColor: "bg-slate-800" },
-        { name: "FX", audience: "98.7M", logoColor: "bg-black" },
+        { name: "USA Network", audience: "122.5M", logoColor: "bg-slate-600" },
+        { name: "FX", audience: "98.7M", logoColor: "bg-foreground" },
         { name: "AMC", audience: "87.3M", logoColor: "bg-yellow-600" },
         { name: "Bravo", audience: "76.2M", logoColor: "bg-blue-300" }
     ],
@@ -55,7 +55,6 @@ const CHANNELS_DATA: Record<string, ChannelData[]> = {
     ]
 };
 
-// Simulated AI score for channels
 const getAIScore = (channelName: string) => {
     const score = (channelName.length * 7) % 50 + 50;
     return score > 40 ? score : score + 40;
@@ -63,7 +62,7 @@ const getAIScore = (channelName: string) => {
 
 export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacementsProps) {
     const [searchTerm, setSearchTerm] = React.useState("");
-    const [activeTab, setActiveTab] = React.useState("manual"); // Default to manual for this demo
+    const [activeTab, setActiveTab] = React.useState("manual");
     const [expandedCategories, setExpandedCategories] = React.useState<Record<string, boolean>>({
         "Sports": true,
         "News": true,
@@ -90,10 +89,8 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
 
         let newPlacements = [...current];
         if (allSelected) {
-            // Deselect all
             newPlacements = newPlacements.filter(c => !allChannels.includes(c));
         } else {
-            // Select all (add missing)
             allChannels.forEach(c => {
                 if (!newPlacements.includes(c)) newPlacements.push(c);
             });
@@ -102,22 +99,22 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
     };
 
     return (
-        <Card className="w-full bg-white/5 border-white/10 backdrop-blur-sm shadow-none">
+        <Card className="w-full bg-card border-border backdrop-blur-sm shadow-card">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white"><MonitorPlay className="w-5 h-5 text-blue-500" /> Placements & Channels</CardTitle>
-                <CardDescription className="text-white/50">Choose where your ads will appear across premium TV networks and streaming platforms.</CardDescription>
+                <CardTitle className="flex items-center gap-2 text-foreground"><MonitorPlay className="w-5 h-5 text-primary" /> Placements & Channels</CardTitle>
+                <CardDescription className="text-muted-foreground">Choose where your ads will appear across premium TV networks and streaming platforms.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/5 text-white/50">
-                        <TabsTrigger value="manual" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                    <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted text-muted-foreground">
+                        <TabsTrigger value="manual" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                             <Tv className="w-4 h-4" />
                             Apps & Channels
                         </TabsTrigger>
-                        <TabsTrigger value="smart" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                            <Sparkles className="w-4 h-4 text-purple-300" />
+                        <TabsTrigger value="smart" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                            <Sparkles className="w-4 h-4" />
                             Auto Sports
-                            <Badge variant="secondary" className="ml-2 text-[10px] bg-white/20 text-white">AI</Badge>
+                            <Badge variant="secondary" className="ml-2 text-[10px] bg-primary/20 text-primary">AI</Badge>
                         </TabsTrigger>
                     </TabsList>
 
@@ -125,19 +122,19 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
                     <TabsContent value="manual" className="space-y-4">
                         <div className="flex items-center gap-4 mb-4">
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
+                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Search for channels..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-9 h-11 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus:ring-blue-500/10"
+                                    className="pl-9 h-11 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 focus:ring-primary/10"
                                 />
                             </div>
                         </div>
 
-                        <div className="border border-white/10 rounded-lg bg-black/20 overflow-hidden">
+                        <div className="border border-border rounded-lg bg-muted/30 overflow-hidden">
                             {/* List Header */}
-                            <div className="flex items-center justify-between p-3 px-6 bg-white/5 border-b border-white/10 text-xs font-semibold text-white/40">
+                            <div className="flex items-center justify-between p-3 px-6 bg-muted/50 border-b border-border text-xs font-semibold text-muted-foreground">
                                 <div>Available ({Object.values(CHANNELS_DATA).flat().length})</div>
                                 <div className="flex gap-8">
                                     <span className="w-24 text-right">Weekly Est. Audience</span>
@@ -154,21 +151,21 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
                                         const isExpanded = expandedCategories[category];
 
                                         return (
-                                            <div key={category} className="border-b border-white/5 last:border-0">
+                                            <div key={category} className="border-b border-border/50 last:border-0">
                                                 {/* Category Header */}
-                                                <div className="flex items-center p-4 bg-white/5 hover:bg-white/10 cursor-pointer select-none" >
-                                                    <button onClick={() => toggleCategory(category)} className="flex items-center gap-2 flex-1 text-white">
-                                                        {isExpanded ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
+                                                <div className="flex items-center p-4 bg-muted/40 hover:bg-muted/60 cursor-pointer select-none">
+                                                    <button onClick={() => toggleCategory(category)} className="flex items-center gap-2 flex-1 text-foreground">
+                                                        {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                                                         <span className="font-semibold text-sm">{category}</span>
                                                     </button>
-                                                    <Button variant="ghost" size="sm" className="h-6 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10" onClick={() => toggleAllInCategory(category)}>
+                                                    <Button variant="ghost" size="sm" className="h-6 text-xs text-primary hover:text-primary/80 hover:bg-primary/10" onClick={() => toggleAllInCategory(category)}>
                                                         Select all
                                                     </Button>
                                                 </div>
 
                                                 {/* Channels List */}
                                                 {isExpanded && (
-                                                    <div className="divide-y divide-white/5">
+                                                    <div className="divide-y divide-border/30">
                                                         {filteredChannels.map(channel => {
                                                             const isSelected = strategy.placements?.includes(channel.name);
                                                             const score = getAIScore(channel.name);
@@ -179,32 +176,32 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
                                                                     key={channel.name}
                                                                     onClick={() => toggleChannel(channel.name)}
                                                                     className={cn(
-                                                                        "flex items-center justify-between p-3 px-6 cursor-pointer transition-colors hover:bg-white/5",
-                                                                        isSelected && "bg-blue-500/10 hover:bg-blue-500/20"
+                                                                        "flex items-center justify-between p-3 px-6 cursor-pointer transition-colors hover:bg-muted/50",
+                                                                        isSelected && "bg-primary/5 hover:bg-primary/10"
                                                                     )}
                                                                 >
                                                                     <div className="flex items-center gap-4">
                                                                         <CheckboxWithCheck isChecked={!!isSelected} />
 
                                                                         {/* Logo / Icon */}
-                                                                        <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm shadow-black/50", channel.logoColor)}>
+                                                                        <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm", channel.logoColor)}>
                                                                             {channel.name.substring(0, 1)}
                                                                         </div>
 
-                                                                        <span className="font-medium text-sm text-white">{channel.name}</span>
+                                                                        <span className="font-medium text-sm text-foreground">{channel.name}</span>
 
                                                                         {isHighMatch && (
-                                                                            <Badge variant="outline" className="text-[10px] text-green-400 border-green-500/30 bg-green-500/10">
+                                                                            <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-green-400 border-emerald-500/30 bg-emerald-500/10">
                                                                                 <Sparkles className="w-3 h-3 mr-1" /> Best Match
                                                                             </Badge>
                                                                         )}
                                                                     </div>
 
                                                                     <div className="flex items-center gap-8">
-                                                                        <span className="text-sm font-medium text-white/40 w-24 text-right">
+                                                                        <span className="text-sm font-medium text-muted-foreground w-24 text-right">
                                                                             {channel.audience}
                                                                         </span>
-                                                                        <span className={cn("text-sm font-bold w-16 text-right", isHighMatch ? "text-green-400" : "text-white/40")}>
+                                                                        <span className={cn("text-sm font-bold w-16 text-right", isHighMatch ? "text-emerald-600 dark:text-green-400" : "text-muted-foreground")}>
                                                                             {score}%
                                                                         </span>
                                                                     </div>
@@ -222,8 +219,8 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
                     </TabsContent>
 
                     <TabsContent value="smart">
-                        <div className="p-12 text-center text-white/40 border border-white/10 rounded-lg border-dashed bg-black/20">
-                            <Sparkles className="w-12 h-12 mx-auto mb-4 text-purple-400/50" />
+                        <div className="p-12 text-center text-muted-foreground border border-border rounded-lg border-dashed bg-muted/30">
+                            <Sparkles className="w-12 h-12 mx-auto mb-4 text-purple-500/50 dark:text-purple-400/50" />
                             <p>AI Auto-Sports mode will automatically select the best live sports inventory.</p>
                         </div>
                     </TabsContent>
@@ -240,7 +237,7 @@ function CheckboxWithCheck({ isChecked }: { isChecked: boolean }) {
             "w-5 h-5 rounded border flex items-center justify-center transition-all",
             isChecked ? "bg-primary border-primary" : "border-muted-foreground/30 bg-background"
         )}>
-            {isChecked && <Check className="w-3.5 h-3.5 text-white" />}
+            {isChecked && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
         </div>
     )
 }
