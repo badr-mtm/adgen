@@ -38,7 +38,7 @@ export default function VideoEditor() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showEndScreen, setShowEndScreen] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
-
+  
   // Generated video from ScriptSelection page
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
   const [showGeneratedVideo, setShowGeneratedVideo] = useState(false);
@@ -102,19 +102,19 @@ export default function VideoEditor() {
 
         // Optimistic Load from Transition State (new flow passes variant data)
         const locationState = location.state as any;
-
+        
         // Check for generated video from ScriptSelection page
         if (locationState?.generatedVideoUrl) {
           setGeneratedVideoUrl(locationState.generatedVideoUrl);
           setShowGeneratedVideo(true);
-
+          
           // Store script info if passed
           if (locationState.script) {
             setProject((prev: any) => ({
               ...prev,
               selectedScript: locationState.script
             }));
-
+            
             // Handle scene-by-scene videos
             if (locationState.generationMode === "scene-by-scene" && locationState.sceneVideos) {
               // Map scene videos to scenes
@@ -127,10 +127,10 @@ export default function VideoEditor() {
               });
               setScenes(mappedScenes);
               console.log('Loaded scene-by-scene videos:', mappedScenes.length);
-            }
+            } 
             // Create scenes from script for full video mode
             else if (locationState.script.scenes && locationState.script.scenes.length > 0) {
-              const mappedScenes = locationState.script.scenes.map((s: any, idx: number) =>
+              const mappedScenes = locationState.script.scenes.map((s: any, idx: number) => 
                 normalizeScene({
                   ...s,
                   videoUrl: idx === 0 ? locationState.generatedVideoUrl : '' // Assign video to first scene
@@ -140,13 +140,13 @@ export default function VideoEditor() {
             }
           }
         }
-
+        
         if (locationState?.preloadedScenes && locationState.preloadedScenes.length > 0) {
-          const mappedScenes = locationState.preloadedScenes.map((s: any, idx: number) =>
+          const mappedScenes = locationState.preloadedScenes.map((s: any, idx: number) => 
             normalizeScene(s, idx)
           );
           setScenes(mappedScenes);
-
+          
           // Store script and variant info if passed
           if (locationState.script || locationState.variant) {
             setProject((prev: any) => ({
@@ -174,15 +174,15 @@ export default function VideoEditor() {
         if (campaign) {
           setProject(campaign);
           const storyboard = campaign.storyboard as any;
-
+          
           // Load scenes from storyboard - normalize to consistent format
           if (storyboard?.scenes && storyboard.scenes.length > 0) {
-            const normalizedScenes = storyboard.scenes.map((s: any, idx: number) =>
+            const normalizedScenes = storyboard.scenes.map((s: any, idx: number) => 
               normalizeScene(s, idx)
             );
             setScenes(normalizedScenes);
           }
-
+          
           // Load video settings if present
           if (storyboard?.strategy?.videoSettings) {
             setOverlaySettings(prev => ({ ...prev, ...storyboard.strategy.videoSettings }));
@@ -642,17 +642,17 @@ export default function VideoEditor() {
     return (
       <div className="h-screen flex items-center justify-center bg-background text-foreground relative overflow-hidden">
         {/* Cinematic Loading Background */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background opacity-80" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] dark:opacity-20" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black opacity-80" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
 
         <div className="z-10 flex flex-col items-center gap-6 max-w-md w-full px-6">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex items-center justify-center w-20 h-20 rounded-2xl bg-card border border-border backdrop-blur-md shadow-card"
+            className="flex items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-[0_0_50px_-12px_rgba(59,130,246,0.5)]"
           >
-            <Zap className="w-10 h-10 text-primary fill-primary/20" />
+            <Zap className="w-10 h-10 text-blue-500 fill-blue-500/20" />
           </motion.div>
 
           <div className="space-y-2 text-center w-full">
@@ -660,14 +660,14 @@ export default function VideoEditor() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground/80 to-foreground/40"
+              className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/40"
             >
               Initializing Studio
             </motion.h2>
 
-            <div className="relative h-1 w-full bg-muted rounded-full overflow-hidden">
+            <div className="relative h-1 w-full bg-white/10 rounded-full overflow-hidden">
               <motion.div
-                className="absolute top-0 bottom-0 left-0 bg-primary"
+                className="absolute top-0 bottom-0 left-0 bg-blue-500"
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
                 transition={{ duration: 1.5, ease: "easeInOut" }}
@@ -678,7 +678,7 @@ export default function VideoEditor() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="flex justify-between text-xs text-muted-foreground font-mono"
+              className="flex justify-between text-xs text-white/30 font-mono"
             >
               <span>Asset Loader</span>
               <span>Online</span>
@@ -727,8 +727,8 @@ export default function VideoEditor() {
     <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden font-sans selection:bg-primary/30">
       {/* Background Gradients */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[150px] dark:opacity-50" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-accent/5 blur-[150px] dark:opacity-50" />
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[150px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-accent/5 blur-[150px]" />
       </div>
 
       <div className="relative z-10 flex flex-col h-full">
@@ -796,7 +796,7 @@ export default function VideoEditor() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowGeneratedVideo(false)}
-                    className="bg-card/20 border-border/30 text-foreground dark:text-white hover:bg-card/40"
+                    className="bg-background/20 border-white/30 text-white hover:bg-background/40"
                   >
                     Switch to Scene Editor
                   </Button>

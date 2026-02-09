@@ -24,7 +24,7 @@ const Editor = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [campaign, setCampaign] = useState<any>(null);
-
+  
   // Processing states for AI actions
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingAction, setProcessingAction] = useState("");
@@ -33,7 +33,7 @@ const Editor = () => {
   const [showVariants, setShowVariants] = useState(false);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [isGeneratingVariants, setIsGeneratingVariants] = useState(false);
-
+  
   const [adData, setAdData] = useState({
     image: "",
     prompt: "",
@@ -100,7 +100,7 @@ const Editor = () => {
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-image-ad', {
-        body: {
+        body: { 
           campaignId: id,
           ...(customPrompt && { customPrompt })
         }
@@ -109,8 +109,8 @@ const Editor = () => {
       if (error) throw error;
 
       if (data?.imageUrl) {
-        setAdData(prev => ({
-          ...prev,
+        setAdData(prev => ({ 
+          ...prev, 
           image: data.imageUrl,
           generatedAt: new Date().toISOString()
         }));
@@ -133,7 +133,7 @@ const Editor = () => {
 
   const handleDownload = async () => {
     if (!adData.image) return;
-
+    
     try {
       const response = await fetch(adData.image);
       const blob = await response.blob();
@@ -145,7 +145,7 @@ const Editor = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-
+      
       toast({ title: "Image downloaded!" });
     } catch (error) {
       toast({
@@ -173,10 +173,10 @@ const Editor = () => {
 
     setIsProcessing(true);
     setProcessingAction(action);
-
+    
     try {
       const { data, error } = await supabase.functions.invoke('image-ai-actions', {
-        body: {
+        body: { 
           action,
           imageUrl: adData.image,
           params,
@@ -187,13 +187,13 @@ const Editor = () => {
       if (error) throw error;
 
       if (data?.imageUrl) {
-        setAdData(prev => ({
-          ...prev,
+        setAdData(prev => ({ 
+          ...prev, 
           image: data.imageUrl,
           generatedAt: new Date().toISOString()
         }));
       }
-
+      
       toast({
         title: "AI Action Applied",
         description: `Successfully applied: ${action.replace(/_/g, ' ')}`
@@ -224,10 +224,10 @@ const Editor = () => {
 
     setIsGeneratingVariants(true);
     setShowVariants(true);
-
+    
     try {
       const { data, error } = await supabase.functions.invoke('generate-ad-variants', {
-        body: {
+        body: { 
           campaignId,
           imageUrl: adData.image,
           variantCount: 3
@@ -280,7 +280,7 @@ const Editor = () => {
 
     setIsProcessing(true);
     setProcessingAction("remove_background");
-
+    
     try {
       toast({
         title: "Loading AI Model",
@@ -289,21 +289,21 @@ const Editor = () => {
 
       // Load image from URL
       const imageElement = await loadImageFromUrl(adData.image);
-
+      
       // Process with in-browser AI
       const resultBlob = await removeBackground(imageElement, (progress, status) => {
         console.log(`Background removal: ${progress}% - ${status}`);
       });
-
+      
       // Create object URL for the result
       const resultUrl = URL.createObjectURL(resultBlob);
-
-      setAdData(prev => ({
-        ...prev,
+      
+      setAdData(prev => ({ 
+        ...prev, 
         image: resultUrl,
         generatedAt: new Date().toISOString()
       }));
-
+      
       toast({
         title: "Background Removed!",
         description: "Background has been removed using in-browser AI"
@@ -323,7 +323,7 @@ const Editor = () => {
 
   // Variant selection handler
   const handleSelectVariant = (id: string) => {
-    setVariants(prev => prev.map(v =>
+    setVariants(prev => prev.map(v => 
       v.id === id ? { ...v, selected: !v.selected } : v
     ));
   };
@@ -331,7 +331,7 @@ const Editor = () => {
   // Download selected variants
   const handleDownloadSelected = async () => {
     const selected = variants.filter(v => v.selected);
-
+    
     for (const variant of selected) {
       try {
         const response = await fetch(variant.imageUrl);
@@ -348,7 +348,7 @@ const Editor = () => {
         console.error('Download error:', error);
       }
     }
-
+    
     toast({
       title: "Downloaded",
       description: `Downloaded ${selected.length} variant(s)`
@@ -376,7 +376,7 @@ const Editor = () => {
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       <Navigation />
-
+      
       <div className="flex-1 flex overflow-hidden min-h-0 border-t border-border">
         {generating ? (
           <div className="flex-1 flex items-center justify-center">
@@ -388,7 +388,7 @@ const Editor = () => {
               <div className="space-y-2">
                 <h2 className="text-2xl font-semibold text-foreground">Generating Your Ad Image</h2>
                 <p className="text-muted-foreground max-w-md">
-                  Our AI is crafting a stunning visual based on your campaign brief...
+                  Our AI is creating a stunning visual based on your campaign brief...
                 </p>
               </div>
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -396,7 +396,7 @@ const Editor = () => {
           </div>
         ) : (
           <>
-            <ImagePreview
+            <ImagePreview 
               imageUrl={adData.image}
               aspectRatio={adData.aspectRatio}
               onAspectRatioChange={handleAspectRatioChange}
