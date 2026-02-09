@@ -11,7 +11,6 @@ import { ArrowRight, Sparkles, Tv, Globe, Zap, Upload, X, FileVideo } from "luci
 import { CreatePageSkeleton } from "@/components/skeletons/CreatePageSkeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-
 const Create = () => {
   const navigate = useNavigate();
   const {
@@ -120,7 +119,6 @@ const Create = () => {
         hour: '2-digit',
         minute: '2-digit'
       })}`;
-      
       const {
         data,
         error
@@ -188,17 +186,7 @@ const Create = () => {
 
           {/* Hero Header */}
           <div className="text-center space-y-6">
-            <motion.div initial={{
-            scale: 0.9,
-            opacity: 0
-          }} animate={{
-            scale: 1,
-            opacity: 1
-          }} transition={{
-            delay: 0.2
-          }} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4">AI ADS GENERATOR<Sparkles className="h-3 w-3" />
-              AI TV Ad Creator
-            </motion.div>
+            
 
             <h1 className="text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50 md:text-5xl">What Ad you're creating today ?</h1>
             
