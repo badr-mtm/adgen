@@ -226,7 +226,7 @@ const VideoPreview = ({
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={cn(
-            "relative w-full max-w-5xl aspect-video rounded-[32px] overflow-hidden shadow-2xl z-10",
+            "relative w-full max-w-5xl rounded-[32px] overflow-hidden shadow-2xl z-10",
             viewMode === "cinema"
               ? "ring-8 ring-zinc-800 shadow-[0_0_100px_rgba(0,0,0,1)]"
               : "bg-black ring-1 ring-white/10"
@@ -235,7 +235,7 @@ const VideoPreview = ({
             perspective: "1000px",
             maxHeight: "calc(100vh - 450px)", // Ensure space for timeline
             width: "auto",
-            aspectRatio: "16/9"
+            aspectRatio: overlaySettings?.generalSettings?.aspectRatio?.replace(':', '/') || "16/9"
           }}
         >
           {/* Background Media with AnimatePresence for Transitions */}
