@@ -100,7 +100,7 @@ const AISuggestions = () => {
                         </div>
                       </div>
                     </div>
-                    <Badge className="bg-white/10 hover:bg-white/20 border-0 text-white px-3 py-1">
+                    <Badge className="bg-white/10 hover:bg-white/20 border-0 px-3 py-1 text-primary">
                       {insight.impact}
                     </Badge>
                   </div>
@@ -147,7 +147,7 @@ const AISuggestions = () => {
                   </div> :
 
                 <div className="space-y-4 opacity-50">
-                    <Brain className="h-16 w-16 mx-auto text-secondary bg-secondary" />
+                    <Brain className="h-16 w-16 mx-auto text-secondary bg-secondary border-secondary" />
                     <p className="text-lg font-medium text-muted-foreground">Select an insight to simulate its impact.</p>
                   </div>
                 }
