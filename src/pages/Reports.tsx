@@ -18,12 +18,12 @@ import {
   Activity,
   Tv,
   Globe,
-  Zap
-} from "lucide-react";
+  Zap } from
+"lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, AreaChart, Area
-} from "recharts";
+  BarChart, Bar, AreaChart, Area } from
+"recharts";
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState("7d");
@@ -36,10 +36,10 @@ const Reports = () => {
   }));
 
   const regionData = [
-    { region: "North America", reach: 85, lift: 4.2 },
-    { region: "Europe", reach: 65, lift: 3.8 },
-    { region: "Asia Pacific", reach: 45, lift: 2.9 },
-  ];
+  { region: "North America", reach: 85, lift: 4.2 },
+  { region: "Europe", reach: 65, lift: 3.8 },
+  { region: "Asia Pacific", reach: 45, lift: 2.9 }];
+
 
   return (
     <DashboardLayout>
@@ -57,11 +57,11 @@ const Reports = () => {
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center bg-card/50 border border-white/10 rounded-lg p-1">
-              {['24h', '7d', '30d'].map(d => (
-                <button key={d} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${dateRange === d ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-white'}`} onClick={() => setDateRange(d)}>
+              {['24h', '7d', '30d'].map((d) =>
+              <button key={d} className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${dateRange === d ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-white'}`} onClick={() => setDateRange(d)}>
                   {d.toUpperCase()}
                 </button>
-              ))}
+              )}
             </div>
             <Button variant="outline" className="gap-2 border-border hover:border-primary text-foreground">
               <Download className="h-4 w-4" /> Export CSV
@@ -100,8 +100,8 @@ const Reports = () => {
                   <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000}k`} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#09090b', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                    itemStyle={{ color: '#fff' }}
-                  />
+                    itemStyle={{ color: '#fff' }} />
+
                   <Area type="monotone" dataKey="viewers" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorViewers)" />
                 </AreaChart>
               </ResponsiveContainer>
@@ -114,8 +114,8 @@ const Reports = () => {
               <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-indigo-400" /> Regional Impact</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {regionData.map((region, i) => (
-                <div key={region.region} className="space-y-2">
+              {regionData.map((region, i) =>
+              <div key={region.region} className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-white">{region.region}</span>
                     <span className="text-green-400 font-bold">+{region.lift}% Lift</span>
@@ -128,16 +128,16 @@ const Reports = () => {
                     <span>{region.reach}% (High)</span>
                   </div>
                 </div>
-              ))}
+              )}
 
               <div className="pt-4 border-t border-white/10 mt-6">
                 <h4 className="text-xs font-bold uppercase text-muted-foreground mb-4">Top Networks</h4>
                 <div className="flex flex-wrap gap-2">
-                  {['Hulu', 'Roku', 'ESPN', 'Discovery'].map(net => (
-                    <Badge key={net} variant="secondary" className="bg-white/5 hover:bg-white/10 text-white border-white/10 px-3 py-1 cursor-default">
+                  {['Hulu', 'Roku', 'ESPN', 'Discovery'].map((net) =>
+                  <Badge key={net} variant="secondary" className="bg-white/5 hover:bg-white/10 text-white border-white/10 px-3 py-1 cursor-default">
                       {net}
                     </Badge>
-                  ))}
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -148,19 +148,19 @@ const Reports = () => {
         {/* Detailed Metrics Table Placeholder (could be expanded) */}
 
       </div>
-    </DashboardLayout>
-  );
+    </DashboardLayout>);
+
 };
 
 // Sub-components
-const StatCard = ({ title, value, trend, icon, negative }: any) => (
-  <Card className="bg-card/40 border-white/10 backdrop-blur-sm relative overflow-hidden group">
+const StatCard = ({ title, value, trend, icon, negative }: any) =>
+<Card className="bg-card/40 border-white/10 backdrop-blur-sm relative overflow-hidden group">
     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
     <CardContent className="p-6 relative">
       <div className="flex justify-between items-start mb-4">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <h3 className="text-3xl font-black mt-1 tracking-tight text-white">{value}</h3>
+          <h3 className="text-3xl font-black mt-1 tracking-tight text-secondary-foreground">{value}</h3>
         </div>
         <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 shadow-inner">
           {icon}
@@ -173,7 +173,7 @@ const StatCard = ({ title, value, trend, icon, negative }: any) => (
         <span className="text-xs text-muted-foreground">vs previous period</span>
       </div>
     </CardContent>
-  </Card>
-);
+  </Card>;
+
 
 export default Reports;
