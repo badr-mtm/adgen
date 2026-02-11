@@ -550,6 +550,121 @@ const VideoEditorSidebar = ({
               </div>
             </div>
           )}
+
+          {/* AI Input Settings Tab */}
+          {activeTab === "ai-settings" && (
+            <div className="p-4 space-y-5">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">AI Model</Label>
+                <RadioGroup value={overlaySettings.aiSettings?.model || "balanced"} onValueChange={(val) => onOverlaySettingsChange({ ...overlaySettings, aiSettings: { ...overlaySettings.aiSettings, model: val, creativity: overlaySettings.aiSettings?.creativity ?? 70, autoEnhance: overlaySettings.aiSettings?.autoEnhance ?? true, style: overlaySettings.aiSettings?.style || "cinematic" } })}>
+                  <div className="space-y-2">
+                    {[
+                      { id: 'speed', label: 'Speed Priority', desc: 'Faster generation, good quality' },
+                      { id: 'balanced', label: 'Balanced', desc: 'Best mix of speed and quality' },
+                      { id: 'quality', label: 'Quality Priority', desc: 'Highest fidelity, slower' },
+                    ].map((m) => (
+                      <div key={m.id} className="flex items-center space-x-2 p-3 rounded-lg hover:bg-accent border border-transparent hover:border-border has-[:checked]:bg-primary/10 has-[:checked]:border-primary/30 transition-all cursor-pointer">
+                        <RadioGroupItem value={m.id} id={`model-${m.id}`} className="text-primary border-border" />
+                        <Label htmlFor={`model-${m.id}`} className="flex-1 cursor-pointer">
+                          <span className="text-sm font-medium text-foreground block">{m.label}</span>
+                          <span className="text-xs text-muted-foreground">{m.desc}</span>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Creativity Level</Label>
+                <div className="flex items-center gap-3">
+                  <Slider value={[overlaySettings.aiSettings?.creativity ?? 70]} onValueChange={([val]) => onOverlaySettingsChange({ ...overlaySettings, aiSettings: { ...overlaySettings.aiSettings, model: overlaySettings.aiSettings?.model || "balanced", creativity: val, autoEnhance: overlaySettings.aiSettings?.autoEnhance ?? true, style: overlaySettings.aiSettings?.style || "cinematic" } })} min={0} max={100} step={5} className="flex-1" />
+                  <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20">{overlaySettings.aiSettings?.creativity ?? 70}%</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground">Higher values produce more creative and unexpected results</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Visual Style</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['cinematic', 'modern', 'vintage', 'minimal'].map((style) => (
+                    <button key={style}
+                      onClick={() => onOverlaySettingsChange({ ...overlaySettings, aiSettings: { ...overlaySettings.aiSettings, model: overlaySettings.aiSettings?.model || "balanced", creativity: overlaySettings.aiSettings?.creativity ?? 70, autoEnhance: overlaySettings.aiSettings?.autoEnhance ?? true, style } })}
+                      className={`p-2.5 rounded-lg border text-xs font-semibold capitalize transition-all ${(overlaySettings.aiSettings?.style || "cinematic") === style ? "bg-primary/10 border-primary/30 text-primary" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                      {style}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                <div>
+                  <Label className="text-sm font-medium text-foreground block">Auto-Enhance</Label>
+                  <span className="text-[10px] text-muted-foreground">Automatically improve generated visuals</span>
+                </div>
+                <Switch checked={overlaySettings.aiSettings?.autoEnhance ?? true} onCheckedChange={(checked) => onOverlaySettingsChange({ ...overlaySettings, aiSettings: { ...overlaySettings.aiSettings, model: overlaySettings.aiSettings?.model || "balanced", creativity: overlaySettings.aiSettings?.creativity ?? 70, autoEnhance: checked, style: overlaySettings.aiSettings?.style || "cinematic" } })} />
+              </div>
+            </div>
+          )}
+
+          {/* General Settings Tab */}
+          {activeTab === "settings" && (
+            <div className="p-4 space-y-5">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Aspect Ratio</Label>
+                <RadioGroup value={overlaySettings.generalSettings?.aspectRatio || "16:9"} onValueChange={(val) => onOverlaySettingsChange({ ...overlaySettings, generalSettings: { ...overlaySettings.generalSettings, aspectRatio: val, resolution: overlaySettings.generalSettings?.resolution || "1080p", fps: overlaySettings.generalSettings?.fps || 30, loop: overlaySettings.generalSettings?.loop ?? false, watermark: overlaySettings.generalSettings?.watermark ?? false } })}>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['16:9', '4:3', '9:16', '1:1', '21:9'].map((ratio) => (
+                      <div key={ratio} className="flex items-center justify-center p-2 border border-border rounded-lg hover:bg-accent cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary/30 transition-all">
+                        <RadioGroupItem value={ratio} id={`ratio-${ratio}`} className="sr-only" />
+                        <Label htmlFor={`ratio-${ratio}`} className="text-xs font-semibold cursor-pointer text-foreground">{ratio}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Resolution</Label>
+                <RadioGroup value={overlaySettings.generalSettings?.resolution || "1080p"} onValueChange={(val) => onOverlaySettingsChange({ ...overlaySettings, generalSettings: { ...overlaySettings.generalSettings, aspectRatio: overlaySettings.generalSettings?.aspectRatio || "16:9", resolution: val, fps: overlaySettings.generalSettings?.fps || 30, loop: overlaySettings.generalSettings?.loop ?? false, watermark: overlaySettings.generalSettings?.watermark ?? false } })}>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['720p', '1080p', '4K'].map((res) => (
+                      <div key={res} className="flex items-center justify-center p-2 border border-border rounded-lg hover:bg-accent cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary/30 transition-all">
+                        <RadioGroupItem value={res} id={`res-${res}`} className="sr-only" />
+                        <Label htmlFor={`res-${res}`} className="text-xs font-semibold cursor-pointer text-foreground">{res}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Frame Rate</Label>
+                <div className="flex items-center gap-3">
+                  <Slider value={[overlaySettings.generalSettings?.fps || 30]} onValueChange={([val]) => onOverlaySettingsChange({ ...overlaySettings, generalSettings: { ...overlaySettings.generalSettings, aspectRatio: overlaySettings.generalSettings?.aspectRatio || "16:9", resolution: overlaySettings.generalSettings?.resolution || "1080p", fps: val, loop: overlaySettings.generalSettings?.loop ?? false, watermark: overlaySettings.generalSettings?.watermark ?? false } })} min={24} max={60} step={6} className="flex-1" />
+                  <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20">{overlaySettings.generalSettings?.fps || 30} fps</span>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2 border-t border-border">
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                  <div>
+                    <Label className="text-sm font-medium text-foreground block">Loop Playback</Label>
+                    <span className="text-[10px] text-muted-foreground">Video loops continuously</span>
+                  </div>
+                  <Switch checked={overlaySettings.generalSettings?.loop ?? false} onCheckedChange={(checked) => onOverlaySettingsChange({ ...overlaySettings, generalSettings: { ...overlaySettings.generalSettings, aspectRatio: overlaySettings.generalSettings?.aspectRatio || "16:9", resolution: overlaySettings.generalSettings?.resolution || "1080p", fps: overlaySettings.generalSettings?.fps || 30, loop: checked, watermark: overlaySettings.generalSettings?.watermark ?? false } })} />
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                  <div>
+                    <Label className="text-sm font-medium text-foreground block">Watermark</Label>
+                    <span className="text-[10px] text-muted-foreground">Add brand watermark overlay</span>
+                  </div>
+                  <Switch checked={overlaySettings.generalSettings?.watermark ?? false} onCheckedChange={(checked) => onOverlaySettingsChange({ ...overlaySettings, generalSettings: { ...overlaySettings.generalSettings, aspectRatio: overlaySettings.generalSettings?.aspectRatio || "16:9", resolution: overlaySettings.generalSettings?.resolution || "1080p", fps: overlaySettings.generalSettings?.fps || 30, loop: overlaySettings.generalSettings?.loop ?? false, watermark: checked } })} />
+                </div>
+              </div>
+            </div>
+          )}
         </ScrollArea>
       </div>
     </div>
