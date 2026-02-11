@@ -147,8 +147,8 @@ const AISuggestions = () => {
                   </div> :
 
                 <div className="space-y-4 opacity-50">
-                    <Brain className="h-16 w-16 mx-auto text-white/20" />
-                    <p className="text-lg font-medium text-white/50">Select an insight to simulate its impact.</p>
+                    <Brain className="h-16 w-16 mx-auto text-secondary bg-secondary" />
+                    <p className="text-lg font-medium text-muted-foreground">Select an insight to simulate its impact.</p>
                   </div>
                 }
               </CardContent>
