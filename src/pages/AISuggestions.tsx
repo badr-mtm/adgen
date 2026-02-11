@@ -109,7 +109,7 @@ const AISuggestions = () => {
 
                   <div className="mt-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button size="sm" className="bg-primary text-black hover:bg-primary/90">Apply Fix</Button>
-                    <Button size="sm" variant="ghost" className="text-white hover:text-white hover:bg-white/10">Simulate Impact</Button>
+                    <Button size="sm" variant="ghost" className="hover:bg-white/10 text-secondary-foreground">Simulate Impact</Button>
                   </div>
                 </motion.div>
               )}
