@@ -315,20 +315,21 @@ const VideoPreview = ({
             </button>
           )}
 
-          {/* Overlay Content */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none">
-            {/* Overlay Elements (Banner & QR Code) */}
-            {overlaySettings && !showEndScreen && (
+          {/* Overlay Elements (Banner & QR Code) - rendered outside gradient to ensure visibility */}
+          {overlaySettings && !showEndScreen && (
+            <div className="absolute inset-0 z-30 pointer-events-none">
               <div className="pointer-events-auto">
                 <OverlayElements
                   banner={overlaySettings.banner}
                   qrCode={overlaySettings.qrCode}
                 />
               </div>
-            )}
+            </div>
+          )}
 
-            {/* End Screen */}
-            {overlaySettings && (
+          {/* End Screen */}
+          {overlaySettings && (
+            <div className="absolute inset-0 z-30 pointer-events-none">
               <div className="pointer-events-auto">
                 <EndScreen
                   settings={overlaySettings.endScreen}
@@ -337,7 +338,11 @@ const VideoPreview = ({
                   isActive={showEndScreen}
                 />
               </div>
-            )}
+            </div>
+          )}
+
+          {/* Overlay Content */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none">
 
             {/* Center Play Button - Glassmorphism */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
