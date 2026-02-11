@@ -61,7 +61,7 @@ const AISuggestions = () => {
             <p className="text-muted-foreground">Neural engine analyzing real-time campaign data.</p>
           </div>
           <div className="flex items-center gap-4 bg-card/50 border border-white/10 p-2 rounded-xl backdrop-blur-sm">
-            <span className="text-sm font-medium text-white px-2">Auto-Optimization</span>
+            <span className="text-sm font-medium px-2 text-muted-foreground">Auto-Optimization</span>
             <Switch checked={autoApply} onCheckedChange={setAutoApply} className="data-[state=checked]:bg-primary" />
           </div>
         </div>
