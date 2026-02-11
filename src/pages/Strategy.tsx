@@ -136,9 +136,9 @@ export default function Strategy() {
       <Loader2 className="w-8 h-8 animate-spin text-primary" />
     </div>;
   }
-  return <div className="min-h-screen bg-slate-50/50 dark:bg-background text-foreground selection:bg-primary/20 dark:selection:bg-primary/30">
+  return <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
     {/* Cinematic Sticky Header */}
-    <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40 supports-[backdrop-filter]:bg-background/60">
+    <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground hover:bg-muted">
@@ -195,7 +195,7 @@ export default function Strategy() {
 
         {/* Sidebar - Mission Control Summary */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="sticky top-28 bg-card border-border/50 backdrop-blur-md shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/50 overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+          <Card className="sticky top-28 bg-card border-border backdrop-blur-md shadow-2xl overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-purple-500" />
             <CardHeader className="pb-4 border-b border-border bg-muted/50">
               <CardTitle className="flex justify-between items-center text-foreground">
