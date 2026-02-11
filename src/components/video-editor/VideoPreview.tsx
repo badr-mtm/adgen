@@ -373,7 +373,10 @@ const VideoPreview = ({
             )}
 
             {/* Bottom Content - High contrast headings */}
-            <div className="absolute bottom-0 left-0 right-0 p-10 pointer-events-auto">
+            <div className={cn(
+              "absolute left-0 right-0 p-10 pointer-events-auto transition-all duration-300",
+              overlaySettings?.banner?.enabled && overlaySettings?.banner?.position === "bottom" ? "bottom-12" : "bottom-0"
+            )}>
               <div className="flex items-end justify-between gap-12">
                 <div className="space-y-4 flex-1">
                   {/* Headline */}

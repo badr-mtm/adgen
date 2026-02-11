@@ -133,9 +133,9 @@ export interface VideoOverlaySettings {
   generalSettings?: GeneralSettings;
 }
 export const defaultOverlaySettings: VideoOverlaySettings = {
-  banner: { enabled: false, text: "Visit our website", position: "bottom", alignment: "center", backgroundColor: "#000000", textColor: "#ffffff" },
+  banner: { enabled: true, text: "Visit our website", position: "bottom", alignment: "center", backgroundColor: "#000000", textColor: "#ffffff" },
   endScreen: { enabled: true, duration: 5, ctaText: "Learn More", ctaUrl: "", showLogo: true, backgroundColor: "#1a1a2e" },
-  qrCode: { enabled: false, url: "", position: "top-right", size: 100 },
+  qrCode: { enabled: true, url: "https://example.com/qr", position: "top-right", size: 100 },
   music: { selectedTrackId: null, volume: 70, isMuted: false },
   voice: { script: "", selectedVoice: "professional", speed: 1.0, generateVoiceover: false },
   network: { selected: "none" },
