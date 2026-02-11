@@ -107,6 +107,19 @@ export interface VoiceSettings {
   speed: number;
   generateVoiceover: boolean;
 }
+export interface AIInputSettings {
+  model: string;
+  creativity: number;
+  autoEnhance: boolean;
+  style: string;
+}
+export interface GeneralSettings {
+  aspectRatio: string;
+  resolution: string;
+  fps: number;
+  loop: boolean;
+  watermark: boolean;
+}
 export interface VideoOverlaySettings {
   banner: BannerSettings;
   endScreen: EndScreenSettings;
@@ -116,6 +129,8 @@ export interface VideoOverlaySettings {
   network?: {
     selected: "none" | "espn" | "hulu" | "peacock" | "tubi";
   };
+  aiSettings?: AIInputSettings;
+  generalSettings?: GeneralSettings;
 }
 export const defaultOverlaySettings: VideoOverlaySettings = {
   banner: { enabled: false, text: "Visit our website", position: "bottom", alignment: "center", backgroundColor: "#000000", textColor: "#ffffff" },
@@ -124,4 +139,6 @@ export const defaultOverlaySettings: VideoOverlaySettings = {
   music: { selectedTrackId: null, volume: 70, isMuted: false },
   voice: { script: "", selectedVoice: "professional", speed: 1.0, generateVoiceover: false },
   network: { selected: "none" },
+  aiSettings: { model: "balanced", creativity: 70, autoEnhance: true, style: "cinematic" },
+  generalSettings: { aspectRatio: "16:9", resolution: "1080p", fps: 30, loop: false, watermark: false },
 };
