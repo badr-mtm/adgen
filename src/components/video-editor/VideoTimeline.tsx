@@ -239,7 +239,7 @@ const VideoTimeline = ({
                     {track.label}
                   </span>
                 </div>
-                <div className={`h-5 flex-1 rounded-md flex items-center px-2 transition-all relative border ${track.enabled
+                <div className={`h-2 flex-1 rounded-md flex items-center px-2 transition-all relative border ${track.enabled
                   ? `${track.color} border-white/10 shadow-md shadow-black/5`
                   : "bg-muted/30 border-border opacity-40 group-hover:opacity-60"
                   }`}>
