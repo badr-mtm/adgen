@@ -21,6 +21,7 @@ import type { VideoOverlaySettings, BannerSettings, EndScreenSettings, QRCodeSet
 interface SceneSlide {
   id: number;
   thumbnailUrl?: string;
+  videoUrl?: string;
   duration: string;
   label: string;
   isActive?: boolean;
@@ -145,7 +146,16 @@ const VideoEditorSidebar = ({
                 >
                   <div className="flex gap-3">
                     <div className="relative w-24 h-14 rounded-md overflow-hidden bg-muted flex-shrink-0 shadow-inner border border-border">
-                      {scene.thumbnailUrl ? (
+                      {scene.videoUrl ? (
+                        <video
+                          src={scene.videoUrl}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                        />
+                      ) : scene.thumbnailUrl ? (
                         <img src={scene.thumbnailUrl} alt={scene.label} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">

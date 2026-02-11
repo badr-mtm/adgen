@@ -38,7 +38,7 @@ export default function VideoEditor() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showEndScreen, setShowEndScreen] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
-  
+
   // Generated video from ScriptSelection page
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
   const [showGeneratedVideo, setShowGeneratedVideo] = useState(false);
@@ -102,19 +102,19 @@ export default function VideoEditor() {
 
         // Optimistic Load from Transition State (new flow passes variant data)
         const locationState = location.state as any;
-        
+
         // Check for generated video from ScriptSelection page
         if (locationState?.generatedVideoUrl) {
           setGeneratedVideoUrl(locationState.generatedVideoUrl);
           setShowGeneratedVideo(true);
-          
+
           // Store script info if passed
           if (locationState.script) {
             setProject((prev: any) => ({
               ...prev,
               selectedScript: locationState.script
             }));
-            
+
             // Handle scene-by-scene videos
             if (locationState.generationMode === "scene-by-scene" && locationState.sceneVideos) {
               // Map scene videos to scenes
@@ -127,10 +127,10 @@ export default function VideoEditor() {
               });
               setScenes(mappedScenes);
               console.log('Loaded scene-by-scene videos:', mappedScenes.length);
-            } 
+            }
             // Create scenes from script for full video mode
             else if (locationState.script.scenes && locationState.script.scenes.length > 0) {
-              const mappedScenes = locationState.script.scenes.map((s: any, idx: number) => 
+              const mappedScenes = locationState.script.scenes.map((s: any, idx: number) =>
                 normalizeScene({
                   ...s,
                   videoUrl: idx === 0 ? locationState.generatedVideoUrl : '' // Assign video to first scene
@@ -140,13 +140,13 @@ export default function VideoEditor() {
             }
           }
         }
-        
+
         if (locationState?.preloadedScenes && locationState.preloadedScenes.length > 0) {
-          const mappedScenes = locationState.preloadedScenes.map((s: any, idx: number) => 
+          const mappedScenes = locationState.preloadedScenes.map((s: any, idx: number) =>
             normalizeScene(s, idx)
           );
           setScenes(mappedScenes);
-          
+
           // Store script and variant info if passed
           if (locationState.script || locationState.variant) {
             setProject((prev: any) => ({
@@ -162,23 +162,34 @@ export default function VideoEditor() {
           return;
         }
 
-        // Fetch campaign from database
+        // Fetch campaign from database with brand information
         const { data: campaign, error } = await supabase
           .from('campaigns')
-          .select('*')
+          .select(`
+            *,
+            brands (
+              name,
+              logo_url
+            )
+          `)
           .eq('id', id)
           .single();
 
         if (error) throw error;
 
         if (campaign) {
-          setProject(campaign);
+          // Store campaign with brand data
+          setProject({
+            ...campaign,
+            brand_name: campaign.brands?.name || campaign.brand_name,
+            brand_logo: campaign.brands?.logo_url
+          });
           const storyboard = campaign.storyboard as any;
-          
+
           // Load generated video URL from storyboard if not already set from navigation state
           if (!generatedVideoUrl) {
-            const videoUrl = storyboard?.selectedScript?.generatedVideoUrl 
-              || storyboard?.generatedVideoUrl 
+            const videoUrl = storyboard?.selectedScript?.generatedVideoUrl
+              || storyboard?.generatedVideoUrl
               || storyboard?.videoUrl;
             if (videoUrl) {
               setGeneratedVideoUrl(videoUrl);
@@ -188,7 +199,7 @@ export default function VideoEditor() {
 
           // Load scenes from storyboard - normalize to consistent format
           if (storyboard?.scenes && storyboard.scenes.length > 0) {
-            const normalizedScenes = storyboard.scenes.map((s: any, idx: number) => 
+            const normalizedScenes = storyboard.scenes.map((s: any, idx: number) =>
               normalizeScene(s, idx)
             );
             // Only set if we don't already have scenes from location state
@@ -196,7 +207,7 @@ export default function VideoEditor() {
               setScenes(normalizedScenes);
             }
           }
-          
+
           // Load video settings if present
           if (storyboard?.strategy?.videoSettings) {
             setOverlaySettings(prev => ({ ...prev, ...storyboard.strategy.videoSettings }));
@@ -761,6 +772,7 @@ export default function VideoEditor() {
               label: `Scene ${s.sceneNumber || s.number || idx + 1}`,
               duration: s.duration,
               thumbnailUrl: s.visualUrl || s.imageUrl || s.thumbnail || s.url,
+              videoUrl: s.videoUrl,
               isActive: currentSceneIndex === idx
             }))}
             activeTab={activeTab}
@@ -845,6 +857,7 @@ export default function VideoEditor() {
                 overlaySettings={overlaySettings}
                 showEndScreen={showEndScreen}
                 brandName={project?.brand_name || "Brand"}
+                brandLogo={project?.brand_logo}
                 headline={scenes[currentSceneIndex]?.visualDescription?.split('.')[0]}
                 description={scenes[currentSceneIndex]?.visualDescription}
                 ctaText={overlaySettings.endScreen.ctaText}

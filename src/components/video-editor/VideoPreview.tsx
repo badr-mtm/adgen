@@ -18,6 +18,7 @@ interface VideoPreviewProps {
   currentSceneIndex: number;
   sceneProgress?: number;
   brandName?: string;
+  brandLogo?: string;
   headline?: string;
   description?: string;
   ctaText?: string;
@@ -37,6 +38,7 @@ const VideoPreview = ({
   currentSceneIndex,
   sceneProgress = 0,
   brandName = "Brand",
+  brandLogo = "",
   headline = "Your Headline",
   description = "Your description here",
   ctaText = "Learn More",
@@ -335,6 +337,7 @@ const VideoPreview = ({
                   settings={overlaySettings.endScreen}
                   qrSettings={overlaySettings.qrCode}
                   brandName={brandName}
+                  brandLogo={brandLogo}
                   isActive={showEndScreen}
                 />
               </div>
