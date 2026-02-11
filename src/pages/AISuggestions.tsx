@@ -90,7 +90,7 @@ const AISuggestions = () => {
                         {insight.type === 'opportunity' && <Sparkles className="h-5 w-5" />}
                       </div>
                       <div>
-                        <h3 className="font-bold text-white text-lg">{insight.title}</h3>
+                        <h3 className="font-bold text-lg text-[#273a22]">{insight.title}</h3>
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-muted-foreground">Confidence:</span>
                           <div className="h-1.5 w-16 bg-white/10 rounded-full overflow-hidden">
