@@ -54,14 +54,14 @@ const AISuggestions = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 text-secondary-foreground">
               <Cpu className="h-8 w-8 text-primary" />
               Predictive Intelligence
             </h1>
             <p className="text-muted-foreground">Neural engine analyzing real-time campaign data.</p>
           </div>
           <div className="flex items-center gap-4 bg-card/50 border border-white/10 p-2 rounded-xl backdrop-blur-sm">
-            <span className="text-sm font-medium px-2 text-secondary-foreground">Auto-Optimization</span>
+            <span className="text-sm font-medium text-white px-2">Auto-Optimization</span>
             <Switch checked={autoApply} onCheckedChange={setAutoApply} className="data-[state=checked]:bg-primary" />
           </div>
         </div>
@@ -70,7 +70,7 @@ const AISuggestions = () => {
 
           {/* Left: Feed */}
           <div className="lg:col-span-2 space-y-6">
-            <h2 className="text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <h2 className="text-lg font-bold uppercase tracking-wider flex items-center gap-2 text-secondary-foreground">
               <Zap className="h-5 w-5 text-yellow-500" /> Active Insights
             </h2>
 
@@ -100,7 +100,7 @@ const AISuggestions = () => {
                         </div>
                       </div>
                     </div>
-                    <Badge className="bg-white/10 hover:bg-white/20 border-0 px-3 py-1 text-primary">
+                    <Badge className="bg-white/10 hover:bg-white/20 border-0 text-white px-3 py-1">
                       {insight.impact}
                     </Badge>
                   </div>
