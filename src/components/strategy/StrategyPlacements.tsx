@@ -99,7 +99,7 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
     };
 
     return (
-        <Card className="w-full bg-card border-border backdrop-blur-sm shadow-card">
+        <Card className="w-full bg-card border-border/60 backdrop-blur-sm shadow-xl shadow-black/5 dark:shadow-card dark:border-border ring-1 ring-black/5 dark:ring-white/5">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground"><MonitorPlay className="w-5 h-5 text-primary" /> Placements & Channels</CardTitle>
                 <CardDescription className="text-muted-foreground">Choose where your ads will appear across premium TV networks and streaming platforms.</CardDescription>

@@ -101,7 +101,7 @@ export function StrategyAudience({ strategy, setStrategy }: StrategyAudienceProp
     };
 
     return (
-        <Card className="w-full bg-card border-border backdrop-blur-sm shadow-card">
+        <Card className="w-full bg-card border-border/60 backdrop-blur-sm shadow-xl shadow-black/5 dark:shadow-card dark:border-border ring-1 ring-black/5 dark:ring-white/5">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground"><Users className="w-5 h-5 text-primary" /> Audience Targeting</CardTitle>
                 <CardDescription className="text-muted-foreground">Define exactly who sees your ads with precision targeting.</CardDescription>
