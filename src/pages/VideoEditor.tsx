@@ -175,12 +175,26 @@ export default function VideoEditor() {
           setProject(campaign);
           const storyboard = campaign.storyboard as any;
           
+          // Load generated video URL from storyboard if not already set from navigation state
+          if (!generatedVideoUrl) {
+            const videoUrl = storyboard?.selectedScript?.generatedVideoUrl 
+              || storyboard?.generatedVideoUrl 
+              || storyboard?.videoUrl;
+            if (videoUrl) {
+              setGeneratedVideoUrl(videoUrl);
+              setShowGeneratedVideo(true);
+            }
+          }
+
           // Load scenes from storyboard - normalize to consistent format
           if (storyboard?.scenes && storyboard.scenes.length > 0) {
             const normalizedScenes = storyboard.scenes.map((s: any, idx: number) => 
               normalizeScene(s, idx)
             );
-            setScenes(normalizedScenes);
+            // Only set if we don't already have scenes from location state
+            if (scenes.length === 0) {
+              setScenes(normalizedScenes);
+            }
           }
           
           // Load video settings if present
