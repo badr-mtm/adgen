@@ -162,27 +162,32 @@ export default function VideoEditor() {
           return;
         }
 
-        // Fetch campaign from database with brand information
+        // Fetch campaign from database
         const { data: campaign, error } = await supabase
           .from('campaigns')
-          .select(`
-            *,
-            brands (
-              name,
-              logo_url
-            )
-          `)
+          .select('*')
           .eq('id', id)
           .single();
 
         if (error) throw error;
 
         if (campaign) {
+          // Fetch brand information separately using brand_id
+          let brandData = null;
+          if (campaign.brand_id) {
+            const { data: brand } = await supabase
+              .from('brands')
+              .select('name, logo_url')
+              .eq('id', campaign.brand_id)
+              .single();
+            brandData = brand;
+          }
+
           // Store campaign with brand data
           setProject({
             ...campaign,
-            brand_name: campaign.brands?.name || campaign.brand_name,
-            brand_logo: campaign.brands?.logo_url
+            brand_name: brandData?.name || campaign.brand_name,
+            brand_logo: brandData?.logo_url
           });
           const storyboard = campaign.storyboard as any;
 
