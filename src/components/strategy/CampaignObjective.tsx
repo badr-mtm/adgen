@@ -11,7 +11,7 @@ const objectives = [
     description: "Build broad recognition and recall",
     icon: Eye,
     color: "bg-blue-500/10 text-blue-600 border-blue-500/50 dark:text-blue-400",
-    selectedColor: "bg-blue-50 border-blue-500 ring-blue-500/20 dark:bg-blue-500/20 dark:border-blue-400",
+    selectedColor: "bg-blue-50/80 border-blue-500 shadow-blue-500/10 dark:bg-blue-500/20 dark:border-blue-400",
   },
   {
     id: "consideration" as const,
@@ -19,7 +19,7 @@ const objectives = [
     description: "Drive interest and evaluation",
     icon: Target,
     color: "bg-amber-500/10 text-amber-600 border-amber-500/50 dark:text-amber-400",
-    selectedColor: "bg-amber-50 border-amber-500 ring-amber-500/20 dark:bg-amber-500/20 dark:border-amber-400",
+    selectedColor: "bg-amber-50/80 border-amber-500 shadow-amber-500/10 dark:bg-amber-500/20 dark:border-amber-400",
   },
   {
     id: "promotion" as const,
@@ -27,7 +27,7 @@ const objectives = [
     description: "Highlight offers and drive action",
     icon: Tag,
     color: "bg-green-500/10 text-green-600 border-green-500/50 dark:text-green-400",
-    selectedColor: "bg-green-50 border-green-500 ring-green-500/20 dark:bg-green-500/20 dark:border-green-400",
+    selectedColor: "bg-green-50/80 border-green-500 shadow-green-500/10 dark:bg-green-500/20 dark:border-green-400",
   },
   {
     id: "brand_launch" as const,
@@ -35,7 +35,7 @@ const objectives = [
     description: "Introduce a new brand to market",
     icon: Rocket,
     color: "bg-purple-500/10 text-purple-600 border-purple-500/50 dark:text-purple-400",
-    selectedColor: "bg-purple-50 border-purple-500 ring-purple-500/20 dark:bg-purple-500/20 dark:border-purple-400",
+    selectedColor: "bg-purple-50/80 border-purple-500 shadow-purple-500/10 dark:bg-purple-500/20 dark:border-purple-400",
   },
 ];
 
@@ -66,8 +66,8 @@ export function CampaignObjective({
             className={cn(
               "p-4 rounded-xl border text-left transition-all relative overflow-hidden group",
               isSelected
-                ? cn("border-2 shadow-md ring-1", objective.selectedColor)
-                : "bg-card border-border shadow-sm hover:shadow-md hover:border-primary/30 hover:bg-accent/50",
+                ? cn("border-2 shadow-lg z-10", objective.selectedColor)
+                : "bg-slate-50/80 border-slate-200 shadow-sm hover:shadow-md hover:border-primary/30 hover:bg-white dark:bg-muted/20 dark:border-border",
               disabled && "opacity-50 cursor-not-allowed"
             )}
           >
