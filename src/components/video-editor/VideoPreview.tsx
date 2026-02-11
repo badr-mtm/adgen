@@ -319,8 +319,8 @@ const VideoPreview = ({
 
           {/* Overlay Elements (Banner & QR Code) - rendered outside gradient to ensure visibility */}
           {overlaySettings && !showEndScreen && (
-            <div className="absolute inset-0 z-30 pointer-events-none">
-              <div className="pointer-events-auto">
+            <div className="absolute inset-0 z-50 pointer-events-none w-full h-full">
+              <div className="relative w-full h-full pointer-events-auto">
                 <OverlayElements
                   banner={overlaySettings.banner}
                   qrCode={overlaySettings.qrCode}
