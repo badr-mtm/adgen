@@ -277,9 +277,9 @@ export default function Strategy() {
             {/* Quick Actions / Status */}
             <div className="grid grid-cols-3 gap-4 pb-4">
               {[
-                { label: 'Market Readiness', value: '94%', icon: Globe, color: 'text-blue-500' },
-                { label: 'Audience Match', value: 'High', icon: Target, color: 'text-primary' },
-                { label: 'Launch Window', value: 'Prime', icon: Clock, color: 'text-purple-500' }].
+                { label: 'Platform Availability', value: 'High', icon: Globe, color: 'text-blue-500' },
+                { label: 'Household Match', value: '98%', icon: Target, color: 'text-primary' },
+                { label: 'Premiere Slots', value: 'Open', icon: Clock, color: 'text-purple-500' }].
                 map((stat, i) =>
                   <div key={i} className="p-4 rounded-3xl bg-card/40 border border-white/5 backdrop-blur-xl flex flex-col gap-2 transition-all hover:border-white/10 group">
                     <div className={cn("p-2 rounded-xl w-fit bg-muted transition-all group-hover:scale-110", stat.color)}>
@@ -364,9 +364,9 @@ export default function Strategy() {
                 {/* Checklist with premium icons */}
                 <div className="space-y-4 border-t border-white/5 pt-px">
                   {[
-                    { label: 'Brand Safety Verified', icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                    { label: 'Global CDN Ready', icon: Globe, color: 'text-primary', bg: 'bg-primary/10' },
-                    { label: 'AI Optimization Active', icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' }].
+                    { label: 'MPAA/TV Rating Safe', icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                    { label: '4K/HDR Stream Ready', icon: Globe, color: 'text-primary', bg: 'bg-primary/10' },
+                    { label: 'Contextual Movie Pairing', icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' }].
                     map((item, i) =>
                       <div key={i} className="flex items-center gap-4 text-[11px] font-bold text-foreground/70 group cursor-default">
                         <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center border border-white/5 transition-all group-hover:scale-110", item.bg, item.color)}>
