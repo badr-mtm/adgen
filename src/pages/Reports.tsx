@@ -134,7 +134,7 @@ const Reports = () => {
                 <h4 className="text-xs font-bold uppercase text-muted-foreground mb-4">Top Networks</h4>
                 <div className="flex flex-wrap gap-2">
                   {['Hulu', 'Roku', 'ESPN', 'Discovery'].map((net) =>
-                  <Badge key={net} variant="secondary" className="bg-white/5 hover:bg-white/10 text-white border-white/10 px-3 py-1 cursor-default">
+                  <Badge key={net} variant="secondary" className="bg-white/5 hover:bg-white/10 border-white/10 px-3 py-1 cursor-default text-primary">
                       {net}
                     </Badge>
                   )}
