@@ -848,6 +848,7 @@ export default function VideoEditor() {
                       <OverlayElements
                         banner={overlaySettings.banner}
                         qrCode={overlaySettings.qrCode}
+                        title={overlaySettings.title}
                       />
                     </div>
                   </div>
