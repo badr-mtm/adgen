@@ -43,6 +43,7 @@ export default function VideoEditor() {
   // Generated video from ScriptSelection page
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
   const [showGeneratedVideo, setShowGeneratedVideo] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Undo/Redo History
   const [history, setHistory] = useState<any[]>([]);
@@ -759,8 +760,6 @@ export default function VideoEditor() {
     });
     setIsAssistantOpen(true);
   };
-
-  const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePublishAndExport = async () => {
     if (!id) return;
