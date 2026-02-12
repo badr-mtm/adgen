@@ -44,7 +44,7 @@ export const PerformanceInsights = () => {
                             <div className={cn("p-1.5 rounded-lg bg-background border border-border", stat.color)}>
                                 <stat.icon className="h-3.5 w-3.5" />
                             </div>
-                            <Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary uppercase font-bold px-1.5 h-4">Live</Badge>
+                            
                         </div>
                         <div>
                             <p className="text-lg font-black tracking-tighter text-foreground leading-none">{stat.value}</p>
