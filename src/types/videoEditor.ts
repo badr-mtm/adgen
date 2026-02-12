@@ -85,6 +85,7 @@ export interface TitleSettings {
   enabled: boolean;
   text: string;
   color: string;
+  position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
 }
 export interface EndScreenSettings {
   enabled: boolean;
@@ -147,5 +148,5 @@ export const defaultOverlaySettings: VideoOverlaySettings = {
   network: { selected: "none" },
   aiSettings: { model: "balanced", creativity: 70, autoEnhance: true, style: "cinematic" },
   generalSettings: { aspectRatio: "16:9", resolution: "1080p", fps: 30, loop: false, watermark: false },
-  title: { enabled: false, text: "Your Title Here", color: "#ffffff" },
+  title: { enabled: false, text: "Your Title Here", color: "#ffffff", position: "bottom-left" },
 };
