@@ -123,7 +123,7 @@ export function StrategySchedule({ strategy, setStrategy, date, setDate }: Strat
   };
 
   return (
-    <Card className="w-full bg-card border-border backdrop-blur-sm shadow-card">
+    <Card className="w-full border-border backdrop-blur-sm shadow-card bg-primary-foreground">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground">
                     <DollarSign className="w-5 h-5 text-primary" />
