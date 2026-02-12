@@ -219,19 +219,19 @@ export default function Strategy() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="space-y-0.5">
-              <h1 className="text-xl font-black tracking-tighter flex items-center gap-2.5">
+              <h1 className="text-3xl font-bold flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
                   <Target className="h-4 w-4" />
                 </div>
-                STRATEGY COMMAND
+                Strategy Engine
               </h1>
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_hsl(142,70%,45%)]" />
                   Live Sync
                 </div>
                 <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                <span className="text-[10px] text-muted-foreground/80 font-black uppercase tracking-[0.2em]">{strategy.intent.goal} objective active</span>
+                <span className="text-[10px] text-muted-foreground/80 font-bold uppercase tracking-wider">{strategy.intent.goal} objective active</span>
               </div>
             </div>
           </div>
@@ -239,12 +239,12 @@ export default function Strategy() {
           <div className="flex items-center gap-4">
             <div className="hidden lg:flex items-center gap-8 mr-6 border-r border-white/5 pr-8">
               <div className="text-right">
-                <div className="text-[9px] uppercase text-muted-foreground font-black tracking-[0.2em] mb-1 opacity-60">Estimated Reach</div>
-                <div className="text-xl font-black text-foreground tracking-tighter">1.2M <span className="text-xs font-medium text-muted-foreground">HH</span></div>
+                <div className="text-[9px] uppercase text-muted-foreground font-bold tracking-wider mb-1 opacity-60">Estimated Reach</div>
+                <div className="text-xl font-bold text-foreground">1.2M <span className="text-xs font-medium text-muted-foreground">HH</span></div>
               </div>
               <div className="text-right">
-                <div className="text-[9px] uppercase text-muted-foreground font-black tracking-[0.2em] mb-1 opacity-60">Allocated Budget</div>
-                <div className="text-xl font-black text-primary tracking-tighter">${strategy.budget.amount.toLocaleString()}</div>
+                <div className="text-[9px] uppercase text-muted-foreground font-bold tracking-wider mb-1 opacity-60">Allocated Budget</div>
+                <div className="text-xl font-bold text-primary">${strategy.budget.amount.toLocaleString()}</div>
               </div>
             </div>
 
@@ -261,9 +261,9 @@ export default function Strategy() {
             <Button
               onClick={() => handleSave(true)}
               disabled={saving}
-              className="rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 font-black tracking-widest px-8 shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
+              className="rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold tracking-wide px-8 shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
 
-              LAUNCH <Send className="w-4 h-4 ml-2" />
+              Launch Campaign <Send className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </div>
@@ -285,8 +285,8 @@ export default function Strategy() {
                     <div className={cn("p-2 rounded-xl w-fit bg-muted transition-all group-hover:scale-110", stat.color)}>
                       <stat.icon className="w-4 h-4" />
                     </div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{stat.label}</div>
-                    <div className="text-lg font-black tracking-tight">{stat.value}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">{stat.label}</div>
+                    <div className="text-lg font-bold">{stat.value}</div>
                   </div>
                 )}
             </div>
@@ -296,7 +296,7 @@ export default function Strategy() {
               <section className="space-y-4">
                 <div className="flex items-center gap-3 px-2">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">Campaign Schedule</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">Campaign Schedule</span>
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 </div>
                 <StrategySchedule strategy={strategy} setStrategy={setStrategy} date={date} setDate={setDate} />
@@ -305,7 +305,7 @@ export default function Strategy() {
               <section className="space-y-4">
                 <div className="flex items-center gap-3 px-2">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">Audience Architecture</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">Audience Architecture</span>
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 </div>
                 <StrategyAudience strategy={strategy} setStrategy={setStrategy} />
@@ -314,7 +314,7 @@ export default function Strategy() {
               <section className="space-y-4">
                 <div className="flex items-center gap-3 px-2">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">Platform Placements</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">Platform Placements</span>
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 </div>
                 <StrategyPlacements strategy={strategy} setStrategy={setStrategy} />
@@ -328,11 +328,11 @@ export default function Strategy() {
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-purple-500 to-primary animate-gradient-x" />
               <CardHeader className="pb-6 border-b border-white/5 bg-white/[0.02]">
                 <CardTitle className="flex justify-between items-center text-foreground">
-                  <span className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                  <span className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                     <BarChart3 className="w-4 h-4" />
                     Live Projection
                   </span>
-                  <Badge variant="outline" className="text-emerald-500 border-emerald-500/20 bg-emerald-500/5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
+                  <Badge variant="outline" className="text-emerald-500 border-emerald-500/20 bg-emerald-500/5 text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
                     OPTIMIZED
                   </Badge>
                 </CardTitle>
@@ -340,7 +340,7 @@ export default function Strategy() {
               <CardContent className="space-y-8 pt-0">
                 {/* Reach Meter */}
                 <div className="space-y-4">
-                  <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
                     <span>Performance Strength</span>
                     <span className="text-primary">Excellent</span>
                   </div>
@@ -352,12 +352,12 @@ export default function Strategy() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-5 rounded-[28px] bg-white/[0.03] border border-white/5 flex flex-col gap-1.5 hover:bg-white/[0.05] transition-all">
-                    <div className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">Impressions</div>
-                    <div className="text-2xl font-black text-foreground tracking-tighter">2.8M</div>
+                    <div className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-wider">Impressions</div>
+                    <div className="text-2xl font-bold text-foreground">2.8M</div>
                   </div>
                   <div className="p-5 rounded-[28px] bg-white/[0.03] border border-white/5 flex flex-col gap-1.5 hover:bg-white/[0.05] transition-all">
-                    <div className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest">Est. CPM</div>
-                    <div className="text-2xl font-black text-foreground tracking-tighter">$14.20</div>
+                    <div className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-wider">Est. CPM</div>
+                    <div className="text-2xl font-bold text-foreground">$14.20</div>
                   </div>
                 </div>
 
@@ -379,15 +379,15 @@ export default function Strategy() {
 
                 <div className="border-t border-white/5 pt-[16px]">
                   <Button
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-black tracking-[0.2em] h-14 rounded-2xl shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95 text-xs"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold tracking-wider h-14 rounded-2xl shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95 text-xs"
                     onClick={() => handleSave(true)}
                     disabled={saving}>
 
-                    DEPLOY CAMPAIGN
+                    Deploy Campaign
                   </Button>
                   <div className="flex flex-col items-center gap-2 mt-6">
-                    <p className="text-[9px] font-black tracking-[0.4em] text-muted-foreground/40 animate-pulse">
-                      SECURE LAUNCH PROTOCOL v4.0
+                    <p className="text-[9px] font-bold tracking-widest text-muted-foreground/40">
+                      Standard Deployment Protocol v4.0
                     </p>
                   </div>
                 </div>
