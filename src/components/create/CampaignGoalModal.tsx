@@ -41,48 +41,37 @@ export function CampaignGoalModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-5xl bg-background border-border p-0 overflow-hidden h-[600px] shadow-2xl">
+      <DialogContent className="sm:max-w-5xl bg-black/90 border-white/10 p-0 overflow-hidden h-[600px] backdrop-blur-2xl shadow-2xl">
         <div className="flex h-full">
 
           {/* Left Sidebar: Goal Selection */}
-          <div className="w-[320px] border-r border-border p-6 flex flex-col bg-muted/30">
+          <div className="w-[320px] border-r border-white/10 p-6 flex flex-col bg-card/20">
             <div className="mb-6">
-              <button onClick={onBack} className="text-muted-foreground hover:text-foreground mb-4 flex items-center gap-2 text-sm transition-colors">
+              <button onClick={onBack} className="text-muted-foreground hover:text-white mb-4 flex items-center gap-2 text-sm transition-colors">
                 <ArrowLeft className="h-4 w-4" /> Back to Vision
               </button>
-              <h2 className="text-xl font-bold text-foreground tracking-tight">Select Objective</h2>
+              <h2 className="text-xl font-bold text-white tracking-tight">Select Objective</h2>
               <p className="text-muted-foreground text-sm mt-1">What defines success?</p>
             </div>
 
-            <RadioGroup value={selectedGoal} onValueChange={setSelectedGoal} className="space-y-2 flex-1 overflow-y-auto pr-2">
+            <RadioGroup value={selectedGoal} onValueChange={setSelectedGoal} className="space-y-2 flex-1 overflow-y-auto">
               {GOALS.map((goal) => {
                 const Icon = goal.icon;
                 const isSelected = selectedGoal === goal.id;
                 return (
                   <label
                     key={goal.id}
-                    className={cn(
-                      "w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 cursor-pointer group",
-                      isSelected
-                        ? "border-primary bg-primary/10 shadow-inner"
-                        : "border-border bg-background hover:bg-muted/60"
-                    )}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 cursor-pointer group hover:-translate-y-0.5 ${isSelected
+                        ? "border-primary bg-primary/5 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
+                        : "border-border/50 hover:border-primary bg-white/5"
+                      }`}
                   >
                     <RadioGroupItem value={goal.id} id={goal.id} className="shrink-0" />
-                    <div className={cn(
-                      "p-2 rounded-lg transition-all duration-200",
-                      isSelected ? "bg-primary/20" : "bg-muted group-hover:bg-primary/20 group-hover:scale-110"
-                    )}>
-                      <Icon className={cn(
-                        "h-5 w-5 transition-colors",
-                        isSelected ? "text-primary" : "text-muted-foreground group-hover:text-primary"
-                      )} />
+                    <div className={`p-2 rounded-lg transition-all duration-200 ${isSelected ? "bg-primary/20" : "bg-black/20 group-hover:bg-primary/20 group-hover:scale-110"}`}>
+                      <Icon className={`h-5 w-5 transition-colors ${isSelected ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`} />
                     </div>
                     <div>
-                      <div className={cn(
-                        "font-bold text-sm",
-                        isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                      )}>{goal.label}</div>
+                      <div className={`font-bold text-sm ${isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"}`}>{goal.label}</div>
                     </div>
                   </label>
                 )
@@ -91,7 +80,7 @@ export function CampaignGoalModal({
           </div>
 
           {/* Right Content: Visualization & Confirmation */}
-          <div className="flex-1 relative overflow-hidden bg-slate-950">
+          <div className="flex-1 relative overflow-hidden">
             {/* Background Gradients */}
             <div className="absolute inset-0 bg-gradient-to-br from-black via-black to-indigo-950/30" />
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
@@ -104,13 +93,13 @@ export function CampaignGoalModal({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.4 }}
-                  className="relative z-10 h-full flex flex-col p-10 justify-center items-start text-white"
+                  className="relative z-10 h-full flex flex-col p-10 justify-center items-start"
                 >
                   <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20 mb-6">
                     <goal.icon className="h-10 w-10 text-white" />
                   </div>
 
-                  <h2 className="text-4xl font-black mb-3 tracking-tight">{goal.label} Campaign</h2>
+                  <h2 className="text-4xl font-black text-white mb-3 tracking-tight">{goal.label} Campaign</h2>
                   <p className="text-lg text-white/70 max-w-lg leading-relaxed mb-8">{goal.description}</p>
 
                   <div className="space-y-4 mb-10 w-full max-w-md">
