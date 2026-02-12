@@ -537,7 +537,7 @@ const CampaignDetails = () => {
                         </div>
                         <Progress value={92} className="h-1.5 bg-white/10" />
                       </div>
-                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3 pt-0 pb-[8px]">
                         <div className="flex justify-between items-center text-xs">
                           <span className="text-muted-foreground font-medium">Attention Score</span>
                           <span className="font-bold text-primary">88%</span>
