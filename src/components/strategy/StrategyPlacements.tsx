@@ -132,7 +132,7 @@ export function StrategyPlacements({ strategy, setStrategy }: StrategyPlacements
                             </div>
                         </div>
 
-                        <div className="border border-border rounded-lg bg-muted/30 overflow-hidden">
+                        <div className="border border-border rounded-lg overflow-hidden bg-primary-foreground">
                             {/* List Header */}
                             <div className="flex items-center justify-between p-3 px-6 bg-muted/50 border-b border-border text-xs font-semibold text-muted-foreground">
                                 <div>Available ({Object.values(CHANNELS_DATA).flat().length})</div>
