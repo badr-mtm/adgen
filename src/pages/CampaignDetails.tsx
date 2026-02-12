@@ -480,12 +480,13 @@ const CampaignDetails = () => {
                             className="w-full h-full object-contain relative z-0"
                           />
                           {/* Render published overlays if they describe */}
-                          {campaign?.strategy?.videoSettings && (
+                          {/* Use fallback from storyboard if strategy column is missing */}
+                          {(campaign?.strategy?.videoSettings || campaign?.storyboard?.videoSettings || campaign?.storyboard?.strategy?.videoSettings) && (
                             <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
                               <OverlayElements
-                                banner={campaign.strategy.videoSettings.banner}
-                                title={campaign.strategy.videoSettings.title}
-                                qrCode={campaign.strategy.videoSettings.qrCode}
+                                banner={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).banner}
+                                title={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).title}
+                                qrCode={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).qrCode}
                               />
                             </div>
                           )}

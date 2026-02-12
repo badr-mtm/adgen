@@ -783,6 +783,12 @@ export default function VideoEditor() {
       const updatedStoryboard = {
         ...(project?.storyboard || {}),
         scenes: scenes,
+        // Save video settings here as fallback for Creatives/CampaignDetails
+        videoSettings: overlaySettings,
+        strategy: {
+          ...(project?.storyboard?.strategy || {}),
+          videoSettings: overlaySettings
+        },
         // Make sure the main video URL is consistent with the generated one
         // If we are in "generated full video" mode, this is critical
         generatedVideoUrl: generatedVideoUrl || project?.storyboard?.generatedVideoUrl,

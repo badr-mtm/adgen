@@ -78,7 +78,7 @@ const Creatives = () => {
 
             const { data: campaigns, error } = await supabase
                 .from("campaigns")
-                .select("id, title, storyboard, strategy, created_at")
+                .select("id, title, storyboard, created_at")
                 .eq("user_id", session.user.id)
                 .order('created_at', { ascending: false });
 
@@ -91,7 +91,8 @@ const Creatives = () => {
             campaigns?.forEach((item) => {
                 const campaign = item as any;
                 const storyboard = campaign.storyboard;
-                const videoSettings = campaign.strategy?.videoSettings;
+                // Fallback to storyboard.strategy if global strategy column fails or isn't selected
+                const videoSettings = campaign.strategy?.videoSettings || storyboard?.strategy?.videoSettings || storyboard?.videoSettings;
 
                 // Check for full video URL first
                 const fullVideoUrl = storyboard?.selectedScript?.generatedVideoUrl ||
