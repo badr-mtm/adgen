@@ -186,7 +186,7 @@ export default function VideoEditor() {
           // Store campaign with brand data
           setProject({
             ...campaign,
-            brand_name: brandData?.name || campaign.brand_name,
+            brand_name: brandData?.name || (campaign as any).brand_name,
             brand_logo: brandData?.logo_url
           });
           const storyboard = campaign.storyboard as any;
