@@ -11,80 +11,80 @@ interface OverlayElementsProps {
 const OverlayElements = ({ banner, qrCode, title }: OverlayElementsProps) => {
   const getQRPosition = () => {
     switch (qrCode.position) {
-      case "top-left": return "top-6 left-6";
-      case "top-right": return "top-6 right-6";
-      case "bottom-left": return "bottom-6 left-6";
-      case "bottom-right": return "bottom-6 right-6";
-      default: return "top-6 right-6";
+      case "top-left":return "top-6 left-6";
+      case "top-right":return "top-6 right-6";
+      case "bottom-left":return "bottom-6 left-6";
+      case "bottom-right":return "bottom-6 right-6";
+      default:return "top-6 right-6";
     }
   };
 
   const getBannerAlignment = () => {
     switch (banner.alignment) {
-      case "left": return "text-left";
-      case "right": return "text-right";
-      default: return "text-center";
+      case "left":return "text-left";
+      case "right":return "text-right";
+      default:return "text-center";
     }
   };
 
   return (
     <>
       {/* Banner */}
-      {banner.enabled && (
-        <div
-          className={`absolute left-0 right-0 px-4 py-3 ${banner.position === "top" ? "top-0" : "bottom-0"
-            } ${getBannerAlignment()} z-10 pointer-events-auto`}
-          style={{ backgroundColor: banner.backgroundColor }}
-        >
+      {banner.enabled &&
+      <div
+        className={`absolute left-0 right-0 px-4 py-3 ${banner.position === "top" ? "top-0" : "bottom-0"} ${
+        getBannerAlignment()} z-10 pointer-events-auto`}
+        style={{ backgroundColor: banner.backgroundColor }}>
+
           <p
-            className="text-sm font-medium"
-            style={{ color: banner.textColor }}
-          >
+          className="text-sm font-medium"
+          style={{ color: banner.textColor }}>
+
             {banner.text}
           </p>
         </div>
-      )}
+      }
 
       {/* QR Code */}
-      {qrCode.enabled && qrCode.url && (
-        <div
-          className={`absolute ${getQRPosition()} z-10 transition-all duration-300 pointer-events-auto`}
-          style={{ width: `${qrCode.size}px`, height: `${qrCode.size}px` }}
-        >
-          <div className="w-full h-full bg-white rounded-xl p-2 flex flex-col items-center justify-center shadow-2xl ring-1 ring-black/5 overflow-hidden group">
+      {qrCode.enabled && qrCode.url &&
+      <div
+        className={`absolute ${getQRPosition()} z-10 transition-all duration-300 pointer-events-auto`}
+        style={{ width: `${qrCode.size}px`, height: `${qrCode.size}px` }}>
+
+          <div className="w-full h-full bg-white rounded-xl p-2 flex flex-col items-center justify-center shadow-2xl ring-1 ring-black/5 overflow-hidden group pb-0 mt-0 mb-[24px]">
             <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=${qrCode.size}x${qrCode.size}&data=${encodeURIComponent(qrCode.url)}`}
-              alt="QR Code"
-              className="w-full h-full object-contain"
-              onLoad={(e) => (e.currentTarget.style.opacity = "1")}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const fallback = e.currentTarget.parentElement?.querySelector('.qr-fallback');
-                if (fallback) (fallback as HTMLElement).style.display = 'flex';
-              }}
-            />
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=${qrCode.size}x${qrCode.size}&data=${encodeURIComponent(qrCode.url)}`}
+            alt="QR Code"
+            className="w-full h-full object-contain"
+            onLoad={(e) => e.currentTarget.style.opacity = "1"}
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              const fallback = e.currentTarget.parentElement?.querySelector('.qr-fallback');
+              if (fallback) (fallback as HTMLElement).style.display = 'flex';
+            }} />
+
             <div className="qr-fallback hidden w-full h-full items-center justify-center text-black">
               <QrCode className="w-2/3 h-2/3" />
             </div>
           </div>
         </div>
-      )}
+      }
 
       {/* Title Overlays */}
-      {title?.enabled && title.text && (
-        <div className="absolute bottom-16 left-8 z-10 pointer-events-none max-w-[60%]">
+      {title?.enabled && title.text &&
+      <div className="absolute bottom-16 left-8 z-10 pointer-events-none max-w-[60%]">
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] leading-tight"
-            style={{ color: title.color }}
-          >
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] leading-tight"
+          style={{ color: title.color }}>
+
             {title.text}
           </motion.h1>
         </div>
-      )}
-    </>
-  );
+      }
+    </>);
+
 };
 
 export default OverlayElements;
