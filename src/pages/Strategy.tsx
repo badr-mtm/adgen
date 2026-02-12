@@ -358,7 +358,7 @@ export default function Strategy() {
                 </div>
 
                 {/* Checklist with premium icons */}
-                <div className="space-y-4 pt-4 border-t border-white/5">
+                <div className="space-y-4 border-t border-white/5 pt-px">
                   {[
                   { label: 'Brand Safety Verified', icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
                   { label: 'Global CDN Ready', icon: Globe, color: 'text-primary', bg: 'bg-primary/10' },
@@ -373,7 +373,7 @@ export default function Strategy() {
                   )}
                 </div>
 
-                <div className="pt-8 border-t border-white/5">
+                <div className="border-t border-white/5 pt-[16px]">
                   <Button
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-black tracking-[0.2em] h-14 rounded-2xl shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95 text-xs"
                     onClick={() => handleSave(true)}
