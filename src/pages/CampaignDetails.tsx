@@ -444,7 +444,7 @@ const CampaignDetails = () => {
 // --- Sub-Components ---
 const KpiCard = ({ title, value, trend, warning, icon }: any) =>
 <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
-    <CardContent className="p-6">
+    <CardContent className="p-6 py-[12px] px-[16px]">
       <div className="flex justify-between items-start mb-4">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
