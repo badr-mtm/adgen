@@ -12,10 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { PublishDialog } from "@/components/campaign/PublishDialog";
 import { StrategyEditModal } from "@/components/campaign/StrategyEditModal";
 import VideoPreviewModal from "@/components/campaign/VideoPreviewModal";
+import { StrategyPanel } from "@/components/storyboard/StrategyPanel";
 import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 import { useGenerationResume } from "@/hooks/useGenerationResume";
 import InlineEditField from "@/components/storyboard/InlineEditField";
-import { DeploymentSummary } from "@/components/campaign/DeploymentSummary";
 import {
   ArrowLeft,
   Play,
@@ -65,7 +65,6 @@ const CampaignDetails = () => {
   const [strategyModalOpen, setStrategyModalOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [strategy, setStrategy] = useState<TVAdStrategy | null>(null);
-  const [deploymentStrategy, setDeploymentStrategy] = useState<any>(null);
   const [generationStatus, setGenerationStatus] = useState<"idle" | "generating" | "completed">("idle");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
@@ -97,7 +96,7 @@ const CampaignDetails = () => {
       }
 
       setCampaign(data);
-
+      
       // Check generation status
       const progress = data.generation_progress as any;
       if (progress?.status === "generating") {
@@ -116,11 +115,6 @@ const CampaignDetails = () => {
         if (storyboard.strategy) {
           setStrategy(storyboard.strategy);
         }
-      }
-
-      // Merge Mission Control strategy
-      if (data.strategy) {
-        setDeploymentStrategy(data.strategy);
       }
       setLoading(false);
     };
@@ -169,17 +163,17 @@ const CampaignDetails = () => {
 
   const handleUpdateCampaignName = async (newName: string) => {
     if (!id || !newName.trim()) return;
-
+    
     const { error } = await supabase
       .from("campaigns")
       .update({ title: newName.trim() })
       .eq("id", id);
-
+    
     if (error) {
       toast({ title: "Error", description: "Failed to update campaign name", variant: "destructive" });
       return;
     }
-
+    
     setCampaign((prev: any) => ({ ...prev, title: newName.trim() }));
     toast({ title: "Updated", description: "Campaign name saved" });
   };
@@ -208,61 +202,30 @@ const CampaignDetails = () => {
     <DashboardLayout>
       <div className="min-h-screen bg-background pb-20">
 
-        {/* Cinematic Header with Full Video Background */}
-        <div className="relative h-[450px] w-full overflow-hidden border-b border-white/5 bg-black">
-          {/* Background Video Layer */}
-          <div className="absolute inset-0 z-0">
-            {getVideoUrl() ? (
-              <video
-                src={getVideoUrl() || undefined}
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover opacity-60 scale-105 blur-[2px]"
-              />
-            ) : getThumbnail() ? (
-              <img src={getThumbnail()} className="w-full h-full object-cover blur-xl opacity-40 scale-110" alt="Background" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-indigo-900/20 to-black" />
-            )}
+        {/* Cinematic Header with Blur Backdrop */}
+        <div className="relative h-[300px] w-full overflow-hidden border-b border-white/10">
+          <div className="absolute inset-0 bg-black/60 z-10" />
+          {getThumbnail() ? (
+            <img src={getThumbnail()} className="w-full h-full object-cover blur-xl opacity-50 scale-110" alt="Background" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black" />
+          )}
 
-            {/* Cinematic Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
-            <div className="absolute inset-0 bg-black/20 z-10" />
-
-            {/* Focal Point Shadow */}
-            <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.8)] z-10" />
-          </div>
-
-          <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
-            {getVideoUrl() && generationStatus === "completed" && (
-              <div className="p-4 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Play className="w-12 h-12 text-white fill-white" />
-              </div>
-            )}
-          </div>
-
-          <div className="absolute inset-x-0 bottom-0 top-0 z-40 p-8 lg:p-12 flex flex-col justify-end max-w-[1600px] mx-auto">
-            <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8">
-              <div className="flex flex-col md:flex-row items-start md:items-end gap-8 relative group/preview w-full lg:w-auto">
-                {/* Hero Preview Card */}
-                <div
-                  className="w-full md:w-80 aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] bg-black/40 backdrop-blur-md relative group cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] ring-1 ring-white/5"
+          <div className="absolute inset-x-0 bottom-0 top-0 z-20 p-8 flex flex-col justify-end max-w-[1600px] mx-auto">
+            <div className="flex items-end justify-between gap-6">
+              <div className="flex items-end gap-6 relative group/preview">
+                {/* Main Video/Thumbnail Card */}
+                <div 
+                  className="w-48 h-28 rounded-xl overflow-hidden border-2 border-white/20 shadow-2xl bg-black relative mb-1 group cursor-pointer transition-transform hover:scale-105" 
                   onClick={() => getVideoUrl() ? setVideoModalOpen(true) : handleEditVideo()}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
-
                   {generationStatus === "generating" ? (
-                    <div className="w-full h-full flex flex-col items-center justify-center">
-                      <div className="relative">
-                        <Loader2 className="h-10 w-10 text-primary animate-spin" />
-                        <div className="absolute inset-0 blur-lg bg-primary/20 animate-pulse" />
-                      </div>
-                      <span className="text-xs text-primary/80 font-bold uppercase tracking-widest mt-4 animate-pulse">Processing Stream</span>
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/20 to-black">
+                      <Loader2 className="h-8 w-8 text-amber-400 animate-spin mb-2" />
+                      <span className="text-xs text-amber-400/80 font-medium">Generating...</span>
                     </div>
                   ) : getVideoUrl() ? (
-                    <div className="w-full h-full group/video">
+                    <>
                       <video
                         src={getVideoUrl() || undefined}
                         muted
@@ -272,78 +235,68 @@ const CampaignDetails = () => {
                         onMouseEnter={(e) => e.currentTarget.play()}
                         onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
                       />
-                      <div className="absolute inset-0 bg-black/20 group-hover/video:bg-transparent transition-colors" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-100 group-hover/video:opacity-0 transition-opacity duration-300">
-                        <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
-                          <Play className="h-5 w-5 text-white ml-1 fill-white" />
+                      {/* Play button overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
+                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                          <Play className="h-4 w-4 text-primary-foreground ml-0.5" fill="currentColor" />
                         </div>
                       </div>
-                    </div>
+                    </>
                   ) : getThumbnail() ? (
-                    <div className="w-full h-full relative">
-                      <img src={getThumbnail()} className="w-full h-full object-cover opacity-80" alt="Thumbnail" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <MonitorPlay className="h-10 w-10 text-white/40" />
+                    <>
+                      <img src={getThumbnail()} className="w-full h-full object-cover" alt="Thumbnail" />
+                      <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Play className="h-8 w-8 text-white fill-white drop-shadow-lg" />
                       </div>
-                    </div>
+                    </>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Tv className="h-10 w-10 text-white/20" />
+                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                      <Film className="h-8 w-8 text-white/50" />
                     </div>
                   )}
-
-                  <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300">
-                    <span className="text-[10px] font-bold text-white tracking-widest uppercase bg-black/40 backdrop-blur-md px-2 py-1 rounded-md border border-white/10">30s spot</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-[10px] h-7 bg-primary text-primary-foreground hover:bg-primary/90 font-bold uppercase tracking-wider px-3 rounded-full"
-                      onClick={(e) => { e.stopPropagation(); handleEditVideo(); }}
-                    >
-                      Open Editor
-                    </Button>
-                  </div>
                 </div>
+                
+                {/* Edit Video Button */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="absolute -bottom-2 left-24 -translate-x-1/2 border-white/20 bg-black/60 text-white hover:bg-white/20 hover:text-white backdrop-blur-md gap-1.5 text-xs h-7 px-3 opacity-0 group-hover/preview:opacity-100 transition-opacity z-10"
+                  onClick={(e) => { e.stopPropagation(); handleEditVideo(); }}
+                >
+                  <Edit className="h-3 w-3" /> Edit
+                </Button>
 
-                <div className="space-y-4 max-w-2xl">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <Badge className="bg-primary/20 text-primary border-primary/20 hover:bg-primary/30 transition-colors uppercase tracking-widest text-[9px] font-bold py-1 px-2.5 rounded-full">
-                        {campaign.status || 'Draft'}
-                      </Badge>
-                      {getGenerationStatusBadge()}
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-white/40 uppercase tracking-widest border-l border-white/10 pl-3">
-                        <Zap className="h-3 w-3 text-amber-500" />
-                        AI Optimized
-                      </div>
-                    </div>
-
-                    <div className="group/title flex items-center gap-4">
-                      <InlineEditField
-                        value={campaign.title}
+                <div className="mb-2 space-y-1">
+                  <div className="flex items-center gap-3">
+                    <div className="group/title">
+                      <InlineEditField 
+                        value={campaign.title} 
                         onSave={handleUpdateCampaignName}
-                        className="[&_p]:text-5xl [&_p]:font-bold [&_p]:text-white [&_p]:tracking-tight [&_p]:drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] [&_input]:text-4xl [&_input]:font-bold [&_input]:bg-white/5 [&_input]:border-white/10 [&_input]:text-white [&_input]:rounded-2xl [&_button]:text-white/40 [&_button]:hover:text-white"
+                        className="[&_p]:text-4xl [&_p]:font-bold [&_p]:text-white [&_p]:tracking-tight [&_p]:drop-shadow-md [&_input]:text-3xl [&_input]:font-bold [&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_button]:text-white/60 [&_button]:hover:text-white [&_button]:hover:bg-white/10"
                       />
                     </div>
+                    <Badge className={`uppercase tracking-widest text-[10px] py-1 px-2 border-white/20 backdrop-blur-md ${campaign.status === 'active' ? 'bg-green-500/80 text-white' : 'bg-white/10 text-white'}`}>
+                      {campaign.status || 'Draft'}
+                    </Badge>
+                    {getGenerationStatusBadge()}
                   </div>
-
-                  <div className="flex items-center items-center gap-6 text-white/50 text-xs font-medium tracking-wide">
-                    <span className="flex items-center gap-2"><Film className="h-4 w-4 text-primary" /> {campaign.ad_type.toUpperCase()} SPOT</span>
-                    <span className="w-1.5 h-1.5 bg-white/10 rounded-full" />
-                    <span className="flex items-center gap-2"><Target className="h-4 w-4 text-purple-400" /> {campaign.goal.toUpperCase()}</span>
-                    <span className="w-1.5 h-1.5 bg-white/10 rounded-full" />
-                    <span className="flex items-center gap-2"><Globe className="h-4 w-4 text-emerald-400" /> NATIONWIDE SYNC</span>
+                  <div className="flex items-center gap-4 text-white/60 text-sm">
+                    <span className="flex items-center gap-1.5"><Tv className="h-4 w-4" /> {campaign.ad_type} Campaign</span>
+                    <span className="w-1 h-1 bg-white/30 rounded-full" />
+                    <span className="flex items-center gap-1.5"><Target className="h-4 w-4" /> {campaign.goal.replace('_', ' ')}</span>
+                    <span className="w-1 h-1 bg-white/30 rounded-full" />
+                    <span className="flex items-center gap-1.5"><Globe className="h-4 w-4" /> Global Delivery</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col md:flex-row gap-4 w-full lg:w-auto self-end">
-                <Button variant="outline" className="h-12 border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 backdrop-blur-md gap-3 px-6 rounded-2xl transition-all" onClick={handleDuplicate}>
-                  <Copy className="h-4 w-4" /> <span className="text-xs font-bold tracking-wider">CLONE MISSION</span>
+              <div className="mb-2 flex gap-3">
+                <Button variant="outline" className="border-white/20 bg-black/20 text-white hover:bg-white/10 hover:text-white backdrop-blur-md gap-2" onClick={handleDuplicate}>
+                  <Copy className="h-4 w-4" /> Clone
                 </Button>
-                <Button className="h-12 bg-primary text-primary-foreground hover:bg-primary/90 gap-3 px-8 rounded-2xl shadow-[0_10px_30px_-10px_rgba(255,100,100,0.5)] transition-all hover:scale-[1.02] active:scale-95" onClick={() => setPublishDialogOpen(true)}>
-                  <Rocket className="h-5 w-5" /> <span className="text-sm font-bold tracking-widest uppercase">Launch to Broadcast</span>
+                <Button className="bg-white text-black hover:bg-white/90 gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)]" onClick={() => setPublishDialogOpen(true)}>
+                  <Rocket className="h-4 w-4" /> Publish to Network
                 </Button>
               </div>
             </div>
@@ -418,97 +371,25 @@ const CampaignDetails = () => {
 
             {/* STRATEGY TAB */}
             <TabsContent value="strategy" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                {/* Deployment Architecture Summary */}
-                <div className="xl:col-span-1 space-y-6">
-                  <div className="flex items-center justify-between px-2">
-                    <h3 className="text-lg font-bold tracking-tight">Mission Control</h3>
-                    <Button variant="ghost" size="sm" className="h-8 text-primary hover:bg-primary/5" onClick={() => navigate(`/strategy/${id}`)}>
-                      <Layers className="h-3.5 w-3.5 mr-1.5" /> Full View
+              {strategy ? (
+                <div className="space-y-6">
+                  <div className="flex justify-end">
+                    <Button variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5" onClick={() => navigate(`/strategy/${id}`)}>
+                      <Zap className="h-4 w-4 text-primary" />
+                      Full Strategy Command Center
                     </Button>
                   </div>
-                  <DeploymentSummary strategy={deploymentStrategy} />
+                  <StrategyPanel strategy={strategy} onEdit={() => setStrategyModalOpen(true)} />
                 </div>
-
-                {/* Creative Strategy Details */}
-                <div className="xl:col-span-2 space-y-6">
-                  <div className="flex items-center justify-between px-2">
-                    <h3 className="text-lg font-bold tracking-tight">Creative Strategy</h3>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10">Active Intent</Badge>
-                    </div>
-                  </div>
-                  {strategy ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-6">
-                        <section className="space-y-3">
-                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Narrative Bridge</label>
-                          <div className="p-5 rounded-[2rem] bg-card/40 border border-border/50 backdrop-blur-sm">
-                            <p className="text-lg font-semibold leading-relaxed">{strategy.coreMessage?.primary}</p>
-                            <p className="mt-3 text-sm text-muted-foreground">{strategy.coreMessage?.supporting}</p>
-                          </div>
-                        </section>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="p-4 rounded-2xl bg-card/40 border border-border/50">
-                            <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">Pacing</label>
-                            <span className="font-bold capitalize">{strategy.pacing}</span>
-                          </div>
-                          <div className="p-4 rounded-2xl bg-card/40 border border-border/50">
-                            <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-2">Hook Window</label>
-                            <span className="font-bold">{strategy.hookTiming}s</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        <section className="space-y-3">
-                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Visual Architecture</label>
-                          <div className="p-5 rounded-[2rem] bg-primary/5 border border-primary/10">
-                            <div className="flex flex-wrap gap-2">
-                              <Badge variant="outline" className="bg-background/50">{strategy.visualDirection?.tone}</Badge>
-                              <Badge variant="outline" className="bg-background/50">{strategy.visualDirection?.cameraMovement}</Badge>
-                              <Badge variant="outline" className="bg-background/50">{strategy.visualDirection?.musicMood}</Badge>
-                            </div>
-                            <div className="mt-6 flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="p-2 rounded-lg bg-primary/20">
-                                  <Sparkles className="w-4 h-4 text-primary" />
-                                </div>
-                                <div className="text-xs">
-                                  <p className="text-muted-foreground">Prompt Engine</p>
-                                  <p className="font-bold uppercase tracking-widest">Optimized</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </section>
-
-                        <section className="space-y-3">
-                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Call to Action</label>
-                          <div className="p-5 rounded-[2rem] bg-card/40 border border-border/50 flex items-center justify-between">
-                            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                              <MousePointer className="w-5 h-5 text-emerald-500" />
-                            </div>
-                            <div className="flex-1 px-4">
-                              <p className="text-sm font-bold">{strategy.cta?.text}</p>
-                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{strategy.cta?.strength} • {strategy.cta?.placement}</p>
-                            </div>
-                          </div>
-                        </section>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-[2.5rem] bg-card/30">
-                      <p className="text-muted-foreground mb-4">No creative intent configured.</p>
-                      <Button onClick={() => navigate(`/storyboard/${id}`)}>
-                        <Target className="h-4 w-4 mr-2" />
-                        Generate Strategy
-                      </Button>
-                    </div>
-                  )}
+              ) : (
+                <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
+                  <p className="text-muted-foreground mb-4">No strategy configured for this campaign.</p>
+                  <Button onClick={() => navigate(`/strategy/${id}`)}>
+                    <Target className="h-4 w-4 mr-2" />
+                    Initialize Strategy Engine
+                  </Button>
                 </div>
-              </div>
+              )}
             </TabsContent>
 
             {/* Other tabs placeholders for now - keeping it focused on the "Wow" factor */}
@@ -546,13 +427,13 @@ const CampaignDetails = () => {
         {/* Modals */}
         <PublishDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen} campaign={campaign} creatives={[]} onPublish={() => setPublishDialogOpen(false)} />
         <StrategyEditModal open={strategyModalOpen} onOpenChange={setStrategyModalOpen} campaignId={id || ""} initialStrategy={strategy} onStrategySaved={setStrategy} />
-        <VideoPreviewModal
-          open={videoModalOpen}
-          onOpenChange={setVideoModalOpen}
-          videoUrl={getVideoUrl()}
-          thumbnailUrl={getThumbnail()}
-          title={campaign?.title}
-          onEditClick={handleEditVideo}
+        <VideoPreviewModal 
+          open={videoModalOpen} 
+          onOpenChange={setVideoModalOpen} 
+          videoUrl={getVideoUrl()} 
+          thumbnailUrl={getThumbnail()} 
+          title={campaign?.title} 
+          onEditClick={handleEditVideo} 
         />
 
       </div>
