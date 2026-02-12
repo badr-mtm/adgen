@@ -42,8 +42,10 @@ import {
   Zap,
   Loader2,
   CheckCircle2,
-  Clock } from
-"lucide-react";
+  ShieldCheck,
+  Clock
+} from
+  "lucide-react";
 import {
   AreaChart,
   Area,
@@ -51,8 +53,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer } from
-"recharts";
+  ResponsiveContainer
+} from
+  "recharts";
 
 const CampaignDetails = () => {
   const { id } = useParams();
@@ -81,13 +84,13 @@ const CampaignDetails = () => {
     const fetchCampaign = async () => {
       if (!id) return;
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {navigate("/auth");return;}
+      if (!session) { navigate("/auth"); return; }
 
       const { data, error } = await supabase.
-      from("campaigns").
-      select("*").
-      eq("id", id).
-      single();
+        from("campaigns").
+        select("*").
+        eq("id", id).
+        single();
 
       if (error || !data) {
         toast({ title: "Error", description: "Campaign not found", variant: "destructive" });
@@ -165,9 +168,9 @@ const CampaignDetails = () => {
     if (!id || !newName.trim()) return;
 
     const { error } = await supabase.
-    from("campaigns").
-    update({ title: newName.trim() }).
-    eq("id", id);
+      from("campaigns").
+      update({ title: newName.trim() }).
+      eq("id", id);
 
     if (error) {
       toast({ title: "Error", description: "Failed to update campaign name", variant: "destructive" });
@@ -192,10 +195,10 @@ const CampaignDetails = () => {
 
   // Mock Data for "Command Center" Visuals
   const chartData = [
-  { name: 'Mon', value: 4000 }, { name: 'Tue', value: 3000 },
-  { name: 'Wed', value: 2000 }, { name: 'Thu', value: 2780 },
-  { name: 'Fri', value: 1890 }, { name: 'Sat', value: 2390 },
-  { name: 'Sun', value: 3490 }];
+    { name: 'Mon', value: 4000 }, { name: 'Tue', value: 3000 },
+    { name: 'Wed', value: 2000 }, { name: 'Thu', value: 2780 },
+    { name: 'Fri', value: 1890 }, { name: 'Sat', value: 2390 },
+    { name: 'Sun', value: 3490 }];
 
 
   return (
@@ -206,9 +209,9 @@ const CampaignDetails = () => {
         <div className="relative h-[300px] w-full overflow-hidden border-b border-white/10">
           <div className="absolute inset-0 bg-black/60 z-10" />
           {getThumbnail() ?
-          <img src={getThumbnail()} className="w-full h-full object-cover blur-xl opacity-50 scale-110" alt="Background" /> :
+            <img src={getThumbnail()} className="w-full h-full object-cover blur-xl opacity-50 scale-110" alt="Background" /> :
 
-          <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black" />
+            <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black" />
           }
 
           <div className="absolute inset-x-0 bottom-0 top-0 z-20 p-8 flex flex-col justify-end max-w-[1600px] mx-auto">
@@ -220,49 +223,49 @@ const CampaignDetails = () => {
                   onClick={() => getVideoUrl() ? setVideoModalOpen(true) : handleEditVideo()}>
 
                   {generationStatus === "generating" ?
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/20 to-black">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/20 to-black">
                       <Loader2 className="h-8 w-8 text-amber-400 animate-spin mb-2" />
                       <span className="text-xs text-amber-400/80 font-medium">Generating...</span>
                     </div> :
-                  getVideoUrl() ?
-                  <>
-                      <video
-                      src={getVideoUrl() || undefined}
-                      muted
-                      loop
-                      playsInline
-                      className="w-full h-full object-cover"
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => {e.currentTarget.pause();e.currentTarget.currentTime = 0;}} />
+                    getVideoUrl() ?
+                      <>
+                        <video
+                          src={getVideoUrl() || undefined}
+                          muted
+                          loop
+                          playsInline
+                          className="w-full h-full object-cover"
+                          onMouseEnter={(e) => e.currentTarget.play()}
+                          onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }} />
 
-                      {/* Play button overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
-                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
-                          <Play className="h-4 w-4 text-primary-foreground ml-0.5" fill="currentColor" />
+                        {/* Play button overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
+                          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                            <Play className="h-4 w-4 text-primary-foreground ml-0.5" fill="currentColor" />
+                          </div>
                         </div>
-                      </div>
-                    </> :
-                  getThumbnail() ?
-                  <>
-                      <img src={getThumbnail()} className="w-full h-full object-cover" alt="Thumbnail" />
-                      <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Play className="h-8 w-8 text-white fill-white drop-shadow-lg" />
-                      </div>
-                    </> :
+                      </> :
+                      getThumbnail() ?
+                        <>
+                          <img src={getThumbnail()} className="w-full h-full object-cover" alt="Thumbnail" />
+                          <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Play className="h-8 w-8 text-white fill-white drop-shadow-lg" />
+                          </div>
+                        </> :
 
-                  <div className="w-full h-full flex items-center justify-center bg-muted">
-                      <Film className="h-8 w-8 text-white/50" />
-                    </div>
+                        <div className="w-full h-full flex items-center justify-center bg-muted">
+                          <Film className="h-8 w-8 text-white/50" />
+                        </div>
                   }
                 </div>
-                
+
                 {/* Edit Video Button */}
                 <Button
                   variant="outline"
                   size="sm"
                   className="absolute -bottom-2 left-24 -translate-x-1/2 border-white/20 bg-black/60 text-white hover:bg-white/20 hover:text-white backdrop-blur-md gap-1.5 text-xs h-7 px-3 opacity-0 group-hover/preview:opacity-100 transition-opacity z-10"
-                  onClick={(e) => {e.stopPropagation();handleEditVideo();}}>
+                  onClick={(e) => { e.stopPropagation(); handleEditVideo(); }}>
 
                   <Edit className="h-3 w-3" /> Edit
                 </Button>
@@ -271,9 +274,9 @@ const CampaignDetails = () => {
                   <div className="flex items-center gap-3">
                     <div className="group/title">
                       <InlineEditField
-                        value={campaign.title}
+                        value={campaign?.storyboard?.selectedScript?.title || campaign.title}
                         onSave={handleUpdateCampaignName}
-                        className="[&_p]:text-4xl [&_p]:font-bold [&_p]:text-white [&_p]:tracking-tight [&_p]:drop-shadow-md [&_input]:text-3xl [&_input]:font-bold [&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_button]:text-white/60 [&_button]:hover:text-white [&_button]:hover:bg-white/10" />
+                        className="[&_p]:text-2xl [&_p]:font-bold [&_p]:text-white [&_p]:tracking-tight [&_p]:drop-shadow-md [&_input]:text-xl [&_input]:font-bold [&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_button]:text-white/60 [&_button]:hover:text-white [&_button]:hover:bg-white/10" />
 
                     </div>
                     <Badge className={`uppercase tracking-widest text-[10px] py-1 px-2 border-white/20 backdrop-blur-md ${campaign.status === 'active' ? 'bg-green-500/80 text-white' : 'bg-white/10 text-white'}`}>
@@ -371,52 +374,176 @@ const CampaignDetails = () => {
 
             {/* STRATEGY TAB */}
             <TabsContent value="strategy" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {strategy ?
-              <div className="space-y-6">
-                  <div className="flex justify-end">
-                    <Button variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5" onClick={() => navigate(`/strategy/${id}`)}>
-                      <Zap className="h-4 w-4 text-primary" />
-                      Full Strategy Command Center
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                {/* Mission Control Summary (Actual Set Strategy) */}
+                <div className="xl:col-span-1 space-y-6">
+                  <div className="flex items-center justify-between px-2">
+                    <h3 className="text-lg font-bold tracking-tight">Mission Control</h3>
+                    <Button variant="ghost" size="sm" className="h-8 text-primary hover:bg-primary/5" onClick={() => navigate(`/strategy/${id}`)}>
+                      <Layers className="h-3.5 w-3.5 mr-1.5" /> Full View
                     </Button>
                   </div>
-                  <StrategyPanel strategy={strategy} onEdit={() => setStrategyModalOpen(true)} />
-                </div> :
 
-              <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
-                  <p className="text-muted-foreground mb-4">No strategy configured for this campaign.</p>
-                  <Button onClick={() => navigate(`/strategy/${id}`)}>
-                    <Target className="h-4 w-4 mr-2" />
-                    Initialize Strategy Engine
-                  </Button>
+                  {campaign?.strategy ? (
+                    <Card className="bg-card/50 border-border/50 backdrop-blur-sm overflow-hidden">
+                      <CardHeader className="pb-4 border-b border-border/10 bg-muted/20">
+                        <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-primary" />
+                          Strategy Brief
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6 space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Allocated Budget</p>
+                            <p className="text-lg font-bold text-primary">${campaign.strategy.budget?.amount?.toLocaleString()}</p>
+                          </div>
+                          <div className="space-y-1 text-right">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Interval</p>
+                            <p className="text-sm font-bold capitalize">{campaign.strategy.budget?.interval}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Targeting Perimeter</p>
+                          <div className="flex flex-wrap gap-2">
+                            {campaign.strategy.targeting?.locations?.slice(0, 3).map((loc: string, i: number) => (
+                              <Badge key={i} variant="outline" className="bg-primary/5 border-primary/10 text-[10px]">{loc}</Badge>
+                            ))}
+                            {campaign.strategy.targeting?.locations?.length > 3 && (
+                              <Badge variant="outline" className="bg-primary/5 border-primary/10 text-[10px]">+{campaign.strategy.targeting.locations.length - 3} more</Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 pt-2">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-purple-400" />
+                            <div className="text-[10px]">
+                              <p className="text-muted-foreground uppercase font-bold">Demographic</p>
+                              <p className="font-bold">{campaign.strategy.targeting?.ageRange?.[0]}-{campaign.strategy.targeting?.ageRange?.[1]} Age</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Tv className="w-4 h-4 text-amber-400" />
+                            <div className="text-[10px]">
+                              <p className="text-muted-foreground uppercase font-bold">Placements</p>
+                              <p className="font-bold">{campaign.strategy.targeting?.deviceTypes?.length || 0} Platforms</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="p-12 border-2 border-dashed border-border/50 rounded-2xl bg-card/10 text-center">
+                      <p className="text-sm text-muted-foreground mb-4">No deployment strategy set.</p>
+                      <Button variant="outline" onClick={() => navigate(`/strategy/${id}`)}>Set Strategy</Button>
+                    </div>
+                  )}
                 </div>
-              }
+
+                {/* Creative Strategy (Intent & Script) */}
+                <div className="xl:col-span-2 space-y-6">
+                  <div className="flex items-center justify-between px-2">
+                    <h3 className="text-lg font-bold tracking-tight">Creative Infrastructure</h3>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10">Active Intent</Badge>
+                    </div>
+                  </div>
+                  {strategy ? (
+                    <StrategyPanel strategy={strategy} onEdit={() => setStrategyModalOpen(true)} />
+                  ) : (
+                    <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
+                      <p className="text-muted-foreground mb-4">No creative strategy configured.</p>
+                      <Button onClick={() => navigate(`/storyboard/${id}`)}>
+                        <Target className="h-4 w-4 mr-2" />
+                        Initialize Strategy Engine
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </TabsContent>
 
-            {/* Other tabs placeholders for now - keeping it focused on the "Wow" factor */}
-            <TabsContent value="creative">
-              <div className="grid grid-cols-3 gap-6">
-                {/* Placeholder creative cards */}
-                {[1, 2, 3].map((i) =>
-                <Card key={i} className="overflow-hidden border-border/50 bg-card/50 group">
-                    <div className="aspect-video bg-black relative">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Film className="h-8 w-8 text-muted-foreground/30" />
-                      </div>
-                      {/* Heatmap Overlay Mockup */}
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 opacity-50" />
+            <TabsContent value="creative" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Primary Video Asset */}
+                <div className="lg:col-span-2 space-y-6">
+                  <Card className="overflow-hidden border-border/50 bg-black/40 backdrop-blur-xl group relative">
+                    <div className="aspect-video relative">
+                      {getVideoUrl() ? (
+                        <video
+                          src={getVideoUrl() || undefined}
+                          controls
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20">
+                          <Film className="h-12 w-12 text-muted-foreground opacity-20 mb-4" />
+                          <p className="text-sm text-muted-foreground">Video asset under development</p>
+                          <Button variant="link" className="mt-2 text-primary" onClick={handleEditVideo}>
+                            Generate Creative
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                    <div className="p-4">
-                      <div className="flex justify-between mb-2">
-                        <span className="font-bold">Variant {String.fromCharCode(64 + i)}</span>
-                        <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-500/30">Strong Win</Badge>
+                    {getVideoUrl() && (
+                      <div className="p-4 border-t border-white/5 flex items-center justify-between bg-white/[0.02]">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            <MonitorPlay className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-foreground">Premium Master Export</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">30s • 4K • AI Optimized</p>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="sm" className="hover:bg-white/5 transition-all">
+                          <Share2 className="w-4 h-4 mr-2" /> Share
+                        </Button>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                        <div>Attention: <span className="text-foreground">High</span></div>
-                        <div>Completion: <span className="text-foreground">94%</span></div>
-                      </div>
-                    </div>
+                    )}
                   </Card>
-                )}
+                </div>
+
+                {/* Creative Telemetry */}
+                <div className="space-y-6">
+                  <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-emerald-400" />
+                        Creative Yield
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-muted-foreground font-medium">Hook Strength</span>
+                          <span className="font-bold text-emerald-400">92%</span>
+                        </div>
+                        <Progress value={92} className="h-1.5 bg-white/10" />
+                      </div>
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-muted-foreground font-medium">Attention Score</span>
+                          <span className="font-bold text-primary">88%</span>
+                        </div>
+                        <Progress value={88} className="h-1.5 bg-white/10" />
+                      </div>
+                      <div className="pt-4 border-t border-white/5">
+                        <h4 className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-4">Scene Performance</h4>
+                        <div className="space-y-4">
+                          {[1, 2, 3].map(i => (
+                            <div key={i} className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">Scene {i}</span>
+                              <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/5">High Retention</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
 
@@ -443,7 +570,7 @@ const CampaignDetails = () => {
 
 // --- Sub-Components ---
 const KpiCard = ({ title, value, trend, warning, icon }: any) =>
-<Card className="bg-card/50 border-border/50 backdrop-blur-sm">
+  <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
     <CardContent className="p-6 py-[12px] px-[16px]">
       <div className="flex justify-between items-start mb-4">
         <div>
