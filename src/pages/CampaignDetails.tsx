@@ -530,7 +530,7 @@ const CampaignDetails = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3 py-[8px] pt-0 pb-[8px]">
                         <div className="flex justify-between items-center text-xs">
                           <span className="text-muted-foreground font-medium">Hook Strength</span>
                           <span className="font-bold text-emerald-400">92%</span>
