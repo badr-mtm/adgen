@@ -52,7 +52,7 @@ const Reports = () => {
               <Activity className="h-4 w-4 animate-pulse" />
               <span className="text-xs font-bold uppercase tracking-widest">Live Feed</span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight lg:text-4xl text-white">Broadcast Analytics</h1>
+            <h1 className="text-3xl font-black tracking-tight lg:text-4xl text-secondary-foreground"> Campaigns Analytics</h1>
             <p className="text-muted-foreground">Real-time performance across global TV networks.</p>
           </div>
           <div className="flex items-center gap-3">
