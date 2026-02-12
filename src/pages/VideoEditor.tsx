@@ -214,9 +214,16 @@ export default function VideoEditor() {
             }
           }
 
-          // Load video settings if present
+          // Load video settings if present with deep merge to preserve defaults
           if (storyboard?.strategy?.videoSettings) {
-            setOverlaySettings(prev => ({ ...prev, ...storyboard.strategy.videoSettings }));
+            setOverlaySettings(prev => ({
+              ...prev,
+              ...storyboard.strategy.videoSettings,
+              banner: { ...prev.banner, ...storyboard.strategy.videoSettings.banner },
+              qrCode: { ...prev.qrCode, ...storyboard.strategy.videoSettings.qrCode },
+              title: { ...prev.title, ...storyboard.strategy.videoSettings.title },
+              endScreen: { ...prev.endScreen, ...storyboard.strategy.videoSettings.endScreen }
+            }));
           }
         }
       } catch (err: any) {

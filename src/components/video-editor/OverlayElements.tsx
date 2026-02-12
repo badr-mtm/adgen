@@ -10,16 +10,6 @@ interface OverlayElementsProps {
 }
 
 const OverlayElements = ({ banner, qrCode, title }: OverlayElementsProps) => {
-  const getQRPosition = () => {
-    switch (qrCode.position) {
-      case "top-left": return "top-6 left-6";
-      case "top-right": return "top-6 right-6";
-      case "bottom-left": return "bottom-6 left-6";
-      case "bottom-right": return "bottom-6 right-6";
-      default: return "top-6 right-6";
-    }
-  };
-
   const getBannerAlignment = () => {
     switch (banner.alignment) {
       case "left": return "text-left";
@@ -93,21 +83,21 @@ const OverlayElements = ({ banner, qrCode, title }: OverlayElementsProps) => {
 
       {/* Title Overlays */}
       {title?.enabled && title.text && (
-        <div className={cn(
-          "absolute z-10 pointer-events-none max-w-[70%]",
-          getTitlePosition()
-        )}>
+        <div
+          className={cn(
+            "absolute z-50 pointer-events-none max-w-[80%] flex flex-col",
+            getTitlePosition()
+          )}
+        >
           {/* Subtle gradient behind title for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent blur-3xl -z-10 scale-150 transform translate-y-1/4" />
+          <div className="absolute inset-0 bg-black/40 blur-3xl -z-10 scale-150 transform translate-y-1/4 rounded-full" />
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] leading-[1.1] whitespace-pre-wrap"
+          <h1
+            className="text-white text-4xl md:text-5xl lg:text-6xl font-black tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] leading-[1.05] whitespace-pre-wrap"
             style={{ color: title.color }}
           >
             {title.text}
-          </motion.h1>
+          </h1>
         </div>
       )}
     </>

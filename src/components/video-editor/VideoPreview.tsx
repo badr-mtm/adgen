@@ -321,10 +321,11 @@ const VideoPreview = ({
               </div>
             )}
 
-            {/* Bottom Content */}
+            {/* Bottom Content - Hide if title overlay is active to avoid clutter */}
             <div className={cn(
               "absolute left-0 right-0 p-10 pointer-events-auto transition-all duration-300",
-              overlaySettings?.banner?.enabled && overlaySettings?.banner?.position === "bottom" ? "bottom-12" : "bottom-0"
+              overlaySettings?.banner?.enabled && overlaySettings?.banner?.position === "bottom" ? "bottom-12" : "bottom-0",
+              title?.enabled && title.text ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"
             )}>
               <div className="flex items-end justify-between gap-12">
                 <div className="space-y-4 flex-1">
