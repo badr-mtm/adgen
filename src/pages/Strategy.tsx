@@ -277,7 +277,7 @@ export default function Strategy() {
               { label: 'Audience Match', value: 'High', icon: Target, color: 'text-primary' },
               { label: 'Launch Window', value: 'Prime', icon: Clock, color: 'text-purple-500' }].
               map((stat, i) =>
-              <div key={i} className="p-4 rounded-3xl bg-card/40 border border-white/5 backdrop-blur-xl flex flex-col gap-2 transition-all hover:border-white/10 group">
+              <div key={i} className="p-4 bg-card/40 border backdrop-blur-xl flex flex-col gap-2 transition-all group pb-[8px] pt-[8px] border-primary-foreground rounded-lg">
                   <div className={cn("p-2 rounded-xl w-fit bg-muted transition-all group-hover:scale-110", stat.color)}>
                     <stat.icon className="w-4 h-4" />
                   </div>
