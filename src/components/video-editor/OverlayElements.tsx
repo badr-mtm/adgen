@@ -20,11 +20,11 @@ const OverlayElements = ({ banner, qrCode, title }: OverlayElementsProps) => {
 
   const getTitlePosition = () => {
     switch (title?.position) {
-      case "top-left": return "top-12 left-12";
-      case "top-right": return "top-12 right-12 text-right";
-      case "bottom-left": return "bottom-12 left-12";
-      case "bottom-right": return "bottom-12 right-12 text-right";
-      default: return "bottom-12 left-12";
+      case "top-left": return "top-16 left-12";
+      case "top-right": return "top-16 right-12 text-right";
+      case "bottom-left": return "bottom-16 left-12";
+      case "bottom-right": return "bottom-16 right-12 text-right";
+      default: return "bottom-16 left-12";
     }
   };
 
