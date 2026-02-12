@@ -203,7 +203,7 @@ export default function Strategy() {
       </div>
 
       {/* Cinematic Sticky Header */}
-      <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-white/5 shadow-md">
+      <div className="sticky top-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-white/5 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between shadow">
           <div className="flex items-center gap-6">
             <Button
