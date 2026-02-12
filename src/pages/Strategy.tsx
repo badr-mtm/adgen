@@ -65,7 +65,7 @@ export default function Strategy() {
       const {
         data,
         error
-      } = await supabase.from('campaigns').select('*').eq('id', id).single() as any;
+      } = (await supabase.from('campaigns').select('*').eq('id', id).single()) as any;
       if (error) throw error;
 
       // Process audience data for strategy
@@ -137,29 +137,29 @@ export default function Strategy() {
       };
 
       // Perform a schema-aware update
-      const { error } = await supabase
-        .from('campaigns')
-        .update({
-          strategy: updatedStrategy as any,
-          status: publish ? 'scheduled' : 'draft',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
+      const { error } = await supabase.
+      from('campaigns').
+      update({
+        strategy: updatedStrategy as any,
+        status: publish ? 'scheduled' : 'draft',
+        updated_at: new Date().toISOString()
+      }).
+      eq('id', id);
 
       if (error) {
         // If the 'strategy' column is literally missing, it might fall back to storyboard
         if (error.message.includes('column "strategy" of relation "campaigns" does not exist')) {
-          const { error: fallbackError } = await supabase
-            .from('campaigns')
-            .update({
-              storyboard: {
-                ...(await supabase.from('campaigns').select('storyboard').eq('id', id).single()).data?.storyboard as any,
-                strategy: updatedStrategy
-              } as any,
-              status: publish ? 'scheduled' : 'draft',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', id);
+          const { error: fallbackError } = await supabase.
+          from('campaigns').
+          update({
+            storyboard: {
+              ...((await supabase.from('campaigns').select('storyboard').eq('id', id).single()).data?.storyboard as any),
+              strategy: updatedStrategy
+            } as any,
+            status: publish ? 'scheduled' : 'draft',
+            updated_at: new Date().toISOString()
+          }).
+          eq('id', id);
           if (fallbackError) throw fallbackError;
         } else {
           throw error;
@@ -190,8 +190,8 @@ export default function Strategy() {
       <div className="h-screen flex items-center justify-center bg-background text-foreground relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent animate-pulse" />
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -210,8 +210,8 @@ export default function Strategy() {
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-2xl transition-all"
-            >
+              className="text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-2xl transition-all">
+
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="space-y-0.5">
@@ -248,8 +248,8 @@ export default function Strategy() {
               variant="ghost"
               onClick={() => handleSave(false)}
               disabled={saving}
-              className="rounded-2xl text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent hover:border-white/10 transition-all font-bold tracking-tight px-6"
-            >
+              className="rounded-2xl text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent hover:border-white/10 transition-all font-bold tracking-tight px-6">
+
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
               Save Draft
             </Button>
@@ -257,8 +257,8 @@ export default function Strategy() {
             <Button
               onClick={() => handleSave(true)}
               disabled={saving}
-              className="rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 font-black tracking-widest px-8 shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
-            >
+              className="rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 font-black tracking-widest px-8 shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
+
               LAUNCH <Send className="w-4 h-4 ml-2" />
             </Button>
           </div>
@@ -273,18 +273,18 @@ export default function Strategy() {
             {/* Quick Actions / Status */}
             <div className="grid grid-cols-3 gap-4 pb-4">
               {[
-                { label: 'Market Readiness', value: '94%', icon: Globe, color: 'text-blue-500' },
-                { label: 'Audience Match', value: 'High', icon: Target, color: 'text-primary' },
-                { label: 'Launch Window', value: 'Prime', icon: Clock, color: 'text-purple-500' }
-              ].map((stat, i) => (
-                <div key={i} className="p-4 rounded-3xl bg-card/40 border border-white/5 backdrop-blur-xl flex flex-col gap-2 transition-all hover:border-white/10 group">
+              { label: 'Market Readiness', value: '94%', icon: Globe, color: 'text-blue-500' },
+              { label: 'Audience Match', value: 'High', icon: Target, color: 'text-primary' },
+              { label: 'Launch Window', value: 'Prime', icon: Clock, color: 'text-purple-500' }].
+              map((stat, i) =>
+              <div key={i} className="p-4 rounded-3xl bg-card/40 border border-white/5 backdrop-blur-xl flex flex-col gap-2 transition-all hover:border-white/10 group">
                   <div className={cn("p-2 rounded-xl w-fit bg-muted transition-all group-hover:scale-110", stat.color)}>
                     <stat.icon className="w-4 h-4" />
                   </div>
                   <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{stat.label}</div>
                   <div className="text-lg font-black tracking-tight">{stat.value}</div>
                 </div>
-              ))}
+              )}
             </div>
 
             {/* Modules Container with more aggressive fade-in */}
@@ -320,7 +320,7 @@ export default function Strategy() {
 
           {/* Sidebar - Mission Control Summary */}
           <div className="lg:col-span-4 lg:block space-y-8">
-            <Card className="sticky top-28 bg-card/60 border-white/5 backdrop-blur-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden rounded-[40px] border-t-white/10">
+            <Card className="sticky top-28 bg-card/60 border-white/5 backdrop-blur-3xl overflow-hidden border-t-white/10 rounded-sm shadow">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-purple-500 to-primary animate-gradient-x" />
               <CardHeader className="pb-6 border-b border-white/5 bg-white/[0.02]">
                 <CardTitle className="flex justify-between items-center text-foreground">
@@ -360,25 +360,25 @@ export default function Strategy() {
                 {/* Checklist with premium icons */}
                 <div className="space-y-4 pt-4 border-t border-white/5">
                   {[
-                    { label: 'Brand Safety Verified', icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                    { label: 'Global CDN Ready', icon: Globe, color: 'text-primary', bg: 'bg-primary/10' },
-                    { label: 'AI Optimization Active', icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' }
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 text-[11px] font-bold text-foreground/70 group cursor-default">
+                  { label: 'Brand Safety Verified', icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                  { label: 'Global CDN Ready', icon: Globe, color: 'text-primary', bg: 'bg-primary/10' },
+                  { label: 'AI Optimization Active', icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' }].
+                  map((item, i) =>
+                  <div key={i} className="flex items-center gap-4 text-[11px] font-bold text-foreground/70 group cursor-default">
                       <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center border border-white/5 transition-all group-hover:scale-110", item.bg, item.color)}>
                         <item.icon className="h-4 w-4" />
                       </div>
                       {item.label}
                     </div>
-                  ))}
+                  )}
                 </div>
 
                 <div className="pt-8 border-t border-white/5">
                   <Button
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-black tracking-[0.2em] h-14 rounded-2xl shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95 text-xs"
                     onClick={() => handleSave(true)}
-                    disabled={saving}
-                  >
+                    disabled={saving}>
+
                     DEPLOY CAMPAIGN
                   </Button>
                   <div className="flex flex-col items-center gap-2 mt-6">
@@ -393,6 +393,6 @@ export default function Strategy() {
 
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
