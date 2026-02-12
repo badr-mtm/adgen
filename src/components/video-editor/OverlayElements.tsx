@@ -47,14 +47,23 @@ const OverlayElements = ({ banner, qrCode }: OverlayElementsProps) => {
       {qrCode.enabled && qrCode.url && (
         <div
           className={`absolute ${getQRPosition()} z-10 transition-all duration-300 pointer-events-auto`}
-          style={{ width: qrCode.size, height: qrCode.size }}
+          style={{ width: `${qrCode.size}px`, height: `${qrCode.size}px` }}
         >
-          <div className="w-full h-full bg-white rounded-xl p-2 flex items-center justify-center shadow-2xl ring-1 ring-black/5 overflow-hidden">
+          <div className="w-full h-full bg-white rounded-xl p-2 flex flex-col items-center justify-center shadow-2xl ring-1 ring-black/5 overflow-hidden group">
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=${qrCode.size}x${qrCode.size}&data=${encodeURIComponent(qrCode.url)}`}
               alt="QR Code"
               className="w-full h-full object-contain"
+              onLoad={(e) => (e.currentTarget.style.opacity = "1")}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const fallback = e.currentTarget.parentElement?.querySelector('.qr-fallback');
+                if (fallback) (fallback as HTMLElement).style.display = 'flex';
+              }}
             />
+            <div className="qr-fallback hidden w-full h-full items-center justify-center text-black">
+              <QrCode className="w-2/3 h-2/3" />
+            </div>
           </div>
         </div>
       )}

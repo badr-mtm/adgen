@@ -837,14 +837,16 @@ export default function VideoEditor() {
                     src={generatedVideoUrl}
                     controls
                     autoPlay
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain relative z-0"
                   />
-                  {/* Overlays for generated video */}
-                  <div className="absolute inset-0 pointer-events-none z-20">
-                    <OverlayElements
-                      banner={overlaySettings.banner}
-                      qrCode={overlaySettings.qrCode}
-                    />
+                  {/* Overlays for generated video - High z-index to stay above native controls */}
+                  <div className="absolute inset-0 pointer-events-none z-[100]">
+                    <div className="relative w-full h-full">
+                      <OverlayElements
+                        banner={overlaySettings.banner}
+                        qrCode={overlaySettings.qrCode}
+                      />
+                    </div>
                   </div>
                 </div>
                 <p className="mt-4 text-sm text-white/60">
