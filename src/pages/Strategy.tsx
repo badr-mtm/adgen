@@ -333,7 +333,7 @@ export default function Strategy() {
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-8 pt-8">
+              <CardContent className="space-y-8 pt-0">
                 {/* Reach Meter */}
                 <div className="space-y-4">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
