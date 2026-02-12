@@ -82,24 +82,46 @@ const OverlayElements = ({ banner, qrCode, title }: OverlayElementsProps) => {
       )}
 
       {/* Title Overlays */}
-      {title?.enabled && title.text && (
-        <div
-          className={cn(
-            "absolute z-50 pointer-events-none max-w-[80%] flex flex-col",
-            getTitlePosition()
-          )}
-        >
-          {/* Subtle gradient behind title for readability */}
-          <div className="absolute inset-0 bg-black/40 blur-3xl -z-10 scale-150 transform translate-y-1/4 rounded-full" />
+      {title?.enabled && title.text && (() => {
+        const lines = title.text.split('\n');
+        const lineCount = lines.length;
+        const charCount = title.text.length;
 
-          <h1
-            className="text-white text-4xl md:text-5xl lg:text-6xl font-black tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] leading-[1.05] whitespace-pre-wrap"
-            style={{ color: title.color }}
+        // Dynamic sizing logic
+        let sizeClass = "text-2xl md:text-3xl lg:text-4xl"; // Default
+        let weightClass = "font-bold";
+
+        if (lineCount <= 1 && charCount < 25) {
+          sizeClass = "text-3xl md:text-5xl lg:text-6xl";
+          weightClass = "font-black";
+        } else if (lineCount > 3 || charCount > 60) {
+          sizeClass = "text-xl md:text-2xl lg:text-3xl";
+          weightClass = "font-semibold";
+        }
+
+        return (
+          <div
+            className={cn(
+              "absolute z-50 pointer-events-none max-w-[85%] flex flex-col",
+              getTitlePosition()
+            )}
           >
-            {title.text}
-          </h1>
-        </div>
-      )}
+            {/* Subtle gradient behind title for readability */}
+            <div className="absolute inset-0 bg-black/40 blur-3xl -z-10 scale-150 transform translate-y-1/4 rounded-full" />
+
+            <h1
+              className={cn(
+                "text-white tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] leading-[1.05] whitespace-pre-wrap transition-all duration-300",
+                sizeClass,
+                weightClass
+              )}
+              style={{ color: title.color }}
+            >
+              {title.text}
+            </h1>
+          </div>
+        );
+      })()}
     </>
   );
 };
