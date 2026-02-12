@@ -55,30 +55,30 @@ export const PerformanceInsights = () => {
             </div>
 
             {/* Affinity Score Chart */}
-            <div className="space-y-4 pt-2">
-                <LabelWithIcon icon={Target} label="Network Affinity Match" />
-                <div className="space-y-3">
-                    {[
-          { network: 'Hulu', match: 94, color: 'bg-green-500' },
-          { network: 'Samsung TV Plus', match: 88, color: 'bg-blue-600' },
-          { network: 'Peacock', match: 82, color: 'bg-purple-600' },
-          { network: 'Roku Channel', match: 76, color: 'bg-purple-400' }].
-          map((item, i) =>
-          <div key={i} className="space-y-1.5">
-                            <div className="flex justify-between items-center text-[10px] font-bold">
-                                <span className="text-foreground">{item.network}</span>
-                                <span className="text-primary">{item.match}%</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                                <div
-                className={cn("h-full transition-all duration-1000", item.color)}
-                style={{ width: `${item.match}%` }} />
+            
 
-                            </div>
-                        </div>
-          )}
-                </div>
-            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             {/* Regional Attribution Map (Visual) */}
             
