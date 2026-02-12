@@ -762,7 +762,7 @@ export default function VideoEditor() {
   };
 
   const handlePublishAndExport = async () => {
-    if (!id) return;
+    if (!id || !project) return;
     setIsPublishing(true);
 
     // Save current state first
@@ -781,12 +781,12 @@ export default function VideoEditor() {
       // 2. Ensure specific "master" video fields are set on the storyboard
       // This is what CampaignDetails will look for
       const updatedStoryboard = {
-        ...project.storyboard,
+        ...(project?.storyboard || {}),
         scenes: scenes,
         // Make sure the main video URL is consistent with the generated one
         // If we are in "generated full video" mode, this is critical
-        generatedVideoUrl: generatedVideoUrl || project.storyboard?.generatedVideoUrl,
-        videoUrl: generatedVideoUrl || project.storyboard?.videoUrl
+        generatedVideoUrl: generatedVideoUrl || project?.storyboard?.generatedVideoUrl,
+        videoUrl: generatedVideoUrl || project?.storyboard?.videoUrl
       };
 
       const { error } = await supabase
