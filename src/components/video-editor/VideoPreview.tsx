@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import OverlayElements from "./OverlayElements";
 import EndScreen from "./EndScreen";
-import type { VideoOverlaySettings } from "@/types/videoEditor";
+import type { VideoOverlaySettings, TitleSettings } from "@/types/videoEditor";
 
 interface VideoPreviewProps {
   scenes: Array<{
@@ -31,6 +31,7 @@ interface VideoPreviewProps {
   overlaySettings?: VideoOverlaySettings;
   showEndScreen?: boolean;
   currentTime?: number;
+  title?: TitleSettings;
 }
 
 const VideoPreview = ({
@@ -51,6 +52,7 @@ const VideoPreview = ({
   overlaySettings,
   showEndScreen = false,
   currentTime = 0,
+  title,
 }: VideoPreviewProps) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -375,6 +377,7 @@ const VideoPreview = ({
                 <OverlayElements
                   banner={overlaySettings.banner}
                   qrCode={overlaySettings.qrCode}
+                  title={title}
                 />
               </div>
             </div>

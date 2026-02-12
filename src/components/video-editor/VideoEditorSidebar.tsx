@@ -10,13 +10,13 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Film, PanelBottom, Square, QrCode, Music, Mic, Settings2, Upload, Sparkles,
+  Film, PanelBottom, Square, QrCode, Music, Mic, Settings2, Upload, Sparkles, Type,
   MoreVertical, Edit3, Plus, Play, Pause, Volume2, VolumeX, Link, Palette,
   AlignLeft, AlignCenter, AlignRight, HelpCircle, BarChart2, Zap, Layout,
   Activity, UserCheck, Heart, ChevronUp, ChevronDown, Trash2
 } from "lucide-react";
 import { PerformanceInsights } from "./PerformanceInsights";
-import type { VideoOverlaySettings, BannerSettings, EndScreenSettings, QRCodeSettings, MusicSettings, VoiceSettings } from "@/types/videoEditor";
+import type { VideoOverlaySettings, BannerSettings, EndScreenSettings, QRCodeSettings, MusicSettings, VoiceSettings, TitleSettings } from "@/types/videoEditor";
 
 interface SceneSlide {
   id: number;
@@ -49,6 +49,7 @@ const sidebarTabs = [
   { id: "bottom-banner", label: "Bottom banner", icon: PanelBottom },
   { id: "end-screen", label: "End screen", icon: Square },
   { id: "qr-code", label: "QR code", icon: QrCode },
+  { id: "title", label: "Title", icon: Type },
   { id: "music", label: "Music", icon: Music },
   { id: "voice-script", label: "Voice & Script", icon: Mic },
   { id: "ai-settings", label: "AI Input Settings", icon: Settings2 },
@@ -85,6 +86,9 @@ const VideoEditorSidebar = ({
   };
   const updateVoice = (updates: Partial<VoiceSettings>) => {
     onOverlaySettingsChange({ ...overlaySettings, voice: { ...overlaySettings.voice, ...updates } });
+  };
+  const updateTitle = (updates: Partial<TitleSettings>) => {
+    onOverlaySettingsChange({ ...overlaySettings, title: { ...overlaySettings.title, ...updates } });
   };
 
   return (
@@ -431,6 +435,46 @@ const VideoEditorSidebar = ({
                     <div className="bg-background rounded flex items-center justify-center shadow-lg border border-border"
                       style={{ width: overlaySettings.qrCode.size / 2, height: overlaySettings.qrCode.size / 2 }}>
                       <QrCode className="w-full h-full p-2 text-foreground" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Title Tab */}
+          {activeTab === "title" && (
+            <div className="p-4 space-y-5">
+              <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                <Label htmlFor="title-enabled" className="text-sm font-medium text-foreground">Enable Title Overlay</Label>
+                <Switch id="title-enabled" checked={overlaySettings.title?.enabled} onCheckedChange={(checked) => updateTitle({ enabled: checked })} />
+              </div>
+
+              {overlaySettings.title?.enabled && (
+                <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Title Text</Label>
+                      <Button variant="ghost" size="icon" className="h-5 w-5 text-purple-500 hover:text-purple-400 hover:bg-purple-500/10"
+                        onClick={() => onAIAction?.("improve_title_text", { text: overlaySettings.title.text })}>
+                        <Sparkles className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <Input value={overlaySettings.title.text} onChange={(e) => updateTitle({ text: e.target.value })}
+                      placeholder="e.g. Modern Luxury Living" className="bg-muted/30 border-border text-foreground focus:border-primary/50" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Text Color</Label>
+                    <div className="flex gap-2">
+                      <div className="relative w-10 h-10 rounded-md overflow-hidden border border-border shadow-sm cursor-pointer hover:scale-105 transition-transform">
+                        <Input type="color" value={overlaySettings.title.color}
+                          onChange={(e) => updateTitle({ color: e.target.value })}
+                          className="absolute -top-2 -left-2 w-[150%] h-[150%] p-0 border-0 cursor-pointer" />
+                      </div>
+                      <Input value={overlaySettings.title.color}
+                        onChange={(e) => updateTitle({ color: e.target.value })}
+                        className="flex-1 bg-muted/30 border-border text-foreground font-mono text-xs uppercase" />
                     </div>
                   </div>
                 </div>

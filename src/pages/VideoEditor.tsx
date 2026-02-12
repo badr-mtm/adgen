@@ -880,6 +880,7 @@ export default function VideoEditor() {
                 description={scenes[currentSceneIndex]?.visualDescription}
                 ctaText={overlaySettings.endScreen.ctaText}
                 ctaUrl={overlaySettings.endScreen.ctaUrl}
+                title={overlaySettings.title}
               />
             )}
 

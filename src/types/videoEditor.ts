@@ -81,6 +81,11 @@ export interface BannerSettings {
   backgroundColor: string;
   textColor: string;
 }
+export interface TitleSettings {
+  enabled: boolean;
+  text: string;
+  color: string;
+}
 export interface EndScreenSettings {
   enabled: boolean;
   duration: number;
@@ -131,14 +136,16 @@ export interface VideoOverlaySettings {
   };
   aiSettings?: AIInputSettings;
   generalSettings?: GeneralSettings;
+  title: TitleSettings;
 }
 export const defaultOverlaySettings: VideoOverlaySettings = {
-  banner: { enabled: true, text: "Visit our website", position: "bottom", alignment: "center", backgroundColor: "#000000", textColor: "#ffffff" },
+  banner: { enabled: false, text: "Visit our website", position: "bottom", alignment: "center", backgroundColor: "#000000", textColor: "#ffffff" },
   endScreen: { enabled: true, duration: 5, ctaText: "Learn More", ctaUrl: "", showLogo: true, backgroundColor: "#1a1a2e" },
-  qrCode: { enabled: true, url: "https://example.com/qr", position: "top-right", size: 100 },
+  qrCode: { enabled: true, url: "https://example.com/qr", position: "bottom-right", size: 100 },
   music: { selectedTrackId: null, volume: 70, isMuted: false },
   voice: { script: "", selectedVoice: "professional", speed: 1.0, generateVoiceover: false },
   network: { selected: "none" },
   aiSettings: { model: "balanced", creativity: 70, autoEnhance: true, style: "cinematic" },
   generalSettings: { aspectRatio: "16:9", resolution: "1080p", fps: 30, loop: false, watermark: false },
+  title: { enabled: false, text: "Your Title Here", color: "#ffffff" },
 };

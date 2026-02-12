@@ -1,12 +1,14 @@
 import { QrCode } from "lucide-react";
-import type { BannerSettings, QRCodeSettings } from "@/types/videoEditor";
+import { motion } from "framer-motion";
+import type { BannerSettings, QRCodeSettings, TitleSettings } from "@/types/videoEditor";
 
 interface OverlayElementsProps {
   banner: BannerSettings;
   qrCode: QRCodeSettings;
+  title?: TitleSettings;
 }
 
-const OverlayElements = ({ banner, qrCode }: OverlayElementsProps) => {
+const OverlayElements = ({ banner, qrCode, title }: OverlayElementsProps) => {
   const getQRPosition = () => {
     switch (qrCode.position) {
       case "top-left": return "top-6 left-6";
@@ -65,6 +67,20 @@ const OverlayElements = ({ banner, qrCode }: OverlayElementsProps) => {
               <QrCode className="w-2/3 h-2/3" />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Title Overlays */}
+      {title?.enabled && title.text && (
+        <div className="absolute bottom-16 left-8 z-10 pointer-events-none max-w-[60%]">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-white text-4xl md:text-5xl font-bold tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] leading-tight"
+            style={{ color: title.color }}
+          >
+            {title.text}
+          </motion.h1>
         </div>
       )}
     </>
