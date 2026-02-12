@@ -832,12 +832,15 @@ export default function VideoEditor() {
                     Switch to Scene Editor
                   </Button>
                 </div>
-                <div className="w-full max-w-4xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl relative">
+                <div
+                  className="w-full max-w-4xl bg-black rounded-xl overflow-hidden shadow-2xl relative"
+                  style={{ aspectRatio: overlaySettings?.generalSettings?.aspectRatio?.replace(':', '/') || "16/9" }}
+                >
                   <video
                     src={generatedVideoUrl}
                     controls
                     autoPlay
-                    className="w-full h-full object-contain relative z-0"
+                    className="w-full h-full object-cover relative z-0"
                   />
                   {/* Overlays for generated video - High z-index to stay above native controls */}
                   <div className="absolute inset-0 pointer-events-none z-[100]">
