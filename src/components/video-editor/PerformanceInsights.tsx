@@ -34,25 +34,25 @@ export const PerformanceInsights = () => {
             </div>
 
             {/* Main Stats Grid */}
-            <div className="grid grid-cols-2 gap-3">
-                {[
-        { label: 'Est. Reach', value: '1.2M+', sub: 'Daily Viewers', icon: Users, color: 'text-blue-500' },
-        { label: 'Conv. Prob.', value: '18.4%', sub: '+3.2% vs Benchmark', icon: TrendingUp, color: 'text-green-500' }].
-        map((stat, i) =>
-        <div key={i} className="bg-accent/5 border border-border rounded-2xl p-3 space-y-2">
-                        <div className="flex items-start justify-between">
-                            <div className={cn("p-1.5 rounded-lg bg-background border border-border", stat.color)}>
-                                <stat.icon className="h-3.5 w-3.5" />
-                            </div>
-                            
-                        </div>
-                        <div>
-                            <p className="text-lg font-black tracking-tighter text-foreground leading-none">{stat.value}</p>
-                            <p className="text-[9px] font-bold text-muted-foreground mt-1 uppercase tracking-wider">{stat.label}</p>
-                        </div>
-                    </div>
-        )}
-            </div>
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             {/* Affinity Score Chart */}
             
