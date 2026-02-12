@@ -64,6 +64,7 @@ const Creatives = () => {
     const [assets, setAssets] = useState<CreativeAsset[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const [showScenes, setShowScenes] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [selectedAsset, setSelectedAsset] = useState<CreativeAsset | null>(null);
     const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -103,7 +104,7 @@ const Creatives = () => {
                     flattenedAssets.push({
                         id: `${campaign.id}-full`,
                         campaignId: campaign.id,
-                        campaignTitle: campaign.title,
+                        campaignTitle: storyboard?.selectedScript?.title || campaign.title,
                         sceneIndex: null,
                         type: "video",
                         url: fullVideoUrl,
@@ -126,7 +127,7 @@ const Creatives = () => {
                             flattenedAssets.push({
                                 id: `${campaign.id}-scene-${index}`,
                                 campaignId: campaign.id,
-                                campaignTitle: campaign.title,
+                                campaignTitle: storyboard?.selectedScript?.title || campaign.title,
                                 sceneIndex: index,
                                 type: "video",
                                 url: videoUrl,
@@ -157,7 +158,9 @@ const Creatives = () => {
                 asset.hook.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 asset.body.toLowerCase().includes(searchQuery.toLowerCase());
 
-            return matchesSearch;
+            const matchesType = showScenes ? true : asset.isFullVideo;
+
+            return matchesSearch && matchesType;
         });
     }, [assets, searchQuery]);
 
@@ -217,13 +220,22 @@ const Creatives = () => {
                             />
                         </div>
 
-                        <div className="flex bg-card/40 border border-white/5 p-1 rounded-xl backdrop-blur-md">
+                        <div className="flex bg-card/40 border border-white/5 p-1 rounded-xl backdrop-blur-md gap-1">
                             <Button
-                                variant="secondary"
+                                variant={!showScenes ? "secondary" : "ghost"}
                                 size="sm"
+                                onClick={() => setShowScenes(false)}
                                 className="h-9 px-4 text-xs font-bold gap-2 rounded-lg transition-all"
                             >
-                                <Film className="h-3.5 w-3.5" /> Videos
+                                <Film className="h-3.5 w-3.5" /> Full Videos
+                            </Button>
+                            <Button
+                                variant={showScenes ? "secondary" : "ghost"}
+                                size="sm"
+                                onClick={() => setShowScenes(true)}
+                                className="h-9 px-4 text-xs font-bold gap-2 rounded-lg transition-all"
+                            >
+                                <Grid className="h-3.5 w-3.5" /> All Scenes
                             </Button>
                         </div>
 
@@ -258,8 +270,89 @@ const Creatives = () => {
                     viewMode === 'grid' ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {filteredAssets.map((asset) => (
-                                <Card key={asset.id} className="group overflow-hidden border-border bg-card backdrop-blur-sm hover:border-primary transition-all duration-300 rounded-2xl">
-                                    <div className="aspect-video relative overflow-hidden bg-black">
+                                <Card key={asset.id} className="group overflow-hidden border-border bg-card backdrop-blur-sm hover:border-primary transition-all duration-300 rounded-2xl flex flex-col h-full shadow-lg hover:shadow-primary/20">
+                                    <div className="aspect-video relative overflow-hidden bg-black cursor-pointer" onClick={() => openPreview(asset)}>
+                                        {/* Render Overlays on Thumbnail */}
+                                        {asset.videoSettings && (
+                                            <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
+                                                <div className="relative w-full h-full transform scale-[0.6] origin-top-left w-[166%] h-[166%]">
+                                                    {/* Scale down overlays for thumbnail view to match aspect ratio if needed, 
+                                                        but usually keeping them 1:1 relative to container is better. 
+                                                        However, for small thumbnails, we might want to scale them down or hide them? 
+                                                        The user wants "combined", so showing them is key.
+                                                        Let's try standard render first. 
+                                                    */}
+                                                 </div>
+                                                 <OverlayElements 
+                                                    banner={asset.videoSettings.banner}
+                                                    title={asset.videoSettings.title}
+                                                    qrCode={asset.videoSettings.qrCode}
+                                                 />
+                                            </div>
+                                        )}
+                                        <img
+                                            src={asset.thumbnail || asset.url}
+                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1"
+                                            alt={asset.hook}
+                                        />
+
+                                        {/* Status & Type Badges */}
+                                        <div className="absolute top-3 left-3 flex gap-2 z-[20]">
+                                            <Badge className={`backdrop-blur-md border-white/10 uppercase tracking-widest text-[9px] py-1 px-2.5 font-bold shadow-lg ${asset.isFullVideo ? 'bg-primary text-primary-foreground' : 'bg-black/80 text-white'}`}>
+                                                {asset.isFullVideo ? 'MASTER' : 'SCENE'}
+                                            </Badge>
+                                        </div>
+
+                                        {/* Overlay Actions */}
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center z-[30]">
+                                             <div className="transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                                                <Button size="lg" className="rounded-full h-14 w-14 shadow-2xl bg-white text-black hover:bg-white hover:scale-110 transition-all" onClick={() => openPreview(asset)}>
+                                                    <Play className="h-6 w-6 ml-0.5 fill-current" />
+                                                </Button>
+                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <CardContent className="p-5 flex flex-col flex-grow space-y-4">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="font-black text-lg text-foreground tracking-tight leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+                                                    {asset.campaignTitle}
+                                                </h3>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 text-muted-foreground hover:text-primary" onClick={() => navigate(`/strategy/${asset.campaignId}`)}>
+                                                    <Target className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <p className="text-xs font-medium text-muted-foreground line-clamp-1">
+                                                {asset.hook || "Generated Creative Asset"}
+                                            </p>
+                                        </div>
+
+                                        <div className="bg-muted/30 rounded-lg p-3 border border-white/5 flex-grow">
+                                            <p className="text-[10px] text-muted-foreground/80 line-clamp-3 leading-relaxed font-mono">
+                                                "{asset.body || asset.visualPrompt || "No description provided."}"
+                                            </p>
+                                        </div>
+
+                                        <div className="pt-2 flex items-center justify-between border-t border-white/5 mt-auto">
+                                            <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                <span className="flex items-center gap-1"><Tv className="h-3 w-3" /> Broadcast</span>
+                                                <span className="w-1 h-1 rounded-full bg-white/20" />
+                                                <span>{new Date(asset.createdAt).toLocaleDateString()}</span>
+                                            </div>
+                                            
+                                            <div className="flex gap-1">
+                                                 <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm hover:bg-primary/10 hover:text-primary" title="Download" onClick={() => handleDownload(asset.url, asset.hook)}>
+                                                    <Download className="h-3.5 w-3.5" />
+                                                </Button>
+                                                 <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm hover:bg-primary/10 hover:text-primary" title="Edit" onClick={() => navigate(`/video-editor/${asset.campaignId}`)}>
+                                                    <Film className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
                                         {/* Render Overlays on Thumbnail */}
                                         {asset.videoSettings && (
                                             <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
@@ -379,166 +472,166 @@ const Creatives = () => {
                                     </CardContent>
                                 </Card>
                             ))}
-                        </div>
-                    ) : (
-                        <div className="rounded-2xl border border-white/5 bg-card/30 overflow-hidden backdrop-blur-sm">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-white/5 border-b border-white/5">
-                                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60">Creative Preview</th>
-                                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60">Title / Campaign</th>
-                                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60">Type</th>
-                                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60">Created At</th>
-                                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredAssets.map((asset) => (
-                                        <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
-                                            <td className="p-4">
-                                                <div className="w-24 aspect-video rounded-lg overflow-hidden border border-white/5 bg-black cursor-pointer" onClick={() => openPreview(asset)}>
-                                                    <img src={asset.thumbnail || asset.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" alt="thumb" />
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div>
-                                                    <p className="font-bold text-sm text-foreground">{asset.hook || (asset.isFullVideo ? "Full Video" : `Scene ${(asset.sceneIndex ?? 0) + 1}`)}</p>
-                                                    <p className="text-xs text-muted-foreground/60">{asset.campaignTitle}</p>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <Badge variant="outline" className={`border-white/10 uppercase text-[9px] font-black ${asset.isFullVideo ? 'bg-primary/20 text-primary border-primary/30' : ''}`}>
-                                                    {asset.isFullVideo ? 'Full Video' : 'Scene'}
-                                                </Badge>
-                                            </td>
-                                            <td className="p-4 text-xs text-muted-foreground font-mono">
-                                                {new Date(asset.createdAt).toLocaleDateString()}
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" onClick={() => openPreview(asset)}><Maximize2 className="h-4 w-4" /></Button>
-                                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" title="Set Strategy" onClick={() => navigate(`/strategy/${asset.campaignId}`)}><Target className="h-4 w-4" /></Button>
-                                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" onClick={() => handleDownload(asset.url, asset.hook)}><Download className="h-4 w-4" /></Button>
-                                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" onClick={() => navigate(`/video-editor/${asset.campaignId}`)}><Play className="h-4 w-4" /></Button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )
+        </div>
+    ) : (
+        <div className="rounded-2xl border border-white/5 bg-card/30 overflow-hidden backdrop-blur-sm">
+            <table className="w-full text-left border-collapse">
+                <thead>
+                    <tr className="bg-white/5 border-b border-white/5">
+                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60">Creative Preview</th>
+                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60">Title / Campaign</th>
+                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60">Type</th>
+                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60">Created At</th>
+                        <th className="p-4 text-[11px] uppercase font-black tracking-widest text-muted-foreground/60 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredAssets.map((asset) => (
+                        <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                            <td className="p-4">
+                                <div className="w-24 aspect-video rounded-lg overflow-hidden border border-white/5 bg-black cursor-pointer" onClick={() => openPreview(asset)}>
+                                    <img src={asset.thumbnail || asset.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" alt="thumb" />
+                                </div>
+                            </td>
+                            <td className="p-4">
+                                <div>
+                                    <p className="font-bold text-sm text-foreground">{asset.hook || (asset.isFullVideo ? "Full Video" : `Scene ${(asset.sceneIndex ?? 0) + 1}`)}</p>
+                                    <p className="text-xs text-muted-foreground/60">{asset.campaignTitle}</p>
+                                </div>
+                            </td>
+                            <td className="p-4">
+                                <Badge variant="outline" className={`border-white/10 uppercase text-[9px] font-black ${asset.isFullVideo ? 'bg-primary/20 text-primary border-primary/30' : ''}`}>
+                                    {asset.isFullVideo ? 'Full Video' : 'Scene'}
+                                </Badge>
+                            </td>
+                            <td className="p-4 text-xs text-muted-foreground font-mono">
+                                {new Date(asset.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="p-4">
+                                <div className="flex items-center justify-end gap-2">
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" onClick={() => openPreview(asset)}><Maximize2 className="h-4 w-4" /></Button>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" title="Set Strategy" onClick={() => navigate(`/strategy/${asset.campaignId}`)}><Target className="h-4 w-4" /></Button>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" onClick={() => handleDownload(asset.url, asset.hook)}><Download className="h-4 w-4" /></Button>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" onClick={() => navigate(`/video-editor/${asset.campaignId}`)}><Play className="h-4 w-4" /></Button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    )
                 ) : (
-                    <div className="h-[460px] flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-3xl bg-card/20 backdrop-blur-xl animate-in zoom-in-95 duration-500">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                            <Film className="h-10 w-10 text-primary animate-pulse" />
-                        </div>
-                        <h3 className="text-2xl font-black text-foreground mb-3 italic">Vault is Empty</h3>
-                        <p className="text-muted-foreground max-w-sm text-center font-medium leading-relaxed">
-                            No creatives were found matching your criteria. Start a new production to see your assets here.
-                        </p>
-                        <Button className="mt-8 gap-3 h-12 px-8 rounded-xl font-black bg-primary text-primary-foreground hover:scale-105 transition-transform" onClick={() => navigate('/create')}>
-                            <PlusCircle className="h-5 w-5" /> INITIALIZE PRODUCTION
-                        </Button>
-                    </div>
-                )}
+    <div className="h-[460px] flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-3xl bg-card/20 backdrop-blur-xl animate-in zoom-in-95 duration-500">
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+            <Film className="h-10 w-10 text-primary animate-pulse" />
+        </div>
+        <h3 className="text-2xl font-black text-foreground mb-3 italic">Vault is Empty</h3>
+        <p className="text-muted-foreground max-w-sm text-center font-medium leading-relaxed">
+            No creatives were found matching your criteria. Start a new production to see your assets here.
+        </p>
+        <Button className="mt-8 gap-3 h-12 px-8 rounded-xl font-black bg-primary text-primary-foreground hover:scale-105 transition-transform" onClick={() => navigate('/create')}>
+            <PlusCircle className="h-5 w-5" /> INITIALIZE PRODUCTION
+        </Button>
+    </div>
+)}
 
-            </div>
+            </div >
 
-            {/* High-Fidelity Preview Modal */}
-            <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-                <DialogContent className="max-w-5xl bg-[#0a0a0a]/95 backdrop-blur-2xl border-white/10 p-0 overflow-hidden rounded-3xl ring-1 ring-white/10">
-                    {selectedAsset && (
-                        <div className="flex flex-col h-full">
-                            <div className="aspect-video bg-black relative group/modal">
-                                {selectedAsset.type === 'video' ? (
-                                    <video
-                                        src={selectedAsset.url}
-                                        className="w-full h-full object-contain"
-                                        controls
-                                        autoPlay
-                                    />
-                                ) : (
-                                    <img
-                                        src={selectedAsset.url}
-                                        className="w-full h-full object-contain"
-                                        alt={selectedAsset.hook}
-                                    />
-                                )}
+    {/* High-Fidelity Preview Modal */ }
+    < Dialog open = { isPreviewOpen } onOpenChange = { setIsPreviewOpen } >
+        <DialogContent className="max-w-5xl bg-[#0a0a0a]/95 backdrop-blur-2xl border-white/10 p-0 overflow-hidden rounded-3xl ring-1 ring-white/10">
+            {selectedAsset && (
+                <div className="flex flex-col h-full">
+                    <div className="aspect-video bg-black relative group/modal">
+                        {selectedAsset.type === 'video' ? (
+                            <video
+                                src={selectedAsset.url}
+                                className="w-full h-full object-contain"
+                                controls
+                                autoPlay
+                            />
+                        ) : (
+                            <img
+                                src={selectedAsset.url}
+                                className="w-full h-full object-contain"
+                                alt={selectedAsset.hook}
+                            />
+                        )}
 
-                                {selectedAsset.videoSettings && (
-                                    <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
-                                        <OverlayElements
-                                            banner={selectedAsset.videoSettings.banner}
-                                            title={selectedAsset.videoSettings.title}
-                                            qrCode={selectedAsset.videoSettings.qrCode}
-                                        />
-                                    </div>
-                                )}
-
-                                <div className="absolute top-4 right-4 flex gap-2">
-                                    <Badge className="bg-black/60 backdrop-blur-md border-white/10 uppercase font-black text-[10px] tracking-widest px-3">
-                                        {selectedAsset.type} (HI-RES)
-                                    </Badge>
-                                </div>
+                        {selectedAsset.videoSettings && (
+                            <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
+                                <OverlayElements
+                                    banner={selectedAsset.videoSettings.banner}
+                                    title={selectedAsset.videoSettings.title}
+                                    qrCode={selectedAsset.videoSettings.qrCode}
+                                />
                             </div>
+                        )}
 
-                            <div className="p-8 bg-gradient-to-b from-transparent to-black/40">
-                                <DialogHeader className="mb-6">
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="space-y-1">
-                                            <DialogTitle className="text-2xl font-black tracking-tight">{selectedAsset.hook}</DialogTitle>
-                                            <DialogDescription className="text-primary font-bold uppercase tracking-widest text-[11px] flex items-center gap-2">
-                                                <Tv className="h-3 w-3" /> {selectedAsset.campaignTitle} — Scene {selectedAsset.sceneIndex + 1}
-                                            </DialogDescription>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button variant="secondary" className="gap-2 font-bold rounded-xl" onClick={() => handleCopyLink(selectedAsset.url, 'preview')}>
-                                                <Copy className="h-4 w-4" /> Copy Link
-                                            </Button>
-                                            <Button className="gap-2 font-bold rounded-xl bg-primary hover:bg-primary/90" onClick={() => handleDownload(selectedAsset.url, selectedAsset.hook)}>
-                                                <Download className="h-4 w-4" /> Export
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </DialogHeader>
+                        <div className="absolute top-4 right-4 flex gap-2">
+                            <Badge className="bg-black/60 backdrop-blur-md border-white/10 uppercase font-black text-[10px] tracking-widest px-3">
+                                {selectedAsset.type} (HI-RES)
+                            </Badge>
+                        </div>
+                    </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-4 border-t border-white/5">
-                                    <div className="space-y-4">
-                                        <h4 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/60">Creative Insight</h4>
-                                        <p className="text-sm text-foreground leading-relaxed font-medium">
-                                            {selectedAsset.body || "No narrative description provided for this scene."}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <h4 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/60">Visual Blueprint</h4>
-                                        <p className="text-sm text-muted-foreground italic leading-relaxed">
-                                            "{selectedAsset.visualPrompt || "Standard broadcast visual parameters applied."}"
-                                        </p>
-                                    </div>
+                    <div className="p-8 bg-gradient-to-b from-transparent to-black/40">
+                        <DialogHeader className="mb-6">
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <DialogTitle className="text-2xl font-black tracking-tight">{selectedAsset.hook}</DialogTitle>
+                                    <DialogDescription className="text-primary font-bold uppercase tracking-widest text-[11px] flex items-center gap-2">
+                                        <Tv className="h-3 w-3" /> {selectedAsset.campaignTitle} — Scene {selectedAsset.sceneIndex + 1}
+                                    </DialogDescription>
                                 </div>
-
-                                <div className="mt-8 flex items-center justify-between">
-                                    <div className="flex items-center gap-6">
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] uppercase font-black text-muted-foreground/40 tracking-wider">Storage ID</span>
-                                            <span className="text-[10px] font-mono text-muted-foreground/60">{selectedAsset.campaignId.slice(0, 18)}...</span>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] uppercase font-black text-muted-foreground/40 tracking-wider">Format</span>
-                                            <span className="text-[10px] font-mono text-muted-foreground/60">{selectedAsset.type === 'video' ? 'ProRes 4444' : 'TIFF Lossless'}</span>
-                                        </div>
-                                    </div>
-                                    <Button variant="link" className="text-white/40 hover:text-white text-xs font-bold gap-2" onClick={() => navigate(`/video-editor/${selectedAsset.campaignId}`)}>
-                                        Open in Production Suite <ExternalLink className="h-3 w-3" />
+                                <div className="flex gap-2">
+                                    <Button variant="secondary" className="gap-2 font-bold rounded-xl" onClick={() => handleCopyLink(selectedAsset.url, 'preview')}>
+                                        <Copy className="h-4 w-4" /> Copy Link
+                                    </Button>
+                                    <Button className="gap-2 font-bold rounded-xl bg-primary hover:bg-primary/90" onClick={() => handleDownload(selectedAsset.url, selectedAsset.hook)}>
+                                        <Download className="h-4 w-4" /> Export
                                     </Button>
                                 </div>
                             </div>
+                        </DialogHeader>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-4 border-t border-white/5">
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/60">Creative Insight</h4>
+                                <p className="text-sm text-foreground leading-relaxed font-medium">
+                                    {selectedAsset.body || "No narrative description provided for this scene."}
+                                </p>
+                            </div>
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/60">Visual Blueprint</h4>
+                                <p className="text-sm text-muted-foreground italic leading-relaxed">
+                                    "{selectedAsset.visualPrompt || "Standard broadcast visual parameters applied."}"
+                                </p>
+                            </div>
                         </div>
-                    )}
-                </DialogContent>
-            </Dialog>
-        </DashboardLayout>
+
+                        <div className="mt-8 flex items-center justify-between">
+                            <div className="flex items-center gap-6">
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] uppercase font-black text-muted-foreground/40 tracking-wider">Storage ID</span>
+                                    <span className="text-[10px] font-mono text-muted-foreground/60">{selectedAsset.campaignId.slice(0, 18)}...</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] uppercase font-black text-muted-foreground/40 tracking-wider">Format</span>
+                                    <span className="text-[10px] font-mono text-muted-foreground/60">{selectedAsset.type === 'video' ? 'ProRes 4444' : 'TIFF Lossless'}</span>
+                                </div>
+                            </div>
+                            <Button variant="link" className="text-white/40 hover:text-white text-xs font-bold gap-2" onClick={() => navigate(`/video-editor/${selectedAsset.campaignId}`)}>
+                                Open in Production Suite <ExternalLink className="h-3 w-3" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </DialogContent>
+            </Dialog >
+        </DashboardLayout >
     );
 };
 
