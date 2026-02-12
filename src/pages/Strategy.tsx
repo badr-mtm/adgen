@@ -320,7 +320,7 @@ export default function Strategy() {
 
           {/* Sidebar - Mission Control Summary */}
           <div className="lg:col-span-4 lg:block space-y-8">
-            <Card className="sticky top-28 backdrop-blur-3xl overflow-hidden border-t-white/10 rounded-sm shadow-lg bg-primary-foreground border border-primary">
+            <Card className="sticky top-28 backdrop-blur-3xl overflow-hidden border-t-white/10 rounded-sm shadow-lg bg-primary-foreground border border-[#87ab54]">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-purple-500 to-primary animate-gradient-x" />
               <CardHeader className="pb-6 border-b border-white/5 bg-white/[0.02]">
                 <CardTitle className="flex justify-between items-center text-foreground">
