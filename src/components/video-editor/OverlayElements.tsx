@@ -9,11 +9,11 @@ interface OverlayElementsProps {
 const OverlayElements = ({ banner, qrCode }: OverlayElementsProps) => {
   const getQRPosition = () => {
     switch (qrCode.position) {
-      case "top-left": return "top-4 left-4";
-      case "top-right": return "top-4 right-4";
-      case "bottom-left": return "bottom-24 left-4";
-      case "bottom-right": return "bottom-24 right-4";
-      default: return "top-4 right-4";
+      case "top-left": return "top-6 left-6";
+      case "top-right": return "top-6 right-6";
+      case "bottom-left": return "bottom-6 left-6";
+      case "bottom-right": return "bottom-6 right-6";
+      default: return "top-6 right-6";
     }
   };
 
@@ -31,7 +31,7 @@ const OverlayElements = ({ banner, qrCode }: OverlayElementsProps) => {
       {banner.enabled && (
         <div
           className={`absolute left-0 right-0 px-4 py-3 ${banner.position === "top" ? "top-0" : "bottom-0"
-            } ${getBannerAlignment()} z-10`}
+            } ${getBannerAlignment()} z-10 pointer-events-auto`}
           style={{ backgroundColor: banner.backgroundColor }}
         >
           <p
@@ -46,7 +46,7 @@ const OverlayElements = ({ banner, qrCode }: OverlayElementsProps) => {
       {/* QR Code */}
       {qrCode.enabled && qrCode.url && (
         <div
-          className={`absolute ${getQRPosition()} z-10 transition-all duration-300`}
+          className={`absolute ${getQRPosition()} z-10 transition-all duration-300 pointer-events-auto`}
           style={{ width: qrCode.size, height: qrCode.size }}
         >
           <div className="w-full h-full bg-white rounded-xl p-2 flex items-center justify-center shadow-2xl ring-1 ring-black/5 overflow-hidden">

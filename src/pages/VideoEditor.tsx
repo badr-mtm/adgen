@@ -14,6 +14,7 @@ import VideoTimeline from "@/components/video-editor/VideoTimeline";
 import AIAssistantPanel from "@/components/video-editor/AIAssistantPanel";
 import SceneEditor from "@/components/video-editor/SceneEditor";
 import VideoEditorHeader from "@/components/video-editor/VideoEditorHeader";
+import OverlayElements from "@/components/video-editor/OverlayElements";
 import { searchPexelsVideos } from "@/utils/pexels";
 import { isEdgeFunctionNetworkError, pollForCampaignSceneVideoUrl } from "@/lib/campaignVideoPolling";
 import { useGenerationResume } from "@/hooks/useGenerationResume";
@@ -831,13 +832,20 @@ export default function VideoEditor() {
                     Switch to Scene Editor
                   </Button>
                 </div>
-                <div className="w-full max-w-4xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
+                <div className="w-full max-w-4xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl relative">
                   <video
                     src={generatedVideoUrl}
                     controls
                     autoPlay
                     className="w-full h-full object-contain"
                   />
+                  {/* Overlays for generated video */}
+                  <div className="absolute inset-0 pointer-events-none z-20">
+                    <OverlayElements
+                      banner={overlaySettings.banner}
+                      qrCode={overlaySettings.qrCode}
+                    />
+                  </div>
                 </div>
                 <p className="mt-4 text-sm text-white/60">
                   This is your AI-generated video. Use the Scene Editor for detailed refinements.

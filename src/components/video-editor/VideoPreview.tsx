@@ -371,7 +371,7 @@ const VideoPreview = ({
           {/* Overlay Elements (Banner & QR Code) - LAST in DOM with HIGHEST z-index for guaranteed visibility */}
           {overlaySettings && !showEndScreen && (
             <div className="absolute inset-0 z-[70] pointer-events-none w-full h-full">
-              <div className="relative w-full h-full pointer-events-auto">
+              <div className="relative w-full h-full">
                 <OverlayElements
                   banner={overlaySettings.banner}
                   qrCode={overlaySettings.qrCode}
