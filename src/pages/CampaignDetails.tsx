@@ -44,9 +44,10 @@ import {
   Loader2,
   CheckCircle2,
   ShieldCheck,
-  Clock } from
+  Clock
+} from
 
-"lucide-react";
+  "lucide-react";
 import {
   AreaChart,
   Area,
@@ -54,9 +55,10 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer } from
+  ResponsiveContainer
+} from
 
-"recharts";
+  "recharts";
 
 const CampaignDetails = () => {
   const { id } = useParams();
@@ -85,13 +87,13 @@ const CampaignDetails = () => {
     const fetchCampaign = async () => {
       if (!id) return;
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {navigate("/auth");return;}
+      if (!session) { navigate("/auth"); return; }
 
       const { data, error } = await supabase.
-      from("campaigns").
-      select("*").
-      eq("id", id).
-      single();
+        from("campaigns").
+        select("*").
+        eq("id", id).
+        single();
 
       if (error || !data) {
         toast({ title: "Error", description: "Campaign not found", variant: "destructive" });
@@ -169,9 +171,9 @@ const CampaignDetails = () => {
     if (!id || !newName.trim()) return;
 
     const { error } = await supabase.
-    from("campaigns").
-    update({ title: newName.trim() }).
-    eq("id", id);
+      from("campaigns").
+      update({ title: newName.trim() }).
+      eq("id", id);
 
     if (error) {
       toast({ title: "Error", description: "Failed to update campaign name", variant: "destructive" });
@@ -196,10 +198,10 @@ const CampaignDetails = () => {
 
   // Mock Data for "Command Center" Visuals
   const chartData = [
-  { name: 'Mon', value: 4000 }, { name: 'Tue', value: 3000 },
-  { name: 'Wed', value: 2000 }, { name: 'Thu', value: 2780 },
-  { name: 'Fri', value: 1890 }, { name: 'Sat', value: 2390 },
-  { name: 'Sun', value: 3490 }];
+    { name: 'Mon', value: 4000 }, { name: 'Tue', value: 3000 },
+    { name: 'Wed', value: 2000 }, { name: 'Thu', value: 2780 },
+    { name: 'Fri', value: 1890 }, { name: 'Sat', value: 2390 },
+    { name: 'Sun', value: 3490 }];
 
 
   return (
@@ -210,9 +212,9 @@ const CampaignDetails = () => {
         <div className="relative h-[300px] w-full overflow-hidden border-b border-white/10">
           <div className="absolute inset-0 bg-black/60 z-10" />
           {getThumbnail() ?
-          <img src={getThumbnail()} className="w-full h-full object-cover blur-xl opacity-50 scale-110" alt="Background" /> :
+            <img src={getThumbnail()} className="w-full h-full object-cover blur-xl opacity-50 scale-110" alt="Background" /> :
 
-          <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black" />
+            <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black" />
           }
 
           <div className="absolute inset-x-0 bottom-0 top-0 z-20 p-8 flex flex-col justify-end max-w-[1600px] mx-auto">
@@ -224,20 +226,20 @@ const CampaignDetails = () => {
                   onClick={() => getVideoUrl() ? setVideoModalOpen(true) : handleEditVideo()}>
 
                   {generationStatus === "generating" ?
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/20 to-black">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/20 to-black">
                       <Loader2 className="h-8 w-8 text-amber-400 animate-spin mb-2" />
                       <span className="text-xs text-amber-400/80 font-medium">Generating...</span>
                     </div> :
-                  getVideoUrl() ?
-                  <>
+                    getVideoUrl() ?
+                      <>
                         <video
-                      src={getVideoUrl() || undefined}
-                      muted
-                      loop
-                      playsInline
-                      className="w-full h-full object-cover"
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => {e.currentTarget.pause();e.currentTarget.currentTime = 0;}} />
+                          src={getVideoUrl() || undefined}
+                          muted
+                          loop
+                          playsInline
+                          className="w-full h-full object-cover"
+                          onMouseEnter={(e) => e.currentTarget.play()}
+                          onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }} />
 
                         {/* Play button overlay */}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
@@ -246,8 +248,8 @@ const CampaignDetails = () => {
                           </div>
                         </div>
                       </> :
-                  getThumbnail() ?
-                  <>
+                      getThumbnail() ?
+                        <>
                           <img src={getThumbnail()} className="w-full h-full object-cover" alt="Thumbnail" />
                           <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors" />
                           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -255,7 +257,7 @@ const CampaignDetails = () => {
                           </div>
                         </> :
 
-                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <div className="w-full h-full flex items-center justify-center bg-muted">
                           <Film className="h-8 w-8 text-white/50" />
                         </div>
                   }
@@ -266,7 +268,7 @@ const CampaignDetails = () => {
                   variant="outline"
                   size="sm"
                   className="absolute -bottom-2 left-24 -translate-x-1/2 border-white/20 bg-black/60 text-white hover:bg-white/20 hover:text-white backdrop-blur-md gap-1.5 text-xs h-7 px-3 opacity-0 group-hover/preview:opacity-100 transition-opacity z-10"
-                  onClick={(e) => {e.stopPropagation();handleEditVideo();}}>
+                  onClick={(e) => { e.stopPropagation(); handleEditVideo(); }}>
 
                   <Edit className="h-3 w-3" /> Edit
                 </Button>
@@ -386,7 +388,7 @@ const CampaignDetails = () => {
                   </div>
 
                   {campaign?.strategy ?
-                  <Card className="bg-card/50 border-border/50 backdrop-blur-sm overflow-hidden">
+                    <Card className="bg-card/50 border-border/50 backdrop-blur-sm overflow-hidden">
                       <CardHeader className="pb-4 border-b border-border/10 bg-muted/20">
                         <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                           <ShieldCheck className="w-4 h-4 text-primary" />
@@ -409,11 +411,11 @@ const CampaignDetails = () => {
                           <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Targeting Perimeter</p>
                           <div className="flex flex-wrap gap-2">
                             {campaign.strategy.targeting?.locations?.slice(0, 3).map((loc: string, i: number) =>
-                          <Badge key={i} variant="outline" className="bg-primary/5 border-primary/10 text-[10px]">{loc}</Badge>
-                          )}
+                              <Badge key={i} variant="outline" className="bg-primary/5 border-primary/10 text-[10px]">{loc}</Badge>
+                            )}
                             {campaign.strategy.targeting?.locations?.length > 3 &&
-                          <Badge variant="outline" className="bg-primary/5 border-primary/10 text-[10px]">+{campaign.strategy.targeting.locations.length - 3} more</Badge>
-                          }
+                              <Badge variant="outline" className="bg-primary/5 border-primary/10 text-[10px]">+{campaign.strategy.targeting.locations.length - 3} more</Badge>
+                            }
                           </div>
                         </div>
 
@@ -436,7 +438,7 @@ const CampaignDetails = () => {
                       </CardContent>
                     </Card> :
 
-                  <div className="p-12 border-2 border-dashed border-border/50 rounded-2xl bg-card/10 text-center">
+                    <div className="p-12 border-2 border-dashed border-border/50 rounded-2xl bg-card/10 text-center">
                       <p className="text-sm text-muted-foreground mb-4">No deployment strategy set.</p>
                       <Button variant="outline" onClick={() => navigate(`/strategy/${id}`)}>Set Strategy</Button>
                     </div>
@@ -452,9 +454,9 @@ const CampaignDetails = () => {
                     </div>
                   </div>
                   {strategy ?
-                  <StrategyPanel strategy={strategy} onEdit={() => setStrategyModalOpen(true)} /> :
+                    <StrategyPanel strategy={strategy} onEdit={() => setStrategyModalOpen(true)} /> :
 
-                  <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
+                    <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
                       <p className="text-muted-foreground mb-4">No creative strategy configured.</p>
                       <Button onClick={() => navigate(`/storyboard/${id}`)}>
                         <Target className="h-4 w-4 mr-2" />
@@ -473,26 +475,26 @@ const CampaignDetails = () => {
                   <Card className="overflow-hidden border-border/50 backdrop-blur-xl group relative bg-primary-foreground">
                     <div className="aspect-video relative bg-black">
                       {getVideoUrl() ?
-                      <>
+                        <>
                           <video
-                          src={getVideoUrl() || undefined}
-                          controls
-                          className="w-full h-full object-contain relative z-0" />
+                            src={getVideoUrl() || undefined}
+                            controls
+                            className="w-full h-full object-cover relative z-0" />
 
                           {/* Render published overlays if they describe */}
                           {/* Use fallback from storyboard if strategy column is missing */}
                           {(campaign?.strategy?.videoSettings || campaign?.storyboard?.videoSettings || campaign?.storyboard?.strategy?.videoSettings) &&
-                        <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
+                            <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
                               <OverlayElements
-                            banner={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).banner}
-                            title={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).title}
-                            qrCode={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).qrCode} />
+                                banner={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).banner}
+                                title={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).title}
+                                qrCode={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).qrCode} />
 
                             </div>
-                        }
+                          }
                         </> :
 
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20">
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20">
                           <Film className="h-12 w-12 text-muted-foreground opacity-20 mb-4" />
                           <p className="text-sm text-muted-foreground">Video asset under development</p>
                           <Button variant="link" className="mt-2 text-primary" onClick={handleEditVideo}>
@@ -502,7 +504,7 @@ const CampaignDetails = () => {
                       }
                     </div>
                     {getVideoUrl() &&
-                    <div className="p-4 border-t border-white/5 flex items-center justify-between bg-white/[0.02]">
+                      <div className="p-4 border-t border-white/5 flex items-center justify-between bg-white/[0.02]">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-lg bg-primary/10 text-primary">
                             <MonitorPlay className="w-4 h-4" />
@@ -548,7 +550,7 @@ const CampaignDetails = () => {
                         <h4 className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-4">Scene Performance</h4>
                         <div className="space-y-4">
                           {[1, 2, 3].map((i) =>
-                          <div key={i} className="flex items-center justify-between text-xs">
+                            <div key={i} className="flex items-center justify-between text-xs">
                               <span className="text-muted-foreground">Scene {i}</span>
                               <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/5">High Retention</Badge>
                             </div>
@@ -584,7 +586,7 @@ const CampaignDetails = () => {
 
 // --- Sub-Components ---
 const KpiCard = ({ title, value, trend, warning, icon }: any) =>
-<Card className="bg-card/50 border-border/50 backdrop-blur-sm">
+  <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
     <CardContent className="p-6 py-[12px] px-[16px]">
       <div className="flex justify-between items-start mb-4">
         <div>
