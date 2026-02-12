@@ -42,8 +42,8 @@ import {
   Zap,
   Loader2,
   CheckCircle2,
-  Clock
-} from "lucide-react";
+  Clock } from
+"lucide-react";
 import {
   AreaChart,
   Area,
@@ -51,8 +51,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+  ResponsiveContainer } from
+"recharts";
 
 const CampaignDetails = () => {
   const { id } = useParams();
@@ -81,13 +81,13 @@ const CampaignDetails = () => {
     const fetchCampaign = async () => {
       if (!id) return;
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/auth"); return; }
+      if (!session) {navigate("/auth");return;}
 
-      const { data, error } = await supabase
-        .from("campaigns")
-        .select("*")
-        .eq("id", id)
-        .single();
+      const { data, error } = await supabase.
+      from("campaigns").
+      select("*").
+      eq("id", id).
+      single();
 
       if (error || !data) {
         toast({ title: "Error", description: "Campaign not found", variant: "destructive" });
@@ -96,7 +96,7 @@ const CampaignDetails = () => {
       }
 
       setCampaign(data);
-      
+
       // Check generation status
       const progress = data.generation_progress as any;
       if (progress?.status === "generating") {
@@ -142,38 +142,38 @@ const CampaignDetails = () => {
         <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1.5 animate-pulse">
           <Loader2 className="h-3 w-3 animate-spin" />
           Generating
-        </Badge>
-      );
+        </Badge>);
+
     }
     if (videoUrl) {
       return (
         <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30 gap-1.5">
           <CheckCircle2 className="h-3 w-3" />
           Video Ready
-        </Badge>
-      );
+        </Badge>);
+
     }
     return (
       <Badge className="bg-muted text-muted-foreground border-border gap-1.5">
         <Clock className="h-3 w-3" />
         Awaiting Video
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   const handleUpdateCampaignName = async (newName: string) => {
     if (!id || !newName.trim()) return;
-    
-    const { error } = await supabase
-      .from("campaigns")
-      .update({ title: newName.trim() })
-      .eq("id", id);
-    
+
+    const { error } = await supabase.
+    from("campaigns").
+    update({ title: newName.trim() }).
+    eq("id", id);
+
     if (error) {
       toast({ title: "Error", description: "Failed to update campaign name", variant: "destructive" });
       return;
     }
-    
+
     setCampaign((prev: any) => ({ ...prev, title: newName.trim() }));
     toast({ title: "Updated", description: "Campaign name saved" });
   };
@@ -192,11 +192,11 @@ const CampaignDetails = () => {
 
   // Mock Data for "Command Center" Visuals
   const chartData = [
-    { name: 'Mon', value: 4000 }, { name: 'Tue', value: 3000 },
-    { name: 'Wed', value: 2000 }, { name: 'Thu', value: 2780 },
-    { name: 'Fri', value: 1890 }, { name: 'Sat', value: 2390 },
-    { name: 'Sun', value: 3490 },
-  ];
+  { name: 'Mon', value: 4000 }, { name: 'Tue', value: 3000 },
+  { name: 'Wed', value: 2000 }, { name: 'Thu', value: 2780 },
+  { name: 'Fri', value: 1890 }, { name: 'Sat', value: 2390 },
+  { name: 'Sun', value: 3490 }];
+
 
   return (
     <DashboardLayout>
@@ -205,76 +205,76 @@ const CampaignDetails = () => {
         {/* Cinematic Header with Blur Backdrop */}
         <div className="relative h-[300px] w-full overflow-hidden border-b border-white/10">
           <div className="absolute inset-0 bg-black/60 z-10" />
-          {getThumbnail() ? (
-            <img src={getThumbnail()} className="w-full h-full object-cover blur-xl opacity-50 scale-110" alt="Background" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black" />
-          )}
+          {getThumbnail() ?
+          <img src={getThumbnail()} className="w-full h-full object-cover blur-xl opacity-50 scale-110" alt="Background" /> :
+
+          <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black" />
+          }
 
           <div className="absolute inset-x-0 bottom-0 top-0 z-20 p-8 flex flex-col justify-end max-w-[1600px] mx-auto">
             <div className="flex items-end justify-between gap-6">
               <div className="flex items-end gap-6 relative group/preview">
                 {/* Main Video/Thumbnail Card */}
-                <div 
-                  className="w-48 h-28 rounded-xl overflow-hidden border-2 border-white/20 shadow-2xl bg-black relative mb-1 group cursor-pointer transition-transform hover:scale-105" 
-                  onClick={() => getVideoUrl() ? setVideoModalOpen(true) : handleEditVideo()}
-                >
-                  {generationStatus === "generating" ? (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/20 to-black">
+                <div
+                  className="w-48 h-28 rounded-xl overflow-hidden border-2 border-white/20 shadow-2xl bg-black relative mb-1 group cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => getVideoUrl() ? setVideoModalOpen(true) : handleEditVideo()}>
+
+                  {generationStatus === "generating" ?
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/20 to-black">
                       <Loader2 className="h-8 w-8 text-amber-400 animate-spin mb-2" />
                       <span className="text-xs text-amber-400/80 font-medium">Generating...</span>
-                    </div>
-                  ) : getVideoUrl() ? (
-                    <>
+                    </div> :
+                  getVideoUrl() ?
+                  <>
                       <video
-                        src={getVideoUrl() || undefined}
-                        muted
-                        loop
-                        playsInline
-                        className="w-full h-full object-cover"
-                        onMouseEnter={(e) => e.currentTarget.play()}
-                        onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
-                      />
+                      src={getVideoUrl() || undefined}
+                      muted
+                      loop
+                      playsInline
+                      className="w-full h-full object-cover"
+                      onMouseEnter={(e) => e.currentTarget.play()}
+                      onMouseLeave={(e) => {e.currentTarget.pause();e.currentTarget.currentTime = 0;}} />
+
                       {/* Play button overlay */}
                       <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
                         <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
                           <Play className="h-4 w-4 text-primary-foreground ml-0.5" fill="currentColor" />
                         </div>
                       </div>
-                    </>
-                  ) : getThumbnail() ? (
-                    <>
+                    </> :
+                  getThumbnail() ?
+                  <>
                       <img src={getThumbnail()} className="w-full h-full object-cover" alt="Thumbnail" />
                       <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors" />
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <Play className="h-8 w-8 text-white fill-white drop-shadow-lg" />
                       </div>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                    </> :
+
+                  <div className="w-full h-full flex items-center justify-center bg-muted">
                       <Film className="h-8 w-8 text-white/50" />
                     </div>
-                  )}
+                  }
                 </div>
                 
                 {/* Edit Video Button */}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="absolute -bottom-2 left-24 -translate-x-1/2 border-white/20 bg-black/60 text-white hover:bg-white/20 hover:text-white backdrop-blur-md gap-1.5 text-xs h-7 px-3 opacity-0 group-hover/preview:opacity-100 transition-opacity z-10"
-                  onClick={(e) => { e.stopPropagation(); handleEditVideo(); }}
-                >
+                  onClick={(e) => {e.stopPropagation();handleEditVideo();}}>
+
                   <Edit className="h-3 w-3" /> Edit
                 </Button>
 
                 <div className="mb-2 space-y-1">
                   <div className="flex items-center gap-3">
                     <div className="group/title">
-                      <InlineEditField 
-                        value={campaign.title} 
+                      <InlineEditField
+                        value={campaign.title}
                         onSave={handleUpdateCampaignName}
-                        className="[&_p]:text-4xl [&_p]:font-bold [&_p]:text-white [&_p]:tracking-tight [&_p]:drop-shadow-md [&_input]:text-3xl [&_input]:font-bold [&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_button]:text-white/60 [&_button]:hover:text-white [&_button]:hover:bg-white/10"
-                      />
+                        className="[&_p]:text-4xl [&_p]:font-bold [&_p]:text-white [&_p]:tracking-tight [&_p]:drop-shadow-md [&_input]:text-3xl [&_input]:font-bold [&_input]:bg-white/10 [&_input]:border-white/20 [&_input]:text-white [&_button]:text-white/60 [&_button]:hover:text-white [&_button]:hover:bg-white/10" />
+
                     </div>
                     <Badge className={`uppercase tracking-widest text-[10px] py-1 px-2 border-white/20 backdrop-blur-md ${campaign.status === 'active' ? 'bg-green-500/80 text-white' : 'bg-white/10 text-white'}`}>
                       {campaign.status || 'Draft'}
@@ -328,7 +328,7 @@ const CampaignDetails = () => {
                 {/* Main Chart */}
                 <Card className="lg:col-span-2 border-border/50 bg-card/50 backdrop-blur-sm">
                   <CardHeader>
-                    <CardTitle>Broadcast Performance</CardTitle>
+                    <CardTitle>Campign Performance</CardTitle>
                     <CardDescription>Real-time delivery across connected networks</CardDescription>
                   </CardHeader>
                   <CardContent className="h-[300px]">
@@ -371,8 +371,8 @@ const CampaignDetails = () => {
 
             {/* STRATEGY TAB */}
             <TabsContent value="strategy" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {strategy ? (
-                <div className="space-y-6">
+              {strategy ?
+              <div className="space-y-6">
                   <div className="flex justify-end">
                     <Button variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5" onClick={() => navigate(`/strategy/${id}`)}>
                       <Zap className="h-4 w-4 text-primary" />
@@ -380,24 +380,24 @@ const CampaignDetails = () => {
                     </Button>
                   </div>
                   <StrategyPanel strategy={strategy} onEdit={() => setStrategyModalOpen(true)} />
-                </div>
-              ) : (
-                <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
+                </div> :
+
+              <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-card/30">
                   <p className="text-muted-foreground mb-4">No strategy configured for this campaign.</p>
                   <Button onClick={() => navigate(`/strategy/${id}`)}>
                     <Target className="h-4 w-4 mr-2" />
                     Initialize Strategy Engine
                   </Button>
                 </div>
-              )}
+              }
             </TabsContent>
 
             {/* Other tabs placeholders for now - keeping it focused on the "Wow" factor */}
             <TabsContent value="creative">
               <div className="grid grid-cols-3 gap-6">
                 {/* Placeholder creative cards */}
-                {[1, 2, 3].map(i => (
-                  <Card key={i} className="overflow-hidden border-border/50 bg-card/50 group">
+                {[1, 2, 3].map((i) =>
+                <Card key={i} className="overflow-hidden border-border/50 bg-card/50 group">
                     <div className="aspect-video bg-black relative">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Film className="h-8 w-8 text-muted-foreground/30" />
@@ -416,7 +416,7 @@ const CampaignDetails = () => {
                       </div>
                     </div>
                   </Card>
-                ))}
+                )}
               </div>
             </TabsContent>
 
@@ -427,23 +427,23 @@ const CampaignDetails = () => {
         {/* Modals */}
         <PublishDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen} campaign={campaign} creatives={[]} onPublish={() => setPublishDialogOpen(false)} />
         <StrategyEditModal open={strategyModalOpen} onOpenChange={setStrategyModalOpen} campaignId={id || ""} initialStrategy={strategy} onStrategySaved={setStrategy} />
-        <VideoPreviewModal 
-          open={videoModalOpen} 
-          onOpenChange={setVideoModalOpen} 
-          videoUrl={getVideoUrl()} 
-          thumbnailUrl={getThumbnail()} 
-          title={campaign?.title} 
-          onEditClick={handleEditVideo} 
-        />
+        <VideoPreviewModal
+          open={videoModalOpen}
+          onOpenChange={setVideoModalOpen}
+          videoUrl={getVideoUrl()}
+          thumbnailUrl={getThumbnail()}
+          title={campaign?.title}
+          onEditClick={handleEditVideo} />
+
 
       </div>
-    </DashboardLayout>
-  );
+    </DashboardLayout>);
+
 };
 
 // --- Sub-Components ---
-const KpiCard = ({ title, value, trend, warning, icon }: any) => (
-  <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
+const KpiCard = ({ title, value, trend, warning, icon }: any) =>
+<Card className="bg-card/50 border-border/50 backdrop-blur-sm">
     <CardContent className="p-6">
       <div className="flex justify-between items-start mb-4">
         <div>
@@ -457,7 +457,7 @@ const KpiCard = ({ title, value, trend, warning, icon }: any) => (
         {warning && <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 px-2 py-1 rounded-full">{warning}</span>}
       </div>
     </CardContent>
-  </Card>
-);
+  </Card>;
+
 
 export default CampaignDetails;
