@@ -26,6 +26,7 @@ import {
     Tv,
     Target
 } from "lucide-react";
+import OverlayElements from "@/components/video-editor/OverlayElements";
 import {
     Dialog,
     DialogContent,
@@ -53,6 +54,7 @@ interface CreativeAsset {
     visualPrompt: string;
     createdAt: string;
     isFullVideo?: boolean;
+    videoSettings?: any;
 }
 
 const Creatives = () => {
@@ -76,7 +78,7 @@ const Creatives = () => {
 
             const { data: campaigns, error } = await supabase
                 .from("campaigns")
-                .select("id, title, storyboard, created_at")
+                .select("id, title, storyboard, strategy, created_at")
                 .eq("user_id", session.user.id)
                 .order('created_at', { ascending: false });
 
@@ -86,8 +88,10 @@ const Creatives = () => {
             }
 
             const flattenedAssets: CreativeAsset[] = [];
-            campaigns?.forEach((campaign) => {
-                const storyboard = campaign.storyboard as any;
+            campaigns?.forEach((item) => {
+                const campaign = item as any;
+                const storyboard = campaign.storyboard;
+                const videoSettings = campaign.strategy?.videoSettings;
 
                 // Check for full video URL first
                 const fullVideoUrl = storyboard?.selectedScript?.generatedVideoUrl ||
@@ -107,7 +111,8 @@ const Creatives = () => {
                         body: storyboard?.selectedScript?.script || "",
                         visualPrompt: "",
                         createdAt: campaign.created_at,
-                        isFullVideo: true
+                        isFullVideo: true,
+                        videoSettings
                     });
                 }
 
@@ -129,7 +134,8 @@ const Creatives = () => {
                                 body: scene.body || scene.description || "",
                                 visualPrompt: scene.visualPrompt || "",
                                 createdAt: campaign.created_at,
-                                isFullVideo: false
+                                isFullVideo: false,
+                                videoSettings
                             });
                         }
                     });
@@ -253,6 +259,24 @@ const Creatives = () => {
                             {filteredAssets.map((asset) => (
                                 <Card key={asset.id} className="group overflow-hidden border-border bg-card backdrop-blur-sm hover:border-primary transition-all duration-300 rounded-2xl">
                                     <div className="aspect-video relative overflow-hidden bg-black">
+                                        {/* Render Overlays on Thumbnail */}
+                                        {asset.videoSettings && (
+                                            <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
+                                                <div className="relative w-full h-full transform scale-[0.6] origin-top-left w-[166%] h-[166%]">
+                                                    {/* Scale down overlays for thumbnail view to match aspect ratio if needed, 
+                                                        but usually keeping them 1:1 relative to container is better. 
+                                                        However, for small thumbnails, we might want to scale them down or hide them? 
+                                                        The user wants "combined", so showing them is key.
+                                                        Let's try standard render first. 
+                                                    */}
+                                                </div>
+                                                <OverlayElements
+                                                    banner={asset.videoSettings.banner}
+                                                    title={asset.videoSettings.title}
+                                                    qrCode={asset.videoSettings.qrCode}
+                                                />
+                                            </div>
+                                        )}
                                         <img
                                             src={asset.thumbnail || asset.url}
                                             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1"
@@ -439,6 +463,16 @@ const Creatives = () => {
                                         className="w-full h-full object-contain"
                                         alt={selectedAsset.hook}
                                     />
+                                )}
+
+                                {selectedAsset.videoSettings && (
+                                    <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
+                                        <OverlayElements
+                                            banner={selectedAsset.videoSettings.banner}
+                                            title={selectedAsset.videoSettings.title}
+                                            qrCode={selectedAsset.videoSettings.qrCode}
+                                        />
+                                    </div>
                                 )}
 
                                 <div className="absolute top-4 right-4 flex gap-2">
