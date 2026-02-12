@@ -16,6 +16,7 @@ import { StrategyPanel } from "@/components/storyboard/StrategyPanel";
 import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 import { useGenerationResume } from "@/hooks/useGenerationResume";
 import InlineEditField from "@/components/storyboard/InlineEditField";
+import OverlayElements from "@/components/video-editor/OverlayElements";
 import {
   ArrowLeft,
   Play,
@@ -470,13 +471,25 @@ const CampaignDetails = () => {
                 {/* Primary Video Asset */}
                 <div className="lg:col-span-2 space-y-6">
                   <Card className="overflow-hidden border-border/50 bg-black/40 backdrop-blur-xl group relative">
-                    <div className="aspect-video relative">
+                    <div className="aspect-video relative bg-black">
                       {getVideoUrl() ? (
-                        <video
-                          src={getVideoUrl() || undefined}
-                          controls
-                          className="w-full h-full object-contain"
-                        />
+                        <>
+                          <video
+                            src={getVideoUrl() || undefined}
+                            controls
+                            className="w-full h-full object-contain relative z-0"
+                          />
+                          {/* Render published overlays if they describe */}
+                          {campaign?.strategy?.videoSettings && (
+                            <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
+                              <OverlayElements
+                                banner={campaign.strategy.videoSettings.banner}
+                                title={campaign.strategy.videoSettings.title}
+                                qrCode={campaign.strategy.videoSettings.qrCode}
+                              />
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20">
                           <Film className="h-12 w-12 text-muted-foreground opacity-20 mb-4" />

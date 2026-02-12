@@ -760,6 +760,70 @@ export default function VideoEditor() {
     setIsAssistantOpen(true);
   };
 
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  const handlePublishAndExport = async () => {
+    if (!id) return;
+    setIsPublishing(true);
+
+    // Save current state first
+    saveToHistory(scenes, overlaySettings);
+
+    try {
+      // 1. Update the strategy with the latest overlay settings
+      const currentStrategy = (project?.strategy as any) || {};
+      const updatedStrategy = {
+        ...currentStrategy,
+        videoSettings: overlaySettings,
+        // Explicitly mark this as the published configuration
+        lastPublishedAt: new Date().toISOString()
+      };
+
+      // 2. Ensure specific "master" video fields are set on the storyboard
+      // This is what CampaignDetails will look for
+      const updatedStoryboard = {
+        ...project.storyboard,
+        scenes: scenes,
+        // Make sure the main video URL is consistent with the generated one
+        // If we are in "generated full video" mode, this is critical
+        generatedVideoUrl: generatedVideoUrl || project.storyboard?.generatedVideoUrl,
+        videoUrl: generatedVideoUrl || project.storyboard?.videoUrl
+      };
+
+      const { error } = await supabase
+        .from('campaigns')
+        .update({
+          strategy: updatedStrategy,
+          storyboard: updatedStoryboard,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Published Successfully",
+        description: "Your video and creative settings have been saved as the master asset.",
+        duration: 3000
+      });
+
+      // Optional: Add a small delay for effect before navigating
+      setTimeout(() => {
+        navigate(`/campaign/${id}`);
+      }, 1000);
+
+    } catch (err: any) {
+      console.error("Publishing failed:", err);
+      toast({
+        title: "Publishing Failed",
+        description: err.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden font-sans selection:bg-primary/30">
       {/* Background Gradients */}
@@ -775,6 +839,8 @@ export default function VideoEditor() {
           onRedo={handleRedo}
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history.length - 1}
+          onPublish={handlePublishAndExport}
+          isPublishing={isPublishing}
         />
 
         <div className="flex-1 flex overflow-hidden min-h-0">

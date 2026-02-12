@@ -9,6 +9,8 @@ interface VideoEditorHeaderProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  onPublish: () => void;
+  isPublishing?: boolean;
 }
 
 export default function VideoEditorHeader({
@@ -16,7 +18,9 @@ export default function VideoEditorHeader({
   onUndo,
   onRedo,
   canUndo,
-  canRedo
+  canRedo,
+  onPublish,
+  isPublishing
 }: VideoEditorHeaderProps) {
   const navigate = useNavigate();
   return (
@@ -53,13 +57,26 @@ export default function VideoEditorHeader({
           </div>
         </div>
 
-        <div className="relative group hidden sm:block">
+        <div className="relative group hidden sm:block mr-2">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
           <div className="flex items-center gap-1 pl-7 pr-3 py-1.5 bg-muted/50 rounded-md border border-border group-hover:border-primary/30 transition-all cursor-text">
             <span className="text-[10px] text-muted-foreground uppercase tracking-widest hidden lg:inline">Search...</span>
             <span className="text-[10px] bg-background border border-border px-1 rounded text-muted-foreground group-hover:text-foreground">⌘K</span>
           </div>
         </div>
+
+        <Button
+          size="sm"
+          onClick={onPublish}
+          disabled={isPublishing}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-semibold tracking-tight"
+        >
+          {isPublishing ? (
+            <>Processing...</>
+          ) : (
+            <>Process & Publish</>
+          )}
+        </Button>
       </div>
     </div>
   );
