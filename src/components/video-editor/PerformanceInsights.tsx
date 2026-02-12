@@ -4,26 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-    TrendingUp,
-    Users,
-    MapPin,
-    Target,
-    Sparkles,
-    Play,
-    BarChart3,
-    Activity,
-    Globe,
-    CheckCircle2,
-    Volume2,
-    Maximize,
-    Watch,
-    ArrowUpRight
-} from "lucide-react";
+  TrendingUp,
+  Users,
+  MapPin,
+  Target,
+  Sparkles,
+  Play,
+  BarChart3,
+  Activity,
+  Globe,
+  CheckCircle2,
+  Volume2,
+  Maximize,
+  Watch,
+  ArrowUpRight } from
+"lucide-react";
 import { cn } from "@/lib/utils";
 
 export const PerformanceInsights = () => {
-    return (
-        <div className="p-4 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+  return (
+    <div className="p-4 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
             {/* Header Info */}
             <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -36,10 +36,10 @@ export const PerformanceInsights = () => {
             {/* Main Stats Grid */}
             <div className="grid grid-cols-2 gap-3">
                 {[
-                    { label: 'Est. Reach', value: '1.2M+', sub: 'Daily Viewers', icon: Users, color: 'text-blue-500' },
-                    { label: 'Conv. Prob.', value: '18.4%', sub: '+3.2% vs Benchmark', icon: TrendingUp, color: 'text-green-500' },
-                ].map((stat, i) => (
-                    <div key={i} className="bg-accent/5 border border-border rounded-2xl p-3 space-y-2">
+        { label: 'Est. Reach', value: '1.2M+', sub: 'Daily Viewers', icon: Users, color: 'text-blue-500' },
+        { label: 'Conv. Prob.', value: '18.4%', sub: '+3.2% vs Benchmark', icon: TrendingUp, color: 'text-green-500' }].
+        map((stat, i) =>
+        <div key={i} className="bg-accent/5 border border-border rounded-2xl p-3 space-y-2">
                         <div className="flex items-start justify-between">
                             <div className={cn("p-1.5 rounded-lg bg-background border border-border", stat.color)}>
                                 <stat.icon className="h-3.5 w-3.5" />
@@ -51,7 +51,7 @@ export const PerformanceInsights = () => {
                             <p className="text-[9px] font-bold text-muted-foreground mt-1 uppercase tracking-wider">{stat.label}</p>
                         </div>
                     </div>
-                ))}
+        )}
             </div>
 
             {/* Affinity Score Chart */}
@@ -59,61 +59,61 @@ export const PerformanceInsights = () => {
                 <LabelWithIcon icon={Target} label="Network Affinity Match" />
                 <div className="space-y-3">
                     {[
-                        { network: 'Hulu', match: 94, color: 'bg-green-500' },
-                        { network: 'Samsung TV Plus', match: 88, color: 'bg-blue-600' },
-                        { network: 'Peacock', match: 82, color: 'bg-purple-600' },
-                        { network: 'Roku Channel', match: 76, color: 'bg-purple-400' },
-                    ].map((item, i) => (
-                        <div key={i} className="space-y-1.5">
+          { network: 'Hulu', match: 94, color: 'bg-green-500' },
+          { network: 'Samsung TV Plus', match: 88, color: 'bg-blue-600' },
+          { network: 'Peacock', match: 82, color: 'bg-purple-600' },
+          { network: 'Roku Channel', match: 76, color: 'bg-purple-400' }].
+          map((item, i) =>
+          <div key={i} className="space-y-1.5">
                             <div className="flex justify-between items-center text-[10px] font-bold">
                                 <span className="text-foreground">{item.network}</span>
                                 <span className="text-primary">{item.match}%</span>
                             </div>
                             <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
                                 <div
-                                    className={cn("h-full transition-all duration-1000", item.color)}
-                                    style={{ width: `${item.match}%` }}
-                                />
+                className={cn("h-full transition-all duration-1000", item.color)}
+                style={{ width: `${item.match}%` }} />
+
                             </div>
                         </div>
-                    ))}
+          )}
                 </div>
             </div>
 
             {/* Regional Attribution Map (Visual) */}
-            <div className="space-y-4 pt-2">
-                <LabelWithIcon icon={Globe} label="Regional Attribution Map" />
-                <div className="relative aspect-video bg-accent/5 border border-border rounded-xl overflow-hidden flex items-center justify-center group">
-                    {/* Simulated Map Grid */}
-                    <div className="absolute inset-0 grid grid-cols-12 grid-rows-6 opacity-20 pointer-events-none">
-                        {Array.from({ length: 72 }).map((_, i) => (
-                            <div key={i} className="border-[0.5px] border-primary/20" />
-                        ))}
-                    </div>
+            
 
-                    {/* Pulsing Regional Indicators */}
-                    <RegionalPoint x="20%" y="30%" size="bg-primary/40" label="CA" delay="0s" />
-                    <RegionalPoint x="45%" y="60%" size="bg-primary/20" label="TX" delay="1s" />
-                    <RegionalPoint x="85%" y="25%" size="bg-primary/60" label="NY" delay="0.5s" />
-                    <RegionalPoint x="80%" y="75%" size="bg-primary/30" label="FL" delay="1.5s" />
 
-                    <div className="absolute bottom-2 right-2 flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            <span className="text-[8px] text-muted-foreground">High Growth</span>
-                        </div>
-                    </div>
-                </div>
 
-                <div className="flex flex-wrap gap-2">
-                    {['NY Tri-State (8.2%)', 'CA / Silicon (6.4%)', 'TX / Austin (4.1%)'].map((region, i) => (
-                        <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-primary/5 border border-primary/10 rounded-md text-[9px] font-bold text-foreground">
-                            <span className="h-1 w-1 rounded-full bg-primary animate-pulse" />
-                            {region}
-                        </div>
-                    ))}
-                </div>
-            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             {/* Auto-Compliance Checklist */}
             <div className="space-y-3 pt-2">
@@ -124,11 +124,11 @@ export const PerformanceInsights = () => {
 
                 <div className="grid grid-cols-1 gap-1.5">
                     {[
-                        { label: 'Audio Loudness (CALM Act)', status: 'Pass', sub: '-24.2 LKFS', icon: Volume2 },
-                        { label: 'Action Safe Zones', status: 'Pass', sub: '90% Title Safe', icon: Maximize },
-                        { label: 'Spot Duration', status: 'Pass', sub: '29.8s / 30.0s', icon: Watch },
-                    ].map((check, i) => (
-                        <div key={i} className="flex items-center justify-between p-2 bg-accent/5 rounded-lg border border-border group hover:border-primary/30 transition-colors">
+          { label: 'Audio Loudness (CALM Act)', status: 'Pass', sub: '-24.2 LKFS', icon: Volume2 },
+          { label: 'Action Safe Zones', status: 'Pass', sub: '90% Title Safe', icon: Maximize },
+          { label: 'Spot Duration', status: 'Pass', sub: '29.8s / 30.0s', icon: Watch }].
+          map((check, i) =>
+          <div key={i} className="flex items-center justify-between p-2 bg-accent/5 rounded-lg border border-border group hover:border-primary/30 transition-colors">
                             <div className="flex items-center gap-2">
                                 <div className="p-1.5 rounded bg-background border border-border group-hover:bg-primary/5 transition-colors">
                                     <check.icon className="h-3 w-3 text-muted-foreground group-hover:text-primary" />
@@ -143,7 +143,7 @@ export const PerformanceInsights = () => {
                                 PASS
                             </div>
                         </div>
-                    ))}
+          )}
                 </div>
             </div>
 
@@ -158,26 +158,25 @@ export const PerformanceInsights = () => {
                     Apply Strategy Change
                 </button>
             </div>
-        </div>
-    );
+        </div>);
+
 };
 
-const LabelWithIcon = ({ icon: Icon, label }: { icon: any, label: string }) => (
-    <div className="flex items-center gap-2">
+const LabelWithIcon = ({ icon: Icon, label }: {icon: any;label: string;}) =>
+<div className="flex items-center gap-2">
         <div className="p-1 rounded bg-primary/10 border border-primary/10">
             <Icon className="h-3 w-3 text-primary" />
         </div>
         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
-    </div>
-);
+    </div>;
 
-const RegionalPoint = ({ x, y, size, label, delay }: { x: string, y: string, size: string, label: string, delay: string }) => (
-    <div
-        className="absolute flex items-center justify-center"
-        style={{ left: x, top: y }}
-    >
+
+const RegionalPoint = ({ x, y, size, label, delay }: {x: string;y: string;size: string;label: string;delay: string;}) =>
+<div
+  className="absolute flex items-center justify-center"
+  style={{ left: x, top: y }}>
+
         <div className={cn("absolute h-4 w-4 rounded-full animate-ping opacity-25", size)} style={{ animationDelay: delay }} />
         <div className={cn("relative h-2 w-2 rounded-full border border-white/40", size)} />
         <span className="absolute -bottom-3 text-[7px] font-black text-white/40">{label}</span>
-    </div>
-);
+    </div>;
