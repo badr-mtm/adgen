@@ -23,7 +23,8 @@ import {
     Share2,
     Eye,
     Sparkles,
-    Tv
+    Tv,
+    Target
 } from "lucide-react";
 import {
     Dialog,
@@ -87,12 +88,12 @@ const Creatives = () => {
             const flattenedAssets: CreativeAsset[] = [];
             campaigns?.forEach((campaign) => {
                 const storyboard = campaign.storyboard as any;
-                
+
                 // Check for full video URL first
-                const fullVideoUrl = storyboard?.selectedScript?.generatedVideoUrl || 
-                                     storyboard?.generatedVideoUrl || 
-                                     storyboard?.videoUrl;
-                
+                const fullVideoUrl = storyboard?.selectedScript?.generatedVideoUrl ||
+                    storyboard?.generatedVideoUrl ||
+                    storyboard?.videoUrl;
+
                 if (fullVideoUrl) {
                     flattenedAssets.push({
                         id: `${campaign.id}-full`,
@@ -109,12 +110,12 @@ const Creatives = () => {
                         isFullVideo: true
                     });
                 }
-                
+
                 // Then add individual scene videos
                 if (storyboard?.scenes) {
                     storyboard.scenes.forEach((scene: any, index: number) => {
                         const videoUrl = scene.videoUrl;
-                        
+
                         if (videoUrl) {
                             flattenedAssets.push({
                                 id: `${campaign.id}-scene-${index}`,
@@ -275,6 +276,14 @@ const Creatives = () => {
                                                 >
                                                     <Eye className="h-4 w-4" /> Preview
                                                 </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    className="gap-2 bg-white/10 border-white/20 backdrop-blur-md text-white hover:bg-white/20 font-bold rounded-lg h-9"
+                                                    onClick={() => navigate(`/strategy/${asset.campaignId}`)}
+                                                >
+                                                    <Target className="h-4 w-4" /> Strategy
+                                                </Button>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button size="icon" variant="secondary" className="h-9 w-9 bg-white/10 border-white/20 backdrop-blur-md text-white hover:bg-white/20 rounded-lg">
@@ -383,6 +392,7 @@ const Creatives = () => {
                                             <td className="p-4">
                                                 <div className="flex items-center justify-end gap-2">
                                                     <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" onClick={() => openPreview(asset)}><Maximize2 className="h-4 w-4" /></Button>
+                                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" title="Set Strategy" onClick={() => navigate(`/strategy/${asset.campaignId}`)}><Target className="h-4 w-4" /></Button>
                                                     <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" onClick={() => handleDownload(asset.url, asset.hook)}><Download className="h-4 w-4" /></Button>
                                                     <Button size="icon" variant="ghost" className="h-8 w-8 hover:text-primary" onClick={() => navigate(`/video-editor/${asset.campaignId}`)}><Play className="h-4 w-4" /></Button>
                                                 </div>

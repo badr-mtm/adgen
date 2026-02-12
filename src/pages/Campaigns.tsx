@@ -172,10 +172,16 @@ const Campaigns = () => {
     const filteredCampaigns = useMemo(() => {
         return campaigns.filter((c) => {
             const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesStatus = statusFilter === "all" ||
-                (statusFilter === "active" && c.status === "active") ||
-                (statusFilter === "draft" && c.status === "concept") ||
-                (statusFilter === "paused" && c.status === "paused");
+
+            // Only show campaigns that are NOT in concept phase in the main view
+            // unless specifically filtered for "drafts"
+            const status = c.status?.toLowerCase();
+            const matchesStatus = statusFilter === "all"
+                ? (status !== 'concept' && status !== 'draft')
+                : (statusFilter === "active" && status === "active") ||
+                (statusFilter === "draft" && (status === "concept" || status === "draft")) ||
+                (statusFilter === "paused" && status === "paused");
+
             return matchesSearch && matchesStatus;
         });
     }, [campaigns, searchQuery, statusFilter]);
@@ -231,8 +237,8 @@ const Campaigns = () => {
                                 key={tab}
                                 onClick={() => setStatusFilter(tab)}
                                 className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-all ${statusFilter === tab
-                                        ? "bg-background shadow-sm text-foreground"
-                                        : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                                    ? "bg-background shadow-sm text-foreground"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                                     }`}
                             >
                                 {tab}
