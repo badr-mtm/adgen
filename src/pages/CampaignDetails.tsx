@@ -576,7 +576,10 @@ const CampaignDetails = () => {
           videoUrl={getVideoUrl()}
           thumbnailUrl={getThumbnail()}
           title={campaign?.title}
-          onEditClick={handleEditVideo} />
+          onEditClick={handleEditVideo}
+          overlaySettings={campaign?.strategy?.videoSettings || campaign?.storyboard?.videoSettings || campaign?.storyboard?.strategy?.videoSettings}
+          brandName={campaign?.storyboard?.selectedScript?.title || campaign?.title}
+          brandLogo={campaign?.brand_logo} />
 
 
       </div>
