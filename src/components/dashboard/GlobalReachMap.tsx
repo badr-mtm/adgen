@@ -310,7 +310,7 @@ const GlobalReachMap = ({
 
       {/* Top-right legend */}
       <div className="absolute top-5 right-5 z-20 hidden md:flex flex-col gap-1.5 px-3.5 py-2.5 rounded-xl bg-card/90 backdrop-blur-md border border-border shadow-card">
-        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Legend</span>
+        
         <div className="flex items-center gap-2">
           <div className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.5)]" />
           <span className="text-[10px] text-foreground/80">Active Spot</span>
