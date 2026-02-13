@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -7,7 +8,9 @@ import {
   Target, 
   CheckCircle2, 
   BarChart3,
-  Activity
+  Activity,
+  Filter,
+  Calendar
 } from "lucide-react";
 import {
   BarChart,
@@ -17,8 +20,14 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AudienceSegment {
   cohort: string;
@@ -90,7 +99,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanelProps>) {
   const data = { ...defaultProps, ...props };
-
+  const [campaignFilter, setCampaignFilter] = useState("all");
+  const [dateRange, setDateRange] = useState("7d");
   const kpis = [
     { label: "Impressions", value: data.totalImpressions, icon: Eye, color: "text-primary" },
     { label: "VCR", value: `${data.vcr}%`, icon: CheckCircle2, color: "text-emerald-500" },
@@ -139,17 +149,42 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
         transition={{ delay: 0.2 }}
         className="space-y-3"
       >
-        <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">US Reach per Day</h4>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
-              <span className="text-[10px] text-muted-foreground font-medium">Spot 1 — Pre-Show</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="h-2.5 w-2.5 rounded-sm bg-primary/40" />
-              <span className="text-[10px] text-muted-foreground font-medium">Spot 2 — In-Stream</span>
-            </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Reach — All Active Campaigns</h4>
+          <div className="flex items-center gap-2">
+            <Select value={campaignFilter} onValueChange={setCampaignFilter}>
+              <SelectTrigger className="h-7 text-[10px] w-[140px] bg-background/60 border-border/50">
+                <Filter className="h-3 w-3 mr-1 text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Campaigns</SelectItem>
+                <SelectItem value="pre-show">Pre-Show Only</SelectItem>
+                <SelectItem value="in-stream">In-Stream Only</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={dateRange} onValueChange={setDateRange}>
+              <SelectTrigger className="h-7 text-[10px] w-[100px] bg-background/60 border-border/50">
+                <Calendar className="h-3 w-3 mr-1 text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="14d">Last 14 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="90d">Last 90 days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 mt-1">
+          <div className="flex items-center gap-1.5">
+            <div className="h-2.5 w-2.5 rounded-sm bg-primary" />
+            <span className="text-[10px] text-muted-foreground font-medium">Pre-Show</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="h-2.5 w-2.5 rounded-sm bg-primary/40" />
+            <span className="text-[10px] text-muted-foreground font-medium">In-Stream</span>
           </div>
         </div>
 
@@ -173,14 +208,14 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--accent))", opacity: 0.3, radius: 6 }} />
               <Bar
                 dataKey="spot1"
-                name="Spot 1 — Pre-Show"
+                name="Pre-Show"
                 fill="hsl(var(--primary))"
                 radius={[6, 6, 0, 0]}
                 maxBarSize={32}
               />
               <Bar
                 dataKey="spot2"
-                name="Spot 2 — In-Stream"
+                name="In-Stream"
                 fill="hsl(var(--primary) / 0.4)"
                 radius={[6, 6, 0, 0]}
                 maxBarSize={32}
