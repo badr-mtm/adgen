@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, TrendingDown, CheckCircle2, Clock, Play, Pause, SkipForward, Bookmark, Trophy } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, CheckCircle2, Clock, Play, Pause, SkipForward, Bookmark, AlertTriangle, AlertCircle, Zap } from "lucide-react";
 interface AdFormatSpend {
   format: string;
   icon: React.ElementType;
@@ -52,23 +52,41 @@ const defaultAdFormats: AdFormatSpend[] = [{
   cpm: "$42.80",
   cpmTrend: "flat"
 }];
-const defaultTopTitles: TopTitle[] = [{
-  title: "Mission: Impossible 8",
-  vcr: "97.2%",
-  impressions: "2.4M"
-}, {
-  title: "Avatar: Fire & Ash",
-  vcr: "96.8%",
-  impressions: "1.9M"
-}, {
-  title: "Jurassic World: Rebirth",
-  vcr: "95.4%",
-  impressions: "2.1M"
-}, {
-  title: "Captain America: New World",
-  vcr: "94.1%",
-  impressions: "1.2M"
-}];
+const needsAttentionItems = [
+  {
+    title: "Budget pacing ahead of schedule",
+    description: "Pre-Show Trailers flight overspending by 8%",
+    icon: AlertTriangle,
+    iconColor: "text-amber-500",
+    badge: "Review",
+    badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10"
+  },
+  {
+    title: "Low VCR on In-Stream spots",
+    description: "Completion rate dropped below 85% threshold",
+    icon: AlertCircle,
+    iconColor: "text-destructive",
+    badge: "Action",
+    badgeClass: "text-destructive border-destructive/30 bg-destructive/10"
+  },
+  {
+    title: "Creative fatigue detected",
+    description: "Spot 2 frequency exceeding 4.5x this week",
+    icon: Zap,
+    iconColor: "text-amber-500",
+    badge: "Monitor",
+    badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10"
+  },
+  {
+    title: "Audience segment underperforming",
+    description: "50+ cohort index dropped to 72 from 86",
+    icon: TrendingDown,
+    iconColor: "text-muted-foreground",
+    badge: "Optimize",
+    badgeClass: "text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10"
+  }
+];
+
 const defaultProps: SpendIntelligencePanelProps = {
   totalSpend: 26150,
   totalBudget: 35000,
@@ -76,7 +94,7 @@ const defaultProps: SpendIntelligencePanelProps = {
   remainingBudget: 8850,
   daysRemaining: 11,
   adFormats: defaultAdFormats,
-  topTitles: defaultTopTitles
+  topTitles: []
 };
 const pacingConfig = {
   "on-track": {
@@ -170,13 +188,13 @@ export function SpendIntelligencePanel(props: Partial<SpendIntelligencePanelProp
       {/* Ad Format Spend Breakdown */}
       
 
-      {/* Top Performing Titles */}
+      {/* Needs Attention Updates */}
       <div className="space-y-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-          <Trophy className="h-3.5 w-3.5 text-amber-500" />
-          Top Performing Movies
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+          Needs Attention
         </h4>
-        {data.topTitles.map((title, i) => <motion.div key={title.title} initial={{
+        {needsAttentionItems.map((item, i) => <motion.div key={item.title} initial={{
         opacity: 0
       }} animate={{
         opacity: 1
@@ -184,15 +202,15 @@ export function SpendIntelligencePanel(props: Partial<SpendIntelligencePanelProp
         delay: 0.4 + i * 0.05
       }} className="flex items-center justify-between bg-background/60 border border-border/50 rounded-lg px-3 py-2.5 hover:border-primary/30 transition-all group">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[10px] font-black text-muted-foreground w-4">{i + 1}</span>
-              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate">{title.title}</span>
+              <item.icon className={`h-3.5 w-3.5 flex-shrink-0 ${item.iconColor}`} />
+              <div className="min-w-0">
+                <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate block">{item.title}</span>
+                <span className="text-[10px] text-muted-foreground">{item.description}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <span className="text-[10px] text-muted-foreground">{title.impressions}</span>
-              <Badge variant="outline" className="text-[9px] h-5 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
-                {title.vcr}
-              </Badge>
-            </div>
+            <Badge variant="outline" className={`text-[9px] h-5 flex-shrink-0 ${item.badgeClass}`}>
+              {item.badge}
+            </Badge>
           </motion.div>)}
       </div>
     </div>;

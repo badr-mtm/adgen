@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Radio } from "lucide-react";
+import { Globe, Radio, Eye, CheckCircle2, Users, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
 import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON as LeafletGeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -331,12 +331,11 @@ const GlobalReachMap = ({
           </div>
         </div>
 
-        <div className="flex gap-6 bg-card/90 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-border shadow-card">
-          <MetricItem label="Active Spots" value={campaignLocations.length > 0 ? campaignLocations.length : 2} />
-          <div className="w-px bg-border" />
-          <MetricItem label="Network Load" value={activeCampaigns.length > 3 ? 'Critical' : activeCampaigns.length > 1 ? 'High' : activeCampaigns.length > 0 ? 'Normal' : 'Idle'} color={activeCampaigns.length > 3 ? 'text-destructive' : activeCampaigns.length > 1 ? 'text-amber-500' : activeCampaigns.length > 0 ? 'text-primary' : 'text-muted-foreground'} />
-          <div className="w-px bg-border" />
-          <MetricItem label="Latency" value={`${Math.max(8, 8 + activeCampaigns.length * 4)}ms`} color={activeCampaigns.length > 2 ? 'text-amber-500' : 'text-emerald-500'} />
+        <div className="flex gap-3">
+          <PerformanceCard icon={Eye} label="Impressions" value={activeCampaigns.length > 0 ? `${(activeCampaigns.length * 4.2).toFixed(1)}M` : '0'} trend="+12.4%" trendUp />
+          <PerformanceCard icon={CheckCircle2} label="VCR" value={activeCampaigns.length > 0 ? '93.4%' : '—'} trend="+2.1%" trendUp />
+          <PerformanceCard icon={Users} label="Unique Reach" value={activeCampaigns.length > 0 ? `${(activeCampaigns.length * 2.1).toFixed(1)}M` : '0'} trend="+8.6%" trendUp />
+          <PerformanceCard icon={DollarSign} label="CPM" value={activeCampaigns.length > 0 ? '$26.80' : '—'} trend="-3.2%" trendUp />
         </div>
       </div>
     </div>;
@@ -434,6 +433,33 @@ const MarkerCluster = ({
       </Popup>
     </CircleMarker>
   </>;
+
+/* --- Performance card for bottom bar --- */
+const PerformanceCard = ({
+  icon: Icon,
+  label,
+  value,
+  trend,
+  trendUp
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  trend: string;
+  trendUp: boolean;
+}) => (
+  <div className="bg-card/90 backdrop-blur-md px-4 py-3 rounded-xl border border-border/50 min-w-[120px] hover:border-primary/30 transition-all">
+    <div className="flex items-center gap-1.5 mb-1">
+      <Icon className="h-3.5 w-3.5 text-primary" />
+      <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{label}</span>
+    </div>
+    <p className="text-lg font-black tracking-tight text-foreground">{value}</p>
+    <div className="flex items-center gap-1 mt-0.5">
+      {trendUp ? <TrendingUp className="h-3 w-3 text-emerald-500" /> : <TrendingDown className="h-3 w-3 text-amber-500" />}
+      <span className={`text-[10px] font-semibold ${trendUp ? 'text-emerald-500' : 'text-amber-500'}`}>{trend}</span>
+    </div>
+  </div>
+);
 
 /* --- Small metric display --- */
 const MetricItem = ({
