@@ -58,8 +58,8 @@ const Dashboard = () => {
   // Calculate real KPI stats from campaigns
   const kpiStats = useMemo(() => {
     const totalCampaigns = allCampaigns.length;
-    const liveCampaigns = allCampaigns.filter((c) => c.status === 'live').length;
-    const completedCampaigns = allCampaigns.filter((c) => c.status === 'completed').length;
+    const liveCampaigns = allCampaigns.filter(c => c.status === 'live').length;
+    const completedCampaigns = allCampaigns.filter(c => c.status === 'completed').length;
     const avgCtr = allCampaigns.reduce((acc, c) => acc + (c.predicted_ctr || 0), 0) / (totalCampaigns || 1);
     const estimatedSpend = totalCampaigns * 2450;
     const completedViews = totalCampaigns * 168420;
@@ -91,10 +91,10 @@ const Dashboard = () => {
       <ScrollReveal direction="down" duration={0.4}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
-            
-
-
-
+            <div className="flex items-center gap-2 text-primary">
+              <Signal className="h-4 w-4 animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-widest">System Operational</span>
+            </div>
             <h1 className="text-4xl font-black tracking-tight lg:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60">
               Main Dashboard
             </h1>
