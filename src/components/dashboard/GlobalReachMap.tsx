@@ -125,7 +125,7 @@ const GlobalReachMap = ({
 }: GlobalReachMapProps) => {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
   const campaignLocations = useMemo(() => {
-    return activeCampaigns.flatMap(c => {
+    return activeCampaigns.flatMap((c) => {
       const audience = c.target_audience as any;
       const locations = audience?.locations || [];
       return locations.map((locName: string) => ({
@@ -203,7 +203,7 @@ const GlobalReachMap = ({
     return map;
   }, []);
   const activeStateNames = useMemo(() => {
-    const activeLocations = activeCampaigns.flatMap(c => {
+    const activeLocations = activeCampaigns.flatMap((c) => {
       const audience = c.target_audience as any;
       return audience?.locations || [];
     });
@@ -224,10 +224,10 @@ const GlobalReachMap = ({
 
   // Compute LIVE icon positions from active state centroids
   const liveIconPositions = useMemo(() => {
-    return Array.from(activeStateNames).map(name => ({
+    return Array.from(activeStateNames).map((name) => ({
       name,
       center: STATE_CENTROIDS[name]
-    })).filter(s => s.center !== undefined) as {
+    })).filter((s) => s.center !== undefined) as {
       name: string;
       center: [number, number];
     }[];
@@ -245,7 +245,7 @@ const GlobalReachMap = ({
           <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png" noWrap={false} />
 
           {/* Active state polygons */}
-          <LeafletGeoJSON data={usStatesData as any} style={feature => {
+          <LeafletGeoJSON data={usStatesData as any} style={(feature) => {
           const isActive = activeStateNames.has(feature?.properties?.name);
           const isHovered = hoveredState === feature?.properties?.name;
           return {
@@ -300,12 +300,12 @@ const GlobalReachMap = ({
       {/* Top-left HUD */}
       <div className="absolute top-5 left-5 z-20 flex flex-col gap-2">
         
-        {activeCampaigns.length > 0 && <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-card/70 backdrop-blur-sm border border-border/50">
-            <Radio className="h-3 w-3 text-primary animate-pulse" />
-            <span className="text-[10px] font-medium text-muted-foreground">
-              {activeCampaigns.length} Active Node{activeCampaigns.length > 1 ? 's' : ''}
-            </span>
-          </div>}
+        {activeCampaigns.length > 0
+
+
+
+
+      }
       </div>
 
       {/* Top-right legend */}
@@ -344,9 +344,9 @@ const GlobalReachMap = ({
 /* --- Marker cluster with layered animated rings --- */
 const MarkerCluster = ({
   loc
-}: {
-  loc: CampaignLocation;
-}) => <>
+
+
+}: {loc: CampaignLocation;}) => <>
     {/* Outermost slow pulse */}
     <CircleMarker center={[loc.lat, loc.lng]} radius={32} pathOptions={{
     fillColor: 'hsl(var(--primary))',
@@ -441,14 +441,14 @@ const PerformanceCard = ({
   value,
   trend,
   trendUp
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  trend: string;
-  trendUp: boolean;
-}) => (
-  <div className="bg-card/90 backdrop-blur-md px-4 py-3 rounded-xl border border-border/50 min-w-[120px] hover:border-primary/30 transition-all">
+
+
+
+
+
+
+}: {icon: React.ElementType;label: string;value: string;trend: string;trendUp: boolean;}) =>
+<div className="bg-card/90 backdrop-blur-md px-4 py-3 rounded-xl border border-border/50 min-w-[120px] hover:border-primary/30 transition-all">
     <div className="flex items-center gap-1.5 mb-1">
       <Icon className="h-3.5 w-3.5 text-primary" />
       <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">{label}</span>
@@ -458,19 +458,19 @@ const PerformanceCard = ({
       {trendUp ? <TrendingUp className="h-3 w-3 text-emerald-500" /> : <TrendingDown className="h-3 w-3 text-amber-500" />}
       <span className={`text-[10px] font-semibold ${trendUp ? 'text-emerald-500' : 'text-amber-500'}`}>{trend}</span>
     </div>
-  </div>
-);
+  </div>;
+
 
 /* --- Small metric display --- */
 const MetricItem = ({
   label,
   value,
   color
-}: {
-  label: string;
-  value: string | number;
-  color?: string;
-}) => <div className="text-center md:text-right">
+
+
+
+
+}: {label: string;value: string | number;color?: string;}) => <div className="text-center md:text-right">
     <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">{label}</p>
     <p className={`text-xl font-black ${color || 'text-foreground'}`}>{value}</p>
   </div>;
