@@ -188,7 +188,7 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
           </div>
         </div>
 
-        <div className="h-[200px] w-full bg-background/40 rounded-xl border border-border/40 p-3 pr-1">
+        <div className="h-[320px] w-full bg-background/40 rounded-xl border border-border/40 p-3 pr-1">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data.dailyReach} barGap={3} barCategoryGap="20%">
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.4} vertical={false} />
