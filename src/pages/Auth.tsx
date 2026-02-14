@@ -203,11 +203,11 @@ export default function Auth() {
   const { title, subtitle } = getHeadline();
 
   return (
-    <div className="min-h-screen flex bg-black">
-      {/* Left Column — Authentication Panel (Dark Mode) */}
-      <div className="w-full lg:w-[520px] xl:w-[560px] flex flex-col justify-center px-8 lg:px-14 xl:px-16 py-12 bg-zinc-950 relative overflow-hidden">
+    <div className="min-h-screen flex bg-background">
+      {/* Left Column — Authentication Panel */}
+      <div className="w-full lg:w-[520px] xl:w-[560px] flex flex-col justify-center px-8 lg:px-14 xl:px-16 py-12 bg-card relative overflow-hidden">
         {/* Subtle Background Effects */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none" />
         <div className="absolute inset-0 opacity-[0.015] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhKSIvPjwvc3ZnPg==')] pointer-events-none" />
 
         <div className="w-full max-w-sm mx-auto space-y-8 relative z-10">
@@ -221,9 +221,9 @@ export default function Auth() {
                   alt="AdGen Logo"
                   className="h-10 w-10 rounded-lg object-cover ring-1 ring-white/10"
                 />
-                <span className="text-xl font-semibold text-white">AdGen</span>
+                <span className="text-xl font-semibold text-foreground">AdGen</span>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-green-400 font-mono uppercase tracking-widest">
+              <div className="flex items-center gap-1.5 text-[10px] text-primary font-mono uppercase tracking-widest">
                 <ShieldCheck className="h-3 w-3" />
                 Secure
               </div>
@@ -234,7 +234,7 @@ export default function Auth() {
               <button
                 type="button"
                 onClick={() => setAuthMode("login")}
-                className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to login
@@ -243,10 +243,10 @@ export default function Auth() {
 
             {/* Headline */}
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-white tracking-tight">
+              <h1 className="text-3xl font-bold text-foreground tracking-tight">
                 {title}
               </h1>
-              <p className="text-white/50 text-sm">
+              <p className="text-muted-foreground text-sm">
                 {subtitle}
               </p>
             </div>
@@ -256,22 +256,22 @@ export default function Auth() {
           {authMode === "reset-sent" && (
             <div className="space-y-6">
               <div className="flex justify-center">
-                <div className="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                  <Mail className="h-8 w-8 text-blue-400" />
+                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                   <Mail className="h-8 w-8 text-primary" />
                 </div>
               </div>
               <div className="text-center space-y-2">
-                <p className="text-sm text-white/50">
-                  Recovery link sent to:
-                </p>
-                <p className="font-medium text-white font-mono">{email}</p>
-                <p className="text-sm text-white/40 pt-2">
-                  Didn't receive it?{" "}
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode("forgot-password")}
-                    className="text-blue-400 hover:underline"
-                  >
+               <p className="text-sm text-muted-foreground">
+                   Recovery link sent to:
+                 </p>
+                 <p className="font-medium text-foreground font-mono">{email}</p>
+                 <p className="text-sm text-muted-foreground pt-2">
+                   Didn't receive it?{" "}
+                   <button
+                     type="button"
+                     onClick={() => setAuthMode("forgot-password")}
+                     className="text-primary hover:underline"
+                   >
                     Resend
                   </button>
                 </p>
@@ -289,16 +289,16 @@ export default function Auth() {
           {authMode === "forgot-password" && (
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reset-email" className="text-sm font-medium text-white/70">
-                  Email Address
-                </Label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-blue-500/20"
+                 <Label htmlFor="reset-email" className="text-sm font-medium text-muted-foreground">
+                   Email Address
+                 </Label>
+                 <Input
+                   id="reset-email"
+                   type="email"
+                   placeholder="you@company.com"
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+                   className="h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20"
                   autoComplete="email"
                 />
               </div>
@@ -326,12 +326,12 @@ export default function Auth() {
             <>
               {/* Social / SSO Login */}
               <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-medium"
-                  onClick={handleGoogleAuth}
-                >
+                 <Button
+                   type="button"
+                   variant="outline"
+                   className="flex-1 h-12 bg-muted/50 border-border hover:bg-muted hover:border-border text-foreground font-medium"
+                   onClick={handleGoogleAuth}
+                 >
                   <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -353,12 +353,12 @@ export default function Auth() {
                   Google
                 </Button>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 h-12 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-medium"
-                  onClick={handleMicrosoftAuth}
-                >
+                 <Button
+                   type="button"
+                   variant="outline"
+                   className="flex-1 h-12 bg-muted/50 border-border hover:bg-muted hover:border-border text-foreground font-medium"
+                   onClick={handleMicrosoftAuth}
+                 >
                   <svg className="mr-2 h-5 w-5" viewBox="0 0 21 21">
                     <rect x="1" y="1" width="9" height="9" fill="#f25022" />
                     <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
@@ -371,35 +371,35 @@ export default function Auth() {
 
               {/* Divider */}
               <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-white/10" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-zinc-950 px-4 text-white/30 font-medium tracking-widest">or</span>
-                </div>
+                 <div className="absolute inset-0 flex items-center">
+                   <span className="w-full border-t border-border" />
+                 </div>
+                 <div className="relative flex justify-center text-xs uppercase">
+                   <span className="bg-card px-4 text-muted-foreground font-medium tracking-widest">or</span>
+                 </div>
               </div>
 
               {/* Email & Password Form */}
               <form onSubmit={authMode === "login" ? handleLogin : handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-white/70">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-blue-500/20"
+                 <Label htmlFor="email" className="text-sm font-medium text-muted-foreground">
+                     Email
+                   </Label>
+                   <Input
+                     id="email"
+                     type="email"
+                     placeholder="you@company.com"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     className="h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20"
                     autoComplete="email"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium text-white/70">
-                    Password
-                  </Label>
+                   <Label htmlFor="password" className="text-sm font-medium text-muted-foreground">
+                     Password
+                   </Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -407,13 +407,13 @@ export default function Auth() {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 pr-10 focus:border-blue-500/50 focus:ring-blue-500/20"
+                      className="h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground pr-10 focus:border-primary/50 focus:ring-primary/20"
                       autoComplete={authMode === "login" ? "current-password" : "new-password"}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -426,16 +426,16 @@ export default function Auth() {
 
                 {authMode === "signup" && (
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-sm font-medium text-white/70">
-                      Confirm Password
-                    </Label>
-                    <Input
-                      id="confirmPassword"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50 focus:ring-blue-500/20"
+                     <Label htmlFor="confirmPassword" className="text-sm font-medium text-muted-foreground">
+                       Confirm Password
+                     </Label>
+                     <Input
+                       id="confirmPassword"
+                       type={showPassword ? "text" : "password"}
+                       placeholder="••••••••"
+                       value={confirmPassword}
+                       onChange={(e) => setConfirmPassword(e.target.value)}
+                       className="h-12 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20"
                       autoComplete="new-password"
                     />
                   </div>
@@ -446,7 +446,7 @@ export default function Auth() {
                     <button
                       type="button"
                       onClick={() => setAuthMode("forgot-password")}
-                      className="text-sm text-white/40 hover:text-white transition-colors"
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                       Forgot password?
                     </button>
@@ -471,14 +471,14 @@ export default function Auth() {
               </form>
 
               {/* Secondary Action */}
-              <div className="text-center text-sm text-white/40">
+               <div className="text-center text-sm text-muted-foreground">
                 {authMode === "login" ? (
                   <>
                     New to AdGen?{" "}
                     <button
                       type="button"
                       onClick={() => setAuthMode("signup")}
-                      className="text-white font-medium hover:underline"
+                      className="text-foreground font-medium hover:underline"
                     >
                       Create an account
                     </button>
@@ -486,10 +486,10 @@ export default function Auth() {
                 ) : (
                   <>
                     Already have an account?{" "}
-                    <button
+                     <button
                       type="button"
                       onClick={() => setAuthMode("login")}
-                      className="text-white font-medium hover:underline"
+                      className="text-foreground font-medium hover:underline"
                     >
                       Sign in
                     </button>

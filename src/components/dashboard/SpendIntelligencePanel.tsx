@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, TrendingDown, CheckCircle2, Clock, Play, Pause, SkipForward, Bookmark, AlertTriangle, AlertCircle, Zap } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, CheckCircle2, Clock, Play, Pause, SkipForward, Bookmark, AlertTriangle, AlertCircle, Zap, ChevronRight } from "lucide-react";
 interface AdFormatSpend {
   format: string;
   icon: React.ElementType;
@@ -59,7 +60,8 @@ const needsAttentionItems = [
     icon: AlertTriangle,
     iconColor: "text-amber-500",
     badge: "Review",
-    badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10"
+    badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10",
+    navigateTo: "/campaigns"
   },
   {
     title: "Low VCR on In-Stream spots",
@@ -67,7 +69,8 @@ const needsAttentionItems = [
     icon: AlertCircle,
     iconColor: "text-destructive",
     badge: "Action",
-    badgeClass: "text-destructive border-destructive/30 bg-destructive/10"
+    badgeClass: "text-destructive border-destructive/30 bg-destructive/10",
+    navigateTo: "/reports"
   },
   {
     title: "Creative fatigue detected",
@@ -75,7 +78,8 @@ const needsAttentionItems = [
     icon: Zap,
     iconColor: "text-amber-500",
     badge: "Monitor",
-    badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10"
+    badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10",
+    navigateTo: "/creatives"
   },
   {
     title: "Audience segment underperforming",
@@ -83,7 +87,8 @@ const needsAttentionItems = [
     icon: TrendingDown,
     iconColor: "text-muted-foreground",
     badge: "Optimize",
-    badgeClass: "text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10"
+    badgeClass: "text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10",
+    navigateTo: "/settings"
   }
 ];
 
@@ -118,6 +123,7 @@ const pacingConfig = {
 };
 const formatBarColors = ["bg-primary", "bg-blue-500", "bg-amber-500", "bg-purple-500"];
 export function SpendIntelligencePanel(props: Partial<SpendIntelligencePanelProps>) {
+  const navigate = useNavigate();
   const data = {
     ...defaultProps,
     ...props
@@ -200,7 +206,7 @@ export function SpendIntelligencePanel(props: Partial<SpendIntelligencePanelProp
         opacity: 1
       }} transition={{
         delay: 0.4 + i * 0.05
-      }} className="flex items-center justify-between bg-background/60 border border-border/50 rounded-lg px-3 py-2.5 hover:border-primary/30 transition-all group">
+      }} onClick={() => navigate(item.navigateTo)} className="flex items-center justify-between bg-background/60 border border-border/50 rounded-lg px-3 py-2.5 hover:border-primary/30 transition-all group cursor-pointer">
             <div className="flex items-center gap-2 min-w-0">
               <item.icon className={`h-3.5 w-3.5 flex-shrink-0 ${item.iconColor}`} />
               <div className="min-w-0">
@@ -208,9 +214,12 @@ export function SpendIntelligencePanel(props: Partial<SpendIntelligencePanelProp
                 <span className="text-[10px] text-muted-foreground">{item.description}</span>
               </div>
             </div>
-            <Badge variant="outline" className={`text-[9px] h-5 flex-shrink-0 ${item.badgeClass}`}>
-              {item.badge}
-            </Badge>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <Badge variant="outline" className={`text-[9px] h-5 ${item.badgeClass}`}>
+                {item.badge}
+              </Badge>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
           </motion.div>)}
       </div>
     </div>;
