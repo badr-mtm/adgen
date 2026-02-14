@@ -54,43 +54,43 @@ const defaultAdFormats: AdFormatSpend[] = [{
   cpmTrend: "flat"
 }];
 const needsAttentionItems = [
-  {
-    title: "Budget pacing ahead of schedule",
-    description: "Pre-Show Trailers flight overspending by 8%",
-    icon: AlertTriangle,
-    iconColor: "text-amber-500",
-    badge: "Review",
-    badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10",
-    navigateTo: "/campaigns"
-  },
-  {
-    title: "Low VCR on In-Stream spots",
-    description: "Completion rate dropped below 85% threshold",
-    icon: AlertCircle,
-    iconColor: "text-destructive",
-    badge: "Action",
-    badgeClass: "text-destructive border-destructive/30 bg-destructive/10",
-    navigateTo: "/reports"
-  },
-  {
-    title: "Creative fatigue detected",
-    description: "Spot 2 frequency exceeding 4.5x this week",
-    icon: Zap,
-    iconColor: "text-amber-500",
-    badge: "Monitor",
-    badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10",
-    navigateTo: "/creatives"
-  },
-  {
-    title: "Audience segment underperforming",
-    description: "50+ cohort index dropped to 72 from 86",
-    icon: TrendingDown,
-    iconColor: "text-muted-foreground",
-    badge: "Optimize",
-    badgeClass: "text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10",
-    navigateTo: "/settings"
-  }
-];
+{
+  title: "Budget pacing ahead of schedule",
+  description: "Pre-Show Trailers flight overspending by 8%",
+  icon: AlertTriangle,
+  iconColor: "text-amber-500",
+  badge: "Review",
+  badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10",
+  navigateTo: "/campaigns"
+},
+{
+  title: "Low VCR on In-Stream spots",
+  description: "Completion rate dropped below 85% threshold",
+  icon: AlertCircle,
+  iconColor: "text-destructive",
+  badge: "Action",
+  badgeClass: "text-destructive border-destructive/30 bg-destructive/10",
+  navigateTo: "/reports"
+},
+{
+  title: "Creative fatigue detected",
+  description: "Spot 2 frequency exceeding 4.5x this week",
+  icon: Zap,
+  iconColor: "text-amber-500",
+  badge: "Monitor",
+  badgeClass: "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10",
+  navigateTo: "/creatives"
+},
+{
+  title: "Audience segment underperforming",
+  description: "50+ cohort index dropped to 72 from 86",
+  icon: TrendingDown,
+  iconColor: "text-muted-foreground",
+  badge: "Optimize",
+  badgeClass: "text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10",
+  navigateTo: "/settings"
+}];
+
 
 const defaultProps: SpendIntelligencePanelProps = {
   totalSpend: 26150,
@@ -195,7 +195,7 @@ export function SpendIntelligencePanel(props: Partial<SpendIntelligencePanelProp
       
 
       {/* Needs Attention Updates */}
-      <div className="space-y-3">
+      <div className="space-y-3 pt-[8px] shadow-none border border-solid rounded opacity-100 border-[#c7d2b6]">
         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
           <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
           Needs Attention
