@@ -221,7 +221,10 @@ export default function Auth() {
                   alt="AURUM Logo"
                   className="h-11 w-11 rounded-lg object-cover ring-1 ring-border/50"
                 />
-                <span className="text-xl font-semibold text-foreground">AURUM</span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-semibold text-foreground">AURUM</span>
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground">TV Advertising</span>
+                </div>
               </div>
               <div className="flex items-center gap-1.5 text-[10px] text-primary font-mono uppercase tracking-widest">
                 <ShieldCheck className="h-3 w-3" />
