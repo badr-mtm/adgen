@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2, ArrowLeft, Mail, ShieldCheck, Tv, Zap } from "lucide-react";
-import adgenLogo from "@/assets/adgen-logo.jpeg";
+import aurumLogo from "@/assets/aurum-logo.png";
 import tvFamilyHero from "@/assets/tv-family-hero.png";
 
 type AuthMode = "login" | "signup" | "forgot-password" | "reset-sent";
@@ -217,11 +217,11 @@ export default function Auth() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src={adgenLogo}
-                  alt="AdGen Logo"
-                  className="h-10 w-10 rounded-lg object-cover ring-1 ring-white/10"
+                  src={aurumLogo}
+                  alt="AURUM Logo"
+                  className="h-11 w-11 rounded-lg object-cover ring-1 ring-border/50"
                 />
-                <span className="text-xl font-semibold text-foreground">AdGen</span>
+                <span className="text-xl font-semibold text-foreground">AURUM</span>
               </div>
               <div className="flex items-center gap-1.5 text-[10px] text-primary font-mono uppercase tracking-widest">
                 <ShieldCheck className="h-3 w-3" />
@@ -474,7 +474,7 @@ export default function Auth() {
                <div className="text-center text-sm text-muted-foreground">
                 {authMode === "login" ? (
                   <>
-                    New to AdGen?{" "}
+                    New to AURUM?{" "}
                     <button
                       type="button"
                       onClick={() => setAuthMode("signup")}
