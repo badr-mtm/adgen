@@ -29,6 +29,7 @@ import {
     MonitorPlay
 } from "lucide-react";
 import OverlayElements from "@/components/video-editor/OverlayElements";
+import { defaultOverlaySettings } from "@/types/videoEditor";
 import {
     Dialog,
     DialogContent,
