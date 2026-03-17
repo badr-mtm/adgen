@@ -276,15 +276,14 @@ const Creatives = () => {
                                 <Card key={asset.id} className="group overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 rounded-2xl flex flex-col h-full">
                                     {/* Video Preview */}
                                     <div className="aspect-video relative overflow-hidden bg-black cursor-pointer" onClick={() => openPreview(asset)}>
-                                        {asset.videoSettings && (
-                                            <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
-                                                <OverlayElements
-                                                    banner={asset.videoSettings.banner}
-                                                    title={asset.videoSettings.title}
-                                                    qrCode={asset.videoSettings.qrCode}
-                                                />
-                                            </div>
-                                        )}
+                                        {(() => {
+                                            const vs = asset.videoSettings || defaultOverlaySettings;
+                                            return (
+                                                <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
+                                                    <OverlayElements banner={vs.banner} title={vs.title} qrCode={vs.qrCode} />
+                                                </div>
+                                            );
+                                        })()}
                                         <img
                                             src={asset.thumbnail || asset.url}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
