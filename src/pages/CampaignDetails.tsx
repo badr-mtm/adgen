@@ -241,8 +241,18 @@ const CampaignDetails = () => {
                           onMouseEnter={(e) => e.currentTarget.play()}
                           onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }} />
 
+                        {/* Overlay Elements (QR, Banner, Title) */}
+                        {(campaign?.strategy?.videoSettings || campaign?.storyboard?.videoSettings || campaign?.storyboard?.strategy?.videoSettings) &&
+                          <div className="absolute inset-0 pointer-events-none z-[5] overflow-hidden">
+                            <OverlayElements
+                              banner={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).banner}
+                              title={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).title}
+                              qrCode={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).qrCode} />
+                          </div>
+                        }
+
                         {/* Play button overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none">
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none z-[6]">
                           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
                             <Play className="h-4 w-4 text-primary-foreground ml-0.5" fill="currentColor" />
                           </div>
