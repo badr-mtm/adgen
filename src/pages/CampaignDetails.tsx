@@ -17,6 +17,7 @@ import { TVAdStrategy } from "@/components/strategy/StrategyModule";
 import { useGenerationResume } from "@/hooks/useGenerationResume";
 import InlineEditField from "@/components/storyboard/InlineEditField";
 import OverlayElements from "@/components/video-editor/OverlayElements";
+import { defaultOverlaySettings } from "@/types/videoEditor";
 import {
   ArrowLeft,
   Play,
