@@ -492,17 +492,15 @@ const CampaignDetails = () => {
                             controls
                             className="w-full h-full object-cover relative z-0" />
 
-                          {/* Render published overlays if they describe */}
-                          {/* Use fallback from storyboard if strategy column is missing */}
-                          {(campaign?.strategy?.videoSettings || campaign?.storyboard?.videoSettings || campaign?.storyboard?.strategy?.videoSettings) &&
-                            <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
-                              <OverlayElements
-                                banner={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).banner}
-                                title={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).title}
-                                qrCode={(campaign.strategy?.videoSettings || campaign.storyboard?.videoSettings || campaign.storyboard?.strategy?.videoSettings).qrCode} />
-
-                            </div>
-                          }
+                          {/* Overlay Elements (QR, Banner, Title) */}
+                          {(() => {
+                            const vs = campaign?.strategy?.videoSettings || campaign?.storyboard?.videoSettings || campaign?.storyboard?.strategy?.videoSettings || defaultOverlaySettings;
+                            return (
+                              <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
+                                <OverlayElements banner={vs.banner} title={vs.title} qrCode={vs.qrCode} />
+                              </div>
+                            );
+                          })()}
                         </> :
 
                         <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20">
