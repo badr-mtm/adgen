@@ -456,15 +456,14 @@ const Creatives = () => {
                             />
                         )}
 
-                        {selectedAsset.videoSettings && (
-                            <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
-                                <OverlayElements
-                                    banner={selectedAsset.videoSettings.banner}
-                                    title={selectedAsset.videoSettings.title}
-                                    qrCode={selectedAsset.videoSettings.qrCode}
-                                />
-                            </div>
-                        )}
+                        {(() => {
+                            const vs = selectedAsset.videoSettings || defaultOverlaySettings;
+                            return (
+                                <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
+                                    <OverlayElements banner={vs.banner} title={vs.title} qrCode={vs.qrCode} />
+                                </div>
+                            );
+                        })()}
 
                         <div className="absolute top-4 right-4 flex gap-2">
                             <Badge className="bg-black/60 backdrop-blur-md border-white/10 uppercase font-black text-[10px] tracking-widest px-3">
