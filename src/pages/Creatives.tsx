@@ -29,6 +29,7 @@ import {
     MonitorPlay
 } from "lucide-react";
 import OverlayElements from "@/components/video-editor/OverlayElements";
+import { defaultOverlaySettings } from "@/types/videoEditor";
 import {
     Dialog,
     DialogContent,
@@ -275,15 +276,14 @@ const Creatives = () => {
                                 <Card key={asset.id} className="group overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 rounded-2xl flex flex-col h-full">
                                     {/* Video Preview */}
                                     <div className="aspect-video relative overflow-hidden bg-black cursor-pointer" onClick={() => openPreview(asset)}>
-                                        {asset.videoSettings && (
-                                            <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
-                                                <OverlayElements
-                                                    banner={asset.videoSettings.banner}
-                                                    title={asset.videoSettings.title}
-                                                    qrCode={asset.videoSettings.qrCode}
-                                                />
-                                            </div>
-                                        )}
+                                        {(() => {
+                                            const vs = asset.videoSettings || defaultOverlaySettings;
+                                            return (
+                                                <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
+                                                    <OverlayElements banner={vs.banner} title={vs.title} qrCode={vs.qrCode} />
+                                                </div>
+                                            );
+                                        })()}
                                         <img
                                             src={asset.thumbnail || asset.url}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -378,15 +378,14 @@ const Creatives = () => {
                         <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
                             <td className="p-4">
                                 <div className="w-24 aspect-video rounded-lg overflow-hidden border border-white/5 bg-black cursor-pointer relative" onClick={() => openPreview(asset)}>
-                                    {asset.videoSettings && (
-                                        <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
-                                            <OverlayElements
-                                                banner={asset.videoSettings.banner}
-                                                title={asset.videoSettings.title}
-                                                qrCode={asset.videoSettings.qrCode}
-                                            />
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const vs = asset.videoSettings || defaultOverlaySettings;
+                                        return (
+                                            <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
+                                                <OverlayElements banner={vs.banner} title={vs.title} qrCode={vs.qrCode} />
+                                            </div>
+                                        );
+                                    })()}
                                     <img src={asset.thumbnail || asset.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" alt="thumb" />
                                 </div>
                             </td>
@@ -456,15 +455,14 @@ const Creatives = () => {
                             />
                         )}
 
-                        {selectedAsset.videoSettings && (
-                            <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
-                                <OverlayElements
-                                    banner={selectedAsset.videoSettings.banner}
-                                    title={selectedAsset.videoSettings.title}
-                                    qrCode={selectedAsset.videoSettings.qrCode}
-                                />
-                            </div>
-                        )}
+                        {(() => {
+                            const vs = selectedAsset.videoSettings || defaultOverlaySettings;
+                            return (
+                                <div className="absolute inset-0 pointer-events-none z-[10] overflow-hidden">
+                                    <OverlayElements banner={vs.banner} title={vs.title} qrCode={vs.qrCode} />
+                                </div>
+                            );
+                        })()}
 
                         <div className="absolute top-4 right-4 flex gap-2">
                             <Badge className="bg-black/60 backdrop-blur-md border-white/10 uppercase font-black text-[10px] tracking-widest px-3">
