@@ -586,7 +586,7 @@ const CampaignDetails = () => {
           thumbnailUrl={getThumbnail()}
           title={campaign?.title}
           onEditClick={handleEditVideo}
-          overlaySettings={campaign?.strategy?.videoSettings || campaign?.storyboard?.videoSettings || campaign?.storyboard?.strategy?.videoSettings}
+          overlaySettings={campaign?.strategy?.videoSettings || campaign?.storyboard?.videoSettings || campaign?.storyboard?.strategy?.videoSettings || defaultOverlaySettings}
           brandName={campaign?.storyboard?.selectedScript?.title || campaign?.title}
           brandLogo={campaign?.brand_logo} />
 
