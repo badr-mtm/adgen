@@ -377,7 +377,16 @@ const Creatives = () => {
                     {filteredAssets.map((asset) => (
                         <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
                             <td className="p-4">
-                                <div className="w-24 aspect-video rounded-lg overflow-hidden border border-white/5 bg-black cursor-pointer" onClick={() => openPreview(asset)}>
+                                <div className="w-24 aspect-video rounded-lg overflow-hidden border border-white/5 bg-black cursor-pointer relative" onClick={() => openPreview(asset)}>
+                                    {asset.videoSettings && (
+                                        <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
+                                            <OverlayElements
+                                                banner={asset.videoSettings.banner}
+                                                title={asset.videoSettings.title}
+                                                qrCode={asset.videoSettings.qrCode}
+                                            />
+                                        </div>
+                                    )}
                                     <img src={asset.thumbnail || asset.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" alt="thumb" />
                                 </div>
                             </td>
