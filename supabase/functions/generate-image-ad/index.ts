@@ -55,8 +55,11 @@ serve(async (req) => {
       throw new Error('Campaign not found');
     }
 
-    // Use the provided Google API Key for Imagen 3
-    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY') || "AIzaSyAJnTBxSqSmsi839Uk44GFiEY0BkdiJlBw";
+    // Use the Google API Key from environment
+    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY');
+    if (!GOOGLE_API_KEY) {
+      throw new Error('GOOGLE_API_KEY is not configured');
+    }
 
     // Build prompt purely from user inputs - no brand kit references
     const aspectRatio = campaign.aspect_ratios?.[0] || '1:1';
