@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,7 +11,8 @@ import {
   BarChart3,
   Activity,
   Filter,
-  Calendar } from
+  Calendar,
+  ArrowUpRight } from
 "lucide-react";
 import {
   BarChart,
