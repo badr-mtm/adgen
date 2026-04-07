@@ -499,7 +499,6 @@ export default function VideoEditor() {
   const handleGenerateVideo = async (model: string, customPrompt?: string, duration?: string, aspectRatio?: string, language?: string, cameraMovement?: string) => {
     setIsRegenerating(true);
     setGenerationError(null);
-    const FAL_KEY = import.meta.env.VITE_FAL_KEY;
     const startedAt = Date.now();
 
     try {
@@ -533,49 +532,6 @@ export default function VideoEditor() {
         return;
       }
 
-      // If we have a local FAL_KEY, we can try direct generation for faster feedback
-      if (FAL_KEY && (model === "luma" || model === "kling")) {
-        toast({ title: "Direct Production Booting...", description: "Leveraging provided API key for instant rendering." });
-
-        const scene = scenes[currentSceneIndex];
-        const prompt = customPrompt || `${scene.visualDescription}. ${scene.suggestedVisuals || ''}. High quality cinematic motion.`;
-        const endpoint = model === "kling" ? "fal-ai/kling-video/v1/standard/text-to-video" : "fal-ai/luma-dream-machine";
-
-        const response = await fetch(`https://fal.run/${endpoint}`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Key ${FAL_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prompt,
-            ...(scene.visualUrl && { image_url: scene.visualUrl })
-          }),
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          const videoUrl = result.video?.url || result.url;
-
-          if (videoUrl) {
-            saveToHistory(scenes, overlaySettings);
-            const updatedScenes = [...scenes];
-            updatedScenes[currentSceneIndex] = { ...updatedScenes[currentSceneIndex], videoUrl, type: "video" };
-            setScenes(updatedScenes);
-
-            let startTime = 0;
-            for (let i = 0; i < currentSceneIndex; i++) {
-              startTime += parseInt(scenes[i].duration) || 0;
-            }
-            setCurrentTime(startTime);
-            setIsPlaying(true);
-
-            toast({ title: "Video Production Complete", description: "High-fidelity cinematic clip generated." });
-            return;
-          }
-        }
-        // If direct fails, fall back to edge function
-      }
 
       toast({ title: "Generating video clip...", description: "This may take a moment. Please wait." });
 
