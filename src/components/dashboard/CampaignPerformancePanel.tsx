@@ -101,14 +101,18 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
   const data = { ...defaultProps, ...props };
   const [campaignFilter, setCampaignFilter] = useState("all");
   const [dateRange, setDateRange] = useState("7d");
-  const kpis = [
-  { label: "Impressions", value: data.totalImpressions, icon: Eye, color: "text-primary" },
-  { label: "VCR", value: `${data.vcr}%`, icon: CheckCircle2, color: "text-emerald-500" },
-  { label: "Unique Reach", value: data.uniqueReach, icon: Users, color: "text-blue-500" },
-  { label: "Avg Frequency", value: data.avgFrequency.toFixed(1), icon: Target, color: "text-amber-500" },
-  { label: "CPM", value: data.cpm, icon: BarChart3, color: "text-purple-500" },
-  { label: "Brand Lift", value: data.brandLift, icon: TrendingUp, color: "text-indigo-500" }];
 
+  const primaryKpis = [
+    { label: "Total Impressions", value: data.totalImpressions, icon: Eye, color: "text-primary", description: "All flights" },
+    { label: "Video Completion", value: `${data.vcr}%`, icon: CheckCircle2, color: "text-emerald-500", description: "VCR avg" },
+    { label: "Unique Reach", value: data.uniqueReach, icon: Users, color: "text-blue-500", description: "Deduplicated" },
+  ];
+
+  const secondaryKpis = [
+    { label: "Avg Frequency", value: data.avgFrequency.toFixed(1), icon: Target },
+    { label: "CPM", value: data.cpm, icon: BarChart3 },
+    { label: "Brand Lift", value: data.brandLift, icon: TrendingUp },
+  ];
 
   return (
     <div className="bg-card/40 border border-border/50 rounded-2xl p-6 h-full space-y-5 backdrop-blur-sm">
@@ -123,24 +127,43 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
         </Badge>
       </div>
 
-      {/* KPI Grid */}
-      
+      {/* Primary KPIs — Most important metrics front and center */}
+      <div className="grid grid-cols-3 gap-3">
+        {primaryKpis.map((kpi, i) => (
+          <motion.div
+            key={kpi.label}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.05 }}
+            className="bg-background/60 border border-border/50 rounded-xl p-3.5"
+          >
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{kpi.label}</span>
+            </div>
+            <p className="text-2xl font-black tracking-tight text-foreground">{kpi.value}</p>
+            <p className="text-[9px] text-muted-foreground mt-0.5">{kpi.description}</p>
+          </motion.div>
+        ))}
+      </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      {/* Secondary KPIs — Supporting metrics, compact row */}
+      <div className="flex items-center gap-4 px-1">
+        {secondaryKpis.map((kpi, i) => (
+          <motion.div
+            key={kpi.label}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 + i * 0.04 }}
+            className="flex items-center gap-2"
+          >
+            <kpi.icon className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-[10px] text-muted-foreground font-medium">{kpi.label}</span>
+            <span className="text-sm font-bold text-foreground">{kpi.value}</span>
+            {i < secondaryKpis.length - 1 && <span className="text-border ml-2">·</span>}
+          </motion.div>
+        ))}
+      </div>
 
       {/* Reach per Day Bar Chart */}
       <motion.div
@@ -150,7 +173,7 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
         className="space-y-3">
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Reach — All Active Campaigns</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Daily Reach Trend</h4>
           <div className="flex items-center gap-2">
             <Select value={campaignFilter} onValueChange={setCampaignFilter}>
               <SelectTrigger className="h-7 text-[10px] w-[140px] bg-background/60 border-border/50">
@@ -188,7 +211,7 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
           </div>
         </div>
 
-        <div className="h-[320px] w-full bg-background/40 rounded-xl border border-border/40 p-3 pr-1">
+        <div className="h-[280px] w-full bg-background/40 rounded-xl border border-border/40 p-3 pr-1">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data.dailyReach} barGap={3} barCategoryGap="20%">
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.4} vertical={false} />
