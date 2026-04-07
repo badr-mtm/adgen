@@ -100,20 +100,21 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanelProps>) {
+  const navigate = useNavigate();
   const data = { ...defaultProps, ...props };
   const [campaignFilter, setCampaignFilter] = useState("all");
   const [dateRange, setDateRange] = useState("7d");
 
   const primaryKpis = [
-    { label: "Total Impressions", value: data.totalImpressions, icon: Eye, color: "text-primary", description: "All flights" },
-    { label: "Video Completion", value: `${data.vcr}%`, icon: CheckCircle2, color: "text-emerald-500", description: "VCR avg" },
-    { label: "Unique Reach", value: data.uniqueReach, icon: Users, color: "text-blue-500", description: "Deduplicated" },
+    { label: "Total Impressions", value: data.totalImpressions, icon: Eye, color: "text-primary", description: "All flights", route: "/reports" },
+    { label: "Video Completion", value: `${data.vcr}%`, icon: CheckCircle2, color: "text-emerald-500", description: "VCR avg", route: "/reports" },
+    { label: "Unique Reach", value: data.uniqueReach, icon: Users, color: "text-blue-500", description: "Deduplicated", route: "/campaigns" },
   ];
 
   const secondaryKpis = [
-    { label: "Avg Frequency", value: data.avgFrequency.toFixed(1), icon: Target },
-    { label: "CPM", value: data.cpm, icon: BarChart3 },
-    { label: "Brand Lift", value: data.brandLift, icon: TrendingUp },
+    { label: "Avg Frequency", value: data.avgFrequency.toFixed(1), icon: Target, route: "/reports" },
+    { label: "CPM", value: data.cpm, icon: BarChart3, route: "/reports" },
+    { label: "Brand Lift", value: data.brandLift, icon: TrendingUp, route: "/reports" },
   ];
 
   return (
@@ -137,11 +138,15 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.05 }}
-            className="bg-background/60 border border-border/50 rounded-xl p-3.5"
+            onClick={() => navigate(kpi.route)}
+            className="bg-background/60 border border-border/50 rounded-xl p-3.5 cursor-pointer hover:border-primary/40 hover:shadow-[0_0_12px_hsl(var(--primary)/0.1)] transition-all group"
           >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{kpi.label}</span>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-1.5">
+                <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{kpi.label}</span>
+              </div>
+              <ArrowUpRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all" />
             </div>
             <p className="text-2xl font-black tracking-tight text-foreground">{kpi.value}</p>
             <p className="text-[9px] text-muted-foreground mt-0.5">{kpi.description}</p>
