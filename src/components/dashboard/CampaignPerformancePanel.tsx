@@ -162,11 +162,12 @@ export function CampaignPerformancePanel(props: Partial<CampaignPerformancePanel
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 + i * 0.04 }}
-            className="flex items-center gap-2"
+            onClick={() => navigate(kpi.route)}
+            className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors group"
           >
-            <kpi.icon className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-[10px] text-muted-foreground font-medium">{kpi.label}</span>
-            <span className="text-sm font-bold text-foreground">{kpi.value}</span>
+            <kpi.icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            <span className="text-[10px] text-muted-foreground font-medium group-hover:text-primary transition-colors">{kpi.label}</span>
+            <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{kpi.value}</span>
             {i < secondaryKpis.length - 1 && <span className="text-border ml-2">·</span>}
           </motion.div>
         ))}
