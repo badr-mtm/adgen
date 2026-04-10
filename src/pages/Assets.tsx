@@ -70,7 +70,12 @@ const Assets = () => {
         .list(session.user.id, { limit: 100 });
 
       if (data) {
-        const formattedAssets: Asset[] = data.map((file) => ({
+        const paths = data.map((file) => `${session.user.id}/${file.name}`);
+        const { data: signedUrls } = await supabase.storage
+          .from("brand-assets")
+          .createSignedUrls(paths, 86400);
+
+        const formattedAssets: Asset[] = data.map((file, index) => ({
           id: file.id || file.name,
           name: file.name,
           type: file.name.match(/\.(mp4|mov|avi|webm)$/i)
@@ -78,9 +83,7 @@ const Assets = () => {
             : file.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
             ? "image"
             : "document",
-          url: supabase.storage
-            .from("brand-assets")
-            .getPublicUrl(`${session.user.id}/${file.name}`).data.publicUrl,
+          url: signedUrls?.[index]?.signedUrl || "",
           size: file.metadata?.size || 0,
           created_at: file.created_at || new Date().toISOString(),
         }));
