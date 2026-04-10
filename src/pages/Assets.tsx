@@ -168,7 +168,7 @@ const Assets = () => {
             : file.type.startsWith("image/")
             ? "image"
             : "document",
-          url: supabase.storage.from("brand-assets").getPublicUrl(data.path).data.publicUrl,
+          url: (await supabase.storage.from("brand-assets").createSignedUrl(data.path, 86400)).data?.signedUrl || "",
           size: file.size,
           created_at: new Date().toISOString(),
         };
