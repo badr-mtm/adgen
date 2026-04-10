@@ -86,11 +86,12 @@ export default function BrandSetup() {
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
+        const { data: signedData, error: signedError } = await supabase.storage
           .from("brand-assets")
-          .getPublicUrl(fileName);
+          .createSignedUrl(fileName, 86400);
         
-        logoUrl = publicUrl;
+        if (signedError) throw signedError;
+        logoUrl = signedData.signedUrl;
       }
 
       // Call brand ingestion edge function if landing page URL provided
