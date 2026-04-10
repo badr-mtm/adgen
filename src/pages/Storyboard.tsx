@@ -309,11 +309,13 @@ const Storyboard = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('ad-visuals')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 86400); // 24-hour expiry
 
-      await updateScene(sceneNumber, { audioUrl: publicUrl });
+      if (signedUrlError) throw signedUrlError;
+
+      await updateScene(sceneNumber, { audioUrl: signedUrlData.signedUrl });
       
       toast({
         title: "Audio Uploaded",
