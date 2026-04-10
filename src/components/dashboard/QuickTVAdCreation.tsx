@@ -32,23 +32,23 @@ export function QuickTVAdCreation() {
     >
       <Card className="bg-gradient-to-br from-card via-card to-primary/5 border-border overflow-hidden relative">
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <CardContent className="p-6 relative">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-              <Tv className="h-5 w-5 text-primary" />
+        <CardContent className="p-4 relative">
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Tv className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Create TV Ad</h3>
-              <p className="text-xs text-muted-foreground">Script-first broadcast advertising</p>
+              <h3 className="text-sm font-semibold text-foreground">Create TV Ad</h3>
+              <p className="text-[10px] text-muted-foreground">Script-first broadcast advertising</p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <Textarea
               value={concept}
               onChange={(e) => setConcept(e.target.value)}
-              placeholder="Describe your TV ad concept... What's the story you want to tell?"
-              className="min-h-[80px] bg-input border-border text-foreground placeholder:text-muted-foreground resize-none"
+              placeholder="Describe your TV ad concept..."
+              className="min-h-[60px] text-sm bg-input border-border text-foreground placeholder:text-muted-foreground resize-none"
             />
 
             <div>
@@ -61,14 +61,14 @@ export function QuickTVAdCreation() {
                   <button
                     key={option.value}
                     onClick={() => setSelectedDuration(option.value)}
-                    className={`p-3 rounded-lg border text-center transition-all ${
+                    className={`p-2 rounded-lg border text-center transition-all ${
                       selectedDuration === option.value
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50"
                     }`}
                   >
-                    <p className="text-lg font-bold">{option.label}</p>
-                    <p className="text-[10px]">{option.description}</p>
+                    <p className="text-sm font-bold">{option.label}</p>
+                    <p className="text-[9px]">{option.description}</p>
                   </button>
                 ))}
               </div>
@@ -76,7 +76,7 @@ export function QuickTVAdCreation() {
 
             <Button 
               onClick={handleQuickCreate}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-9 text-sm"
             >
               <Sparkles className="h-4 w-4 mr-2" />
               Start with Script
